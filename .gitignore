@@ -53,6 +53,7 @@
 __history/
 Instances/
 Download/
+CMDLauncher.cfg
 *.~*
 
 # Castalia statistics file
