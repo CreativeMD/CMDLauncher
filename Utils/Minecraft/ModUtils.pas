@@ -3,7 +3,7 @@ unit ModUtils;
 interface
 
 uses InstanceUtils, System.Generics.Collections, superobject, System.Types,
-System.SysUtils, Winapi.Windows, Task;
+System.SysUtils, Winapi.Windows, Task, Progressbar;
 
 type
   TModInstallObj = class abstract
@@ -50,15 +50,34 @@ type
       procedure loadMod(Json : ISuperObject);
   end;
   TLoadMod = class(TTask)
-  
+    procedure runTask(Bar : TCMDProgressBar); override;
+    constructor Create;
+  end;
+  TFullLoadMod = class(TLoadMod)
+    procedure runTask(Bar : TCMDProgressBar); override;
   end;
 
+function getModByName(Name : String) : TMod;
 function createMod(Json : ISuperObject) : TMod;
 function createModObj(Json : ISuperObject) : TModInstallObj;
 
+var
+ModList : TList<TMod>;
+
 implementation
 
-uses ForgeUtils, FileUtils, ZipUtils, StringUtils;
+uses ForgeUtils, FileUtils, ZipUtils, StringUtils, DownloadUtils, CoreLoader,
+DatabaseConnection;
+
+function getModByName(Name : String) : TMod;
+var
+  i: Integer;
+begin
+  for i := 0 to ModList.Count-1 do
+    if ModList[i].Title = Name then
+      Exit(ModList[i]);
+  Exit(nil);
+end;
 
 function createMod(Json : ISuperObject) : TMod;
 begin
@@ -81,6 +100,75 @@ begin
     on E : Exception do
       Result := nil;
   end;
+end;
+
+procedure TFullLoadMod.runTask(Bar : TCMDProgressBar);
+var
+FileName : String;
+DownloadTask : TDownloadTask;
+JsonFile : ISuperObject;
+ModArray : TSuperArray;
+i: Integer;
+TempMod : TMod;
+begin
+  FileName := DownloadFolder + 'mod.json';
+  DownloadTask := TDownloadTask.Create('http://launcher.creativemd.de/service/modservice.php?type=full',FileName, True);
+  if DatabaseConnection.online then
+  begin
+    DownloadTask.downloadFile(nil);
+  end;
+  if FileExists(FileName) then
+  begin
+    JsonFile := TSuperObject.ParseFile(FileName, true);
+    ModArray := JsonFile.AsArray;
+    for i := 0 to ModArray.Length-1 do
+    begin
+      TempMod := getModByName(ModArray.O[i].S['title']);
+      if TempMod <> nil then
+        TempMod.loadMod(ModArray.O[i])
+      else
+        Self.Log.log('Failed to load "' + ModArray.O[i].S['title'] + '"');
+    end;
+  end;
+  Self.Log.log('Loaded ' + InttoStr(ModList.Count) + ' mods');
+end;
+
+procedure TLoadMod.runTask(Bar : TCMDProgressBar);
+var
+FileName : String;
+DownloadTask : TDownloadTask;
+JsonFile : ISuperObject;
+ModArray : TSuperArray;
+i: Integer;
+TempMod : TMod;
+begin
+  ModList := TList<TMod>.Create;
+  FileName := DownloadFolder + 'modlite.json';
+  DownloadTask := TDownloadTask.Create('http://launcher.creativemd.de/service/modservice.php',FileName, True);
+  if DatabaseConnection.online then
+  begin
+    DownloadTask.downloadFile(nil);
+  end;
+  if FileExists(FileName) then
+  begin
+    JsonFile := TSuperObject.ParseFile(FileName, true);
+    ModArray := JsonFile.AsArray;
+    for i := 0 to ModArray.Length-1 do
+    begin
+      TempMod := createMod(ModArray.O[i]);
+
+      if TempMod <> nil then
+        ModList.Add(TempMod)
+      else
+        Self.Log.log('Failed to load mod!');
+    end;
+  end;
+  Self.Log.log('Pre-Loaded ' + InttoStr(ModList.Count) + ' mods');
+end;
+
+constructor TLoadMod.Create;
+begin
+  inherited Create('Loading Mods', False, False);
 end;
 
 constructor TMod.Create(Json : ISuperObject);
@@ -137,11 +225,11 @@ InstallArray : TSuperArray;
 i : Integer;
 InstallObj : TModInstallObj;
 begin
-  ID := Json.S['id'];
-  Min := Json.S['min'];
-  Max := Json.S['max'];
+  ID := Json.S['name'];
+  Min := Json.S['minforge'];
+  Max := Json.S['maxforge'];
   InstallObjs := TList<TModInstallObj>.Create;
-  InstallArray := Json.A['obj'];
+  InstallArray := Json.A['files'];
   if InstallArray <> nil then
   begin
     for i := 0 to InstallArray.Length-1 do

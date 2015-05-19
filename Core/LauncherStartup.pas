@@ -22,7 +22,7 @@ implementation
 
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
-ZipUtils, ForgeUtils;
+ZipUtils, ForgeUtils, ModUtils;
 
 constructor TUpdateTask.Create;
 begin
@@ -68,6 +68,7 @@ begin
   Result.Add(TUpdateTask.Create);
   Result.Add(TLoadMV.Create);
   Result.Add(TLoadForge.Create);
+  Result.Add(TLoadMod.Create);
   Result.Add(TLoadIcon.Create);
   Result.Add(TLoadJava.Create);
   Result.Add(TLoadInstance.Create);

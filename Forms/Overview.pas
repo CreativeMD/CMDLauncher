@@ -21,6 +21,7 @@ type
   TBackgroundTaskManager = class(TTaskManager)
     function isEndless : Boolean; override;
     procedure TaskFinishedEvent; override;
+    procedure TaskStartEvent; override;
     procedure NoTaskFoundEvent; override;
   end;
   TOverviewF = class(TForm)
@@ -103,7 +104,7 @@ implementation
 {$R *.dfm}
 
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
-InstanceSettings, FileUtils, MinecraftStartup, JavaUtils;
+InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -113,6 +114,11 @@ end;
 function TBackgroundTaskManager.isEndless : Boolean;
 begin
   Result := True;
+end;
+
+procedure TBackgroundTaskManager.TaskStartEvent;
+begin
+  OverviewF.lblBackgroundTask.Caption := CurrentTask.Title;
 end;
 
 procedure TBackgroundTaskManager.TaskFinishedEvent;
@@ -413,6 +419,7 @@ begin
   else
   begin
     BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
+    BackgroundTask.addTask(ModUtils.TFullLoadMod.Create);
   end;
 end;
 

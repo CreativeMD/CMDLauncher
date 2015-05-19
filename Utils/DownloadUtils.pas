@@ -44,7 +44,7 @@ NewPercent : Integer;
 begin
   if Bar <> nil then
     Bar.StepPos := AWorkCount
-  else
+  else if MaxWork > 0 then
   begin
     NewPercent := Round(AWorkCount/MaxWork*100);
     if NewPercent <> LastPercent then

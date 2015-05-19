@@ -7,7 +7,7 @@ Logger;
 
 type
   TTaskManager = class;
-  TTaskEvent = (teStart, teFinished, teFinishedTask);
+  TTaskEvent = (teStart, teFinished, teStartTask, teFinishedTask);
   TTaskNotify = procedure(Manager : TTaskManager; Event : TTaskEvent);
   TTask = class
     protected
@@ -35,6 +35,7 @@ type
       function isEndless : Boolean; virtual; abstract;
       procedure StartEvent; virtual;
       procedure TaskFinishedEvent; virtual;
+      procedure TaskStartEvent; virtual;
       procedure FinishedEvent; virtual;
       procedure NoTaskFoundEvent; virtual;
       procedure addTask(Task : TTask);
@@ -73,6 +74,12 @@ procedure TTaskManager.StartEvent;
 begin
   if Assigned(Self.TaskEvent) then
     TaskEvent(Self, teStart);
+end;
+
+procedure TTaskManager.TaskStartEvent;
+begin
+  if Assigned(Self.TaskEvent) then
+    TaskEvent(Self, teStartTask);
 end;
 
 procedure TTaskManager.TaskFinishedEvent;
@@ -184,6 +191,7 @@ begin
 
       before := GetTickCount;
       try
+        TaskStartEvent;
         if isEndless then
           ProgressBar.StartProcess(1);
         runTask;
