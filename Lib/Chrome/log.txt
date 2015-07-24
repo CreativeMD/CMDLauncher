@@ -1,0 +1,212 @@
+[0604/124225:ERROR:proxy_service_factory.cc(105)] Cannot use V8 Proxy resolver in single process mode.
+[0604/124452:ERROR:proxy_service_factory.cc(105)] Cannot use V8 Proxy resolver in single process mode.
+[0604/124539:ERROR:child_process_launcher.cc(344)] Failed to launch child process
+[0604/124539:ERROR:child_process_launcher.cc(344)] Failed to launch child process
+[0604/125156:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/125339:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/125455:ERROR:proxy_service_factory.cc(105)] Cannot use V8 Proxy resolver in single process mode.
+[0604/125520:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/125726:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/130530:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/131443:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/131920:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[0604/132419:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/132504:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/132534:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/132614:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0604/132641:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/132641:ERROR:cache_util_win.cc(20)] Unable to move the cache: 5
+[0604/132641:ERROR:cache_util.cc(132)] Unable to move cache folder cache to old_cache_000
+[0604/132641:ERROR:cache_creator.cc(132)] Unable to create cache
+[0604/134159:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/134308:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/143026:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/143442:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/143716:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/143747:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0604/143850:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/144146:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/144402:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/144433:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0604/203921:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/154533:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/154541:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/154838:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/161056:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/162808:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/162918:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/170602:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/171214:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172152:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172210:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172217:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172220:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172223:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172236:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172803:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172806:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/172810:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173218:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173218:ERROR:cache_util_win.cc(20)] Unable to move the cache: 5
+[0615/173218:ERROR:cache_util.cc(132)] Unable to move cache folder cache to old_cache_000
+[0615/173218:ERROR:cache_creator.cc(132)] Unable to create cache
+[0615/173307:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173317:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173319:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173321:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173336:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173344:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173355:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173356:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173356:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173357:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173357:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/173400:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0615/173542:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/174002:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/174008:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/203520:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/203916:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/204039:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/204325:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/204430:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/204656:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/204703:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205034:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205231:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205248:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205324:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205556:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205603:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/205624:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210241:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210244:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0615/210421:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210513:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210608:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210656:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/210658:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/211024:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/211138:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/211144:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/211936:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/211938:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/212011:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/212030:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/212201:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/212203:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/212213:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/214155:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0615/214501:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0616/105155:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0616/105155:ERROR:cache_util_win.cc(20)] Unable to move the cache: 5
+[0616/105155:ERROR:cache_util.cc(132)] Unable to move cache folder cache to old_cache_000
+[0616/105155:ERROR:cache_creator.cc(132)] Unable to create cache
+[0617/175834:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/181410:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/181414:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0617/181414:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/181603:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/181752:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/182832:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/182837:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183157:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183207:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183406:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183533:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183542:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/183952:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/184107:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/184213:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/185709:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/185931:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE T 0 1 0 F F F 1 1
+[0617/190108:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE T 0 3 0 F F F 1 0
+[0617/190108:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE T 0 0 0 F F F 1 0
+[0617/190108:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_SEND_BEGIN_MAIN_FRAME T 0 1 0 F F F 1 0
+[0617/190227:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/190306:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0617/190404:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/190607:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0617/195207:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0618/223445:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0618/225549:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0618/225645:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0618/225701:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 1 1 F F F 1 0
+[0620/170251:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/170252:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/170315:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/170349:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[0620/170514:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[0620/170514:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 0 1 F F F 1 0
+[0620/170514:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 1 1 F F F 1 0
+[0620/170756:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/171103:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/172356:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/173002:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/173354:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_ACTIVATE_SYNC_TREE F 0 2 4 T T F 1 0
+[0620/173354:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 2 0 F F T 1 0
+[0620/173354:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_ANIMATE F 0 3 0 F F T 1 0
+[0620/173354:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_DRAW_AND_SWAP_IF_POSSIBLE F 0 3 0 F F T 1 0
+[0620/173546:ERROR:ipc_channel_win.cc(419)] pipe error: 109
+[0620/175342:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/175407:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[0620/175407:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 0 1 F F F 1 0
+[0620/175407:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 1 1 F F F 1 0
+[0620/175408:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[0620/175408:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 0 1 F F F 1 0
+[0620/175408:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 1 1 F F F 1 0
+[0620/175847:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/180031:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/180235:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/180623:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/180800:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/180950:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/181131:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/181353:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/181403:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[0620/181552:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0620/181716:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE T 0 2 4 T F F 1 0
+[0623/160739:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130706:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130711:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130733:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130736:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130939:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/130956:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131100:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131151:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131209:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131605:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131607:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0627/131633:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/114917:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/114919:ERROR:gles2_cmd_decoder.cc(3872)] Error: 5 for Command kLoseContextCHROMIUM
+[0701/114919:ERROR:gles2_cmd_decoder.cc(3055)]   GLES2DecoderImpl: Context lost during MakeCurrent.
+[0701/114919:ERROR:gles2_cmd_decoder.cc(3060)] Exiting GPU process because some drivers cannot reset a D3D device in the Chrome GPU process sandbox.
+[0701/114932:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/115003:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/115227:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/115323:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/115356:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/115631:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/121535:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/121903:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0701/122024:ERROR:webgraphicscontext3d_command_buffer_impl.cc(230)] Failed to initialize GLES2CmdHelper.
+[0716/171332:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/171413:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/171752:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/171914:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172046:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172141:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172347:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172626:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172904:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/172925:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/173007:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/173019:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/173027:ERROR:ipc_channel_win.cc(171)] pipe error: 109
+[0716/182033:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0716/182509:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0718/112627:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0718/113718:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[0719/165219:ERROR:renderer_main.cc(207)] Running without renderer sandbox

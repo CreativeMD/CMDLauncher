@@ -35,7 +35,7 @@ end;
 
 function getStandardServerSettings(Instance : TInstance) : TList<TSetting>;
 var
-Folders, Difficulty : TStringList;
+Folders, Difficulty, LevelType : TStringList;
 Directories : TStringDynArray;
 i: Integer;
 begin
@@ -44,19 +44,37 @@ begin
   Folders := TStringList.Create;
   for i := 0 to Length(Directories)-1 do
   begin
-    if FileExists(Directories[i] + 'level.dat') then
+    if FileExists(Directories[i] + '\level.dat') then
       Folders.Add(Directories[i].Replace(Instance.getInstanceFolder, ''));
   end;
   Result.Add(TTextSelectSetting.Create('level-name', 'World', Folders, 'world').setNotNeedFill);
   Result.Add(TEulaOption.Create('eula', 'EULA', False, TSaveFile.Create(Instance.getInstanceFolder + 'eula.txt')));
   Result.Add(TCheckOption.Create('online-mode', 'Online', True));
+
+  Result.Add(TCheckOption.Create('allow-flight', 'Allow flight', False));
+  Result.Add(TCheckOption.Create('pvp', 'PVP', True));
+  Result.Add(TCheckOption.Create('enable-command-block', 'Enable command block', False));
+
+  Result.Add(TStringSetting.Create('max-players', 'Max players', '20').setMinimalLength(1).setOnlyNumbers);
+
+  Result.Add(TStringSetting.Create('server-port', 'Port', '25565').setMinimalLength(1).setOnlyNumbers);
+
+  LevelType := TStringList.Create;
+  LevelType.Add('DEFAULT');
+  LevelType.Add('FLAT');
+  LevelType.Add('LARGEBIOMES');
+  LevelType.Add('AMPLIFIED');
+  LevelType.Add('CUSTOMIZED');
+  Result.Add(TTextSelectSetting.Create('level-type', 'Level type', LevelType, 'DEFAULT').setNotNeedFill);
+
+  Result.Add(TStringSetting.Create('motd', 'Description', 'A Minecraft Server'));
+
   Difficulty := TStringList.Create;
   Difficulty.Add('Peaceful');
   Difficulty.Add('Easy');
   Difficulty.Add('Normal');
   Difficulty.Add('Hard');
   Result.Add(TSelectSetting.Create('difficulty', 'Difficulty', Difficulty, 'Peaceful').setSaveNumber(True));
-  { TODO 2 : Add more Settings }
 end;
 
 end.

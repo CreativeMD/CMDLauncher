@@ -3,10 +3,9 @@ unit InstanceUtils;
 interface
 
 uses SaveFileUtils, System.Generics.Collections, Task, ProgressBar, System.Classes, StringUtils, System.IOUtils, System.Types,
-System.SysUtils, SettingUtils, MinecraftLaunchCommand, JavaUtils, AccountUtils;
+System.SysUtils, SettingUtils, MinecraftLaunchCommand, JavaUtils, AccountUtils, SideUtils;
 
 type
-  TInstanceTyp = (IClient, IServer);
   TInstance = class abstract
     private
       FTitle : String;
@@ -18,9 +17,10 @@ type
       procedure Save(SaveFile : TSaveFile); virtual; abstract;
     public
       RAM : Integer;
-      Group, IconName, CustomCommand, CustomJava : String;
-      InstanceTyp : TInstanceTyp;
-      constructor Create(Title : String; read : Boolean = True);
+      Group, IconName, CustomCommand, CustomJava, ExternalFolder : String;
+      Side : TSide;
+      constructor Create(Title : String; read : Boolean = True; ExternalFolder : String = '');
+      function isExternal : Boolean;
       function getInstanceFolder : string;
       function getUUID : String; virtual; abstract;
       function getSettings : TList<TSetting>; virtual; abstract;
@@ -28,6 +28,8 @@ type
       function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; virtual; abstract;
       function getLaunchSettings : TList<TSetting>; virtual; abstract; //No groups avaiable
       function getLaunchSaveFile : TSaveFile; virtual; abstract;
+      function canInstanceLaunch : Boolean; virtual;
+      procedure LoadPost(SaveFile : TSaveFile); virtual;
       procedure SaveInstance;
       property Title : string read FTitle;
       property getSaveFile : TSaveFile read SaveFile;
@@ -37,39 +39,61 @@ type
     protected
       procedure runTask(Bar : TCMDProgressBar); override;
   end;
+  TFinishLoadInstance = class(TTask)
+    protected
+      procedure runTask(Bar : TCMDProgressBar); override;
+    public
+     constructor Create;
+  end;
 
 const
 SaveFileName : String = 'Instance.cfg';
 
 var
 Instances : TList<TInstance>;
-InstanceTypes : TList<TInstance>;
+InstanceTypes : TList<TPair<TInstance, TSideType>>;
+LoadedInstances : Boolean;
+ExternalInstances, HiddenGroups : TStringList;
 
-function CreateInstance(Title, UUID : String) : TInstance;
+function CreateInstance(Title, UUID : String; ExternalFolder : String = '') : TInstance;
 function RenameInstance(Instance : TInstance; NewName : string) : Boolean;
 function canRenameInstance(Instance : TInstance; NewName : string) : Boolean;
-function getInstanceByUUID(UUID : String) : TInstance;
-function ITypeToString(InstanceTyp : TInstanceTyp) : String;
+function getInstanceByUUID(UUID : String; Side : TSide) : TInstance;
+function getInstanceByUUIDIgnoreSide(UUID : String) : TInstance;
+function getTypes(Side : TSide) : TStringList;
+procedure registerInstanceTyp(Instance : TInstance; SideType : TSideType);
 
 implementation
 
-uses CoreLoader, FileUtils, Overview, Logger, VanillaUtils, ForgeUtils;
+uses CoreLoader, FileUtils, Overview, Logger, VanillaUtils, ForgeUtils, ModpackUtils, Cauldron;
 
-function ITypeToString(InstanceTyp : TInstanceTyp) : String;
+function getTypes(Side : TSide) : TStringList;
+var
+  i: Integer;
 begin
-  if InstanceTyp = IClient then
-    Result := 'Client'
-  else
-    Result := 'Server';
+  Result := TStringList.Create;
+  for i := 0 to InstanceTypes.Count-1 do
+    if InstanceTypes[i].Value.isCompatible(Side) then
+      Result.Add(InstanceTypes[i].Key.getUUID);
 end;
 
-function getInstanceByUUID(UUID : String) : TInstance;
+function getInstanceByUUIDIgnoreSide(UUID : String) : TInstance;
 var
   i: Integer;
 begin
   for i := 0 to InstanceTypes.Count-1 do
-    if InstanceTypes[i].getUUID = UUID then
-      Exit(InstanceTypes[i]);
+    if InstanceTypes[i].Key.getUUID = UUID then
+      Exit(InstanceTypes[i].Key);
+  Exit(nil);
+end;
+
+function getInstanceByUUID(UUID : String; Side : TSide) : TInstance;
+var
+  i: Integer;
+begin
+  for i := 0 to InstanceTypes.Count-1 do
+    if (InstanceTypes[i].Key.getUUID = UUID) and (InstanceTypes[i].Value.isCompatible(Side)) then
+      Exit(InstanceTypes[i].Key);
   Exit(nil);
 end;
 
@@ -99,9 +123,35 @@ begin
   end;
 end;
 
+procedure registerInstanceTyp(Instance : TInstance; SideType : TSideType);
+var
+Item : TPair<TInstance, TSideType>;
+begin
+  Item.Key := Instance;
+  Item.Value := SideType;
+  InstanceTypes.Add(Item);
+end;
+
+constructor TFinishLoadInstance.Create;
+begin
+  inherited Create('Finish loading Forge Instances', False);
+end;
+
+procedure TFinishLoadInstance.runTask(Bar : TCMDProgressBar);
+var
+i: Integer;
+begin
+  for i := 0 to InstanceUtils.Instances.Count-1 do
+  begin
+    Instances[i].LoadPost(Instances[i].getSaveFile);
+  end;
+  LoadedInstances := True;
+end;
+
 constructor TLoadInstance.Create;
 begin
   inherited Create('Loading Instances');
+  LoadedInstances := False;
 end;
 
 procedure TLoadInstance.runTask(Bar : TCMDProgressBar);
@@ -113,9 +163,11 @@ begin
   if not DirectoryExists(InstanceFolder) then
     ForceDirectories(InstanceFolder);
   Self.Log.log('Loading Instances ...');
-  InstanceTypes := TList<TInstance>.Create;
-  InstanceTypes.Add(TVanillaInstance.Create('VanillaTyp',False));
-  InstanceTypes.Add(TForgeInstance.Create('ForgeTyp', False));
+  InstanceTypes := TList<TPair<TInstance, TSideType>>.Create;
+  registerInstanceTyp(TVanillaInstance.Create('VanillaTyp',False), Universal);
+  registerInstanceTyp(TForgeInstance.Create('ForgeTyp', False), Universal);
+  registerInstanceTyp(TModpackInstance.Create('ModpackTyp', False), Universal);
+  registerInstanceTyp(TCauldronInstance.Create('CauldronTyp', False), OnlyServer);
 
   if Assigned(Instances) then
   begin
@@ -124,10 +176,13 @@ begin
     Instances.Destroy;
   end;
 
+  ExternalInstances := ProgramSettings.getStringList('external');
+  HiddenGroups := ProgramSettings.getStringList('hidden');
   Instances := TList<TInstance>.Create;
 
   Folders := ArrayToList(TDirectory.GetDirectories(InstanceFolder));
-  Bar.StartStep(Folders.Count);
+  Bar.StartStep(Folders.Count+ExternalInstances.Count);
+
   for i := 0 to Folders.Count-1 do
   begin
     if FileExists(Folders[i] + '\' + SaveFileName) then
@@ -139,26 +194,42 @@ begin
     Bar.StepPos := i;
   end;
 
+  i := 0;
+  while i < ExternalInstances.Count do
+  begin
+    if FileExists(ExternalInstances[i] + '\' + SaveFileName) then
+    begin
+      Instance := CreateInstance(ExtractLastFolder(ExternalInstances[i]), TSaveFile.Create(ExternalInstances[i] + '\' + SaveFileName).getString('uuid'), ExternalInstances[i]);
+      if Instance <> nil then
+        Instances.Add(Instance);
+        i := i + 1;
+    end
+    else
+    begin
+      Self.Log.log('Could not load/find external folder=' + ExternalInstances[i]);
+      ExternalInstances.Delete(i);
+    end;
+    Bar.StepPos := i+Folders.Count;
+  end;
+
   OverviewF.loadInstances;
   Self.Log.log('Loaded ' + InttoStr(Instances.Count) + ' Instances');
   Bar.FinishStep;
 end;
 
-function CreateInstance(Title, UUID : String) : TInstance;
+function CreateInstance(Title, UUID : String; ExternalFolder : String = '') : TInstance;
 var
-i : Integer;
 InstanceTyp : TInstance;
 begin
   Result := nil;
-  InstanceTyp := nil;
-  for i := 0 to InstanceTypes.Count-1 do
-    if InstanceTypes[i].getUUID = UUID then
-       InstanceTyp := InstanceTypes[i];
+  InstanceTyp := getInstanceByUUIDIgnoreSide(UUID);
 
   if InstanceTyp <> nil then
   begin
     try
-      Result := TInstance(InstanceTyp.ClassType.NewInstance).Create(Title);
+      Result := TInstance(InstanceTyp.ClassType.NewInstance).Create(Title, True, ExternalFolder);
+      if (ExternalFolder <> '') and not ExternalInstances.Contains(ExternalFolder) then
+        ExternalInstances.Add(ExternalFolder);
     except
       Logger.Log.log('Failed to create class uuid=' + UUID + ' (title=' + Title + ')');
     end;
@@ -167,10 +238,11 @@ begin
     Logger.Log.log('Found invalid uuid=' + UUID + ' (title=' + Title + ')');
 end;
 
-constructor TInstance.Create(Title : String; read : Boolean = True);
+constructor TInstance.Create(Title : String; read : Boolean = True; ExternalFolder : String = '');
 begin
   Self.FTitle := Title;
   Self.SaveFile := nil;
+  Self.ExternalFolder := ExternalFolder;
   RAM := 1024;
   Group := '';
   IconName := '';
@@ -179,6 +251,11 @@ begin
     SaveFile := TSaveFile.Create(getInstanceFolder + SaveFileName);
     LoadCore(SaveFile);
     Load(SaveFile);
+
+    if isExternal then
+    begin
+      Title := SaveFile.getString('title');
+    end;
   end;
 end;
 
@@ -194,9 +271,9 @@ begin
     CustomCommand := '';
   CustomJava := SaveFile.getString('java');
   if SaveFile.getString('itype') = 'Server' then
-    InstanceTyp := IServer
+    Side := TServer
   else
-    InstanceTyp := IClient;
+    Side := TClient;
 end;
 
 procedure TInstance.SaveCore(SaveFile : TSaveFile);
@@ -205,20 +282,39 @@ begin
   SaveFile.setString('group', Group);
   SaveFile.setString('icon', IconName);
   SaveFile.setString('uuid', getUUID);
-  SaveFile.setString('itype', ITypeToString(InstanceTyp));
+  SaveFile.setString('itype', Side.toString);
   SaveFile.setString('customcommand', CustomCommand);
   SaveFile.setString('java', CustomJava);
+  SaveFile.setString('external', ExternalFolder);
+end;
+
+function TInstance.isExternal : Boolean;
+begin
+  Result := ExternalFolder <> '';
 end;
 
 function TInstance.getInstanceFolder : string;
 begin
-  Result := CoreLoader.InstanceFolder + Self.FTitle + '\';
+  if isExternal then
+    Result := ExternalFolder
+  else
+    Result := CoreLoader.InstanceFolder + Self.FTitle + '\';
 end;
 
 procedure TInstance.SaveInstance;
 begin
   SaveCore(SaveFile);
   Save(SaveFile);
+end;
+
+function TInstance.canInstanceLaunch : Boolean;
+begin
+  Result := True;
+end;
+
+procedure TInstance.LoadPost(SaveFile : TSaveFile);
+begin
+
 end;
 
 end.

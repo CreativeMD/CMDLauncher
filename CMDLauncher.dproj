@@ -154,6 +154,23 @@
         <DCCReference Include="Utils\Minecraft\External\TechnicUtils.pas"/>
         <DCCReference Include="Utils\Minecraft\Custom\ResourcePackUtils.pas"/>
         <DCCReference Include="Utils\Minecraft\Custom\ShaderPackUtils.pas"/>
+        <DCCReference Include="Common\Minecraft\ModSettings.pas"/>
+        <DCCReference Include="Forms\Minecraft\ModSelectForm.pas">
+            <Form>ModSelectF</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Minecraft\ModDownload.pas">
+            <Form>ModDownloaderF</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Common\Minecraft\ModpackSettings.pas"/>
+        <DCCReference Include="Utils\Minecraft\Special\Cauldron.pas"/>
+        <DCCReference Include="Utils\Minecraft\SideUtils.pas"/>
+        <DCCReference Include="Forms\ConsoleServer.pas">
+            <Form>ConsoleServerF</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Utils\Settings\CustomSettings.pas"/>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">

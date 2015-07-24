@@ -3,11 +3,10 @@ unit MinecraftStartup;
 interface
 
 uses Task, InstanceUtils, Logger, System.Generics.Collections, MinecraftLaunchCommand,
-Console, System.SysUtils, SettingUtils;
+Console, System.SysUtils, SettingUtils, SideUtils, System.Classes;
 
 type
   TLaunchTaskManager = class(TTaskManager)
-    Console : TConsoleF;
     Command : TMinecraftLaunch;
     Instance : TInstance;
     function isEndless : Boolean; override;
@@ -33,7 +32,7 @@ end;
 
 procedure launchInstance(Instance : TInstance; Online : Boolean = True; ShowSettings : Boolean = True);
 var
-Console : TConsoleF;
+//Console : TConsoleF;
 LaunchManager : TLaunchTaskManager;
 Tasks : TList<TTask>;
 Command : TMinecraftLaunch;
@@ -46,9 +45,10 @@ Group : TSettingGroup;
 Page : TSettingPage;
 i: Integer;
 Java : TJava;
+Listener : TStrings;
 begin
   Settings := Instance.getLaunchSettings;
-  if ShowSettings and (Settings.Count > 0) then
+  if ShowSettings and (Settings.Count > 0) and Instance.canInstanceLaunch then
   begin
     Group := TSettingGroup.Create('Default');
     Page := TSettingPage.Create('StartupConfig', '');
@@ -59,8 +59,8 @@ begin
     Groups.Add(Group);
     StartupSettings := TInstanceStartupSettings.Create('Startup Config', '', Instance.getLaunchSaveFile, '', Groups);
     StartupSettings.hideGroups;
-    StartupSettings.SettingForm.Width := 300;
-    StartupSettings.SettingForm.Height := 250;
+    StartupSettings.SettingForm.Width := 400;
+    StartupSettings.SettingForm.Height := 450;
     StartupSettings.Instance := Instance;
     StartupSettings.Online := Online;
   end
@@ -90,7 +90,7 @@ begin
 
     LoginData := nil;
 
-    if Instance.InstanceTyp = IClient then
+    if Instance.Side = TClient then
     begin
       LoginData := login(TempAccount, nil, Online);
       if LoginData.hasFailed then
@@ -118,7 +118,7 @@ begin
       Exit;
     end;
 
-    Console := TConsoleF.Create(nil);
+    {Console := TConsoleF.Create(nil);
 
     Console.Caption := Instance.Title;
 
@@ -129,6 +129,15 @@ begin
     LaunchManager.Log := TLog.Create;
     LaunchManager.Log.Listener.Add(Console.mmoLog.Lines);
     LaunchManager.Console := Console;
+    LaunchManager.Command := Command;
+    LaunchManager.Instance := Instance; }
+
+    Tasks := TList<TTask>.Create;
+    Tasks.AddRange(Instance.getStartupTasks(Command));
+    LaunchManager := TLaunchTaskManager.Create(Tasks, Command.createWindow(Instance.Title, Listener));
+    LaunchManager.Log := TLog.Create;
+    LaunchManager.Log.Listener.Add(Listener);
+    //LaunchManager.Console := Console;
     LaunchManager.Command := Command;
     LaunchManager.Instance := Instance;
   end;
@@ -141,16 +150,17 @@ end;
 
 procedure TLaunchTaskManager.FinishedEvent;
 begin
-  Console.Instance := Instance;
+  Command.buildListener(Instance);
+  {Console.Instance := Instance;
   Console.Launching := TLaunching.Create('"' + Command.Java.Path + '"', Command.getLaunchCommand,
-  Instance.getInstanceFolder, procedure(const Line: PAnsiChar)
+  Instance.getInstanceFolder, procedure(const Line: AnsiString)
       begin
           if string(Line) <> '' then
-            Console.mmoLog.Lines.Append(String(Line));
+            Console.mmoLog.Lines.Append(Line);
       end);
   Console.mmoLog.Lines.Add('"' + Command.Java.Path + '"');
   Console.mmoLog.Lines.AddStrings(Command.getLaunchCommandList);
-  Console.Launching.Consol := Console;
+  Console.Launching.OnClosed := Console.onClosed;        }
 end;
 
 end.

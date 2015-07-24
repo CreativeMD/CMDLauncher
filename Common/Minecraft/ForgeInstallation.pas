@@ -9,12 +9,13 @@ SortingUtils, VanillaUtils, AccountUtils, InstanceUtils;
 type
   TForgeLaunch = class(TVanillaLaunch)
     Forge : TForge;
-    constructor Create(Java : TJava; Forge : TForge; Instance : TInstance; LoginData : TLoginData);
+    constructor Create(Java : TJava; Forge : TForge; Instance : TInstance; LoginData : TLoginData); overload;
+    constructor Create(Java : TJava; MC : String; Instance : TInstance; LoginData : TLoginData); overload;
   end;
   TInstallServerForge = class(TLaunchTask)
     InstanceFolder : String;
     procedure runTask(Bar : TCMDProgressBar); override;
-    constructor Create(InstanceFolder : String;Command : TForgeLaunch);
+    constructor Create(InstanceFolder : String; Command : TForgeLaunch);
   end;
   TInstallForge = class(TLaunchTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -29,6 +30,12 @@ constructor TForgeLaunch.Create(Java : TJava; Forge : TForge; Instance : TInstan
 begin
   inherited Create(Java, Forge.MV, Instance, LoginData);
   Self.Forge := Forge;
+end;
+
+constructor TForgeLaunch.Create(Java : TJava; MC : String; Instance : TInstance; LoginData : TLoginData);
+begin
+  inherited Create(Java, MC, Instance, LoginData);
+  Self.Forge := nil;
 end;
 
 procedure TInstallServerForge.runTask(Bar : TCMDProgressBar);
@@ -50,7 +57,7 @@ begin
   if TForgeLaunch(Command).Forge.Branch <> '' then
     FName := FName + '-' + TForgeLaunch(Command).Forge.Branch;
   DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/' + FName + '/forge-' + FName + '-universal.jar',
-  InstanceFolder + 'forge-' + FName + '-universal.jar');
+  InstanceFolder + 'forge-' + FName + '-universal.jar', False);
   DownloadTask.setLog(Log);
   DownloadTask.downloadFile(Bar);
   Command.SpecialArguments.Add('-jar');

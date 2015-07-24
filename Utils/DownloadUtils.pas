@@ -86,6 +86,8 @@ begin
   Http.OnWorkBegin := IdHTTPWorkBegin;
   Http.OnWork := IdHTTPWork;
   Http.OnWorkEnd := IdHTTPWorkEnd;
+  Http.Request.UserAgent := 'Mozilla/5.0';
+
   Self.Bar := Bar;
   Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
   ForceDirectories(ExtractFilePath(DownloadPath));

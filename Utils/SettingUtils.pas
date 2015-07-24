@@ -16,7 +16,7 @@ type
     public
       Name, Title : string;
       Online, HasTitle, IsEdited : Boolean;
-      Controls : TList<TWinControl>;
+      Controls : TList<TControl>;
       constructor Create(Name, Title : String; Online : Boolean = False);
       procedure createControl(x, y : Integer; Parent : TWinControl); virtual; abstract;
       procedure destroyControl; virtual; abstract;
@@ -36,7 +36,7 @@ type
   end;
   TStringSetting = class(TSetting<string>)
     protected
-      Width : Integer;
+      Width, MinimalLength: Integer;
       function isFilled : Boolean; override;
       function isFilledValid : Boolean; override;
       procedure onChanged(Sender: TObject); virtual;
@@ -49,6 +49,8 @@ type
       procedure SaveToFile(SaveFile : TSaveFile); override;
       procedure LoadFromFile(SaveFile : TSaveFile); override;
       function setWidth(Width : Integer) : TStringSetting;
+      function setOnlyNumbers : TStringSetting;
+      function setMinimalLength(Length : Integer) : TStringSetting;
   end;
   TSelectSetting = class(TSetting<string>)
     protected
@@ -185,14 +187,16 @@ type
       function canSaveArgs : TStringList; override;
   end;
 
-implementation
-
-uses Settings, IconUtils, StringUtils, DatabaseConnection;
-
 const
 SpaceY : Integer = 10;
 xOffset : Integer = 10;
 xLabelSpace : Integer = 10;
+
+implementation
+
+uses Settings, IconUtils, StringUtils, DatabaseConnection;
+
+
 
 function Supports(const Instance: TObject; const IID: TGUID; out Intf): Boolean;
 begin
@@ -207,7 +211,7 @@ begin
     setHideTitle;
   Self.Online := Online;
   Self.HasTitle := True;
-  Controls := TList<TWinControl>.Create;
+  Controls := TList<TControl>.Create;
   IsEdited := False;
   NeedFill := True;
 end;
@@ -225,8 +229,23 @@ end;
 function TSetting.canSaveArgs : TStringList;
 var
 Error : String;
+ExSetting : IExpandableSetting;
+SubSettings : TList<TSetting>;
+i: Integer;
 begin
   Result := TStringList.Create;
+
+  if System.SysUtils.Supports(Self.ClassType, IExpandableSetting) then
+  begin
+    Supports(Self, IExpandableSetting, ExSetting);
+    SubSettings := ExSetting.getExpandedSettings;
+    for i := 0 to SubSettings.Count-1 do
+    begin
+      Error := SubSettings[i].canSave;
+      if Error <> '' then
+        Result.Add(Error);
+    end;
+  end;
   Error := canSave;
   if Error <> '' then
     Result.Add(Error);
@@ -262,12 +281,12 @@ begin
   min := -1;
   max := 0;
   for i := 0 to Controls.Count-1 do
-    if Controls[i] is TWinControl then
+    if Controls[i] is TControl then
     begin
-      if (TWinControl(Controls[i]).Top < min) or (min = -1) then
-        min := TWinControl(Controls[i]).Top;
-      if (TWinControl(Controls[i]).Top+TWinControl(Controls[i]).Height) > max then
-        max := (TWinControl(Controls[i]).Top+TWinControl(Controls[i]).Height);
+      if (TControl(Controls[i]).Top < min) or (min = -1) then
+        min := TControl(Controls[i]).Top;
+      if (TControl(Controls[i]).Top+TControl(Controls[i]).Height) > max then
+        max := (TControl(Controls[i]).Top+TControl(Controls[i]).Height);
     end;
 
   Result := max - min;
@@ -329,7 +348,7 @@ begin
   for i := 0 to Settings.Count-1 do
   begin
     offset := xOffset;
-    TempLabel := nil;
+    //TempLabel := nil;
     if Settings[i].HasTitle then
     begin
       TempLabel := TLabel.Create(Parent);
@@ -341,13 +360,20 @@ begin
       offset := TempLabel.Left + TempLabel.Width + xLabelSpace;
       Labels.Add(TempLabel);
     end;
+
+    if System.SysUtils.Supports(Settings[i].ClassType, IExpandableSetting) then
+    begin
+      Supports(Settings[i], IExpandableSetting, ExSetting);
+      ExSetting.setGroupList(GroupList);
+    end;
+
     Settings[i].createControl(offset, current_heigt, Parent);
     if (not DatabaseConnection.online) and (Settings[i].Online) then
       for j := 0 to Settings[i].Controls.Count-1 do
         Settings[i].Controls[j].Enabled := False;
 
-    if Settings[i].HasTitle then
-      TempLabel.Top := TempLabel.Top + Settings[i].getHeight div 2 - TempLabel.Height div 2;
+    //if Settings[i].HasTitle then
+      //TempLabel.Top := TempLabel.Top + Settings[i].getHeight div 2 - TempLabel.Height div 2;
     current_heigt := current_heigt + Settings[i].getHeight + SpaceY;
 
     if System.SysUtils.Supports(Settings[i].ClassType, IExpandableSetting) then
@@ -364,7 +390,7 @@ begin
 
 
       GroupBox.Caption := ExSetting.getGroupTitle;
-      ExSetting.setGroupList(GroupList);
+
 
       SubSettings := ExSetting.getExpandedSettings;
       loadSettings(SubSettings, GroupBox, GroupList);
@@ -393,7 +419,8 @@ begin
     end;
     Settings[i].destroyControl;
     for j := 0 to Settings[i].Controls.Count-1 do
-      Settings[i].Controls[j].Destroy;
+      if Settings[i].Controls[j] <> nil then
+        Settings[i].Controls[j].Destroy;
     Settings[i].Controls.Clear;
   end;
 end;
@@ -609,7 +636,6 @@ var
 i: Integer;
 Settings, Grouped : TList<TSetting>;
 Errors : TStringList;
-Error : string;
 begin
   Result := False;
   Grouped := getNormalGroupedAllSettings;
@@ -656,7 +682,9 @@ end;
 constructor TStringSetting.Create(Name, Title : String; Default : string; Online : Boolean = False; OnlyContains : string = standardChars);
 begin
   inherited Create(Name, Title, Default, Online);
+  Self.Width := 200;
   Self.OnlyContains := OnlyContains;
+  Self.MinimalLength := 3;
 end;
 
 function TStringSetting.isFilled : Boolean;
@@ -667,9 +695,9 @@ end;
 function TStringSetting.isFilledValid : Boolean;
 begin
   Result := (Value <> '');
-  if not StringUtils.onlyContains(Value, Self.OnlyContains) then
+  if (Self.OnlyContains <> '') and not StringUtils.onlyContains(Value, Self.OnlyContains) then
     Result := False;
-  if Length(Value) < 3 then
+  if Length(Value) < MinimalLength then
     Result := False;
 end;
 
@@ -716,6 +744,18 @@ end;
 function TStringSetting.setWidth(Width : Integer) : TStringSetting;
 begin
   Self.Width := Width;
+  Exit(Self);
+end;
+
+function TStringSetting.setOnlyNumbers : TStringSetting;
+begin
+  Self.OnlyContains := '0123456789';
+  Exit(Self);
+end;
+
+function TStringSetting.setMinimalLength(Length : Integer) : TStringSetting;
+begin
+  Self.MinimalLength := Length;
   Exit(Self);
 end;
 

@@ -49,19 +49,34 @@ uses
   FTBUtils in 'Utils\Minecraft\External\FTBUtils.pas',
   TechnicUtils in 'Utils\Minecraft\External\TechnicUtils.pas',
   ResourcePackUtils in 'Utils\Minecraft\Custom\ResourcePackUtils.pas',
-  ShaderPackUtils in 'Utils\Minecraft\Custom\ShaderPackUtils.pas';
+  ShaderPackUtils in 'Utils\Minecraft\Custom\ShaderPackUtils.pas',
+  ModSettings in 'Common\Minecraft\ModSettings.pas',
+  ModSelectForm in 'Forms\Minecraft\ModSelectForm.pas' {ModSelectF},
+  ModDownload in 'Forms\Minecraft\ModDownload.pas' {ModDownloaderF},
+  ModpackSettings in 'Common\Minecraft\ModpackSettings.pas',
+  Cauldron in 'Utils\Minecraft\Special\Cauldron.pas',
+  SideUtils in 'Utils\Minecraft\SideUtils.pas',
+  ConsoleServer in 'Forms\ConsoleServer.pas' {ConsoleServerF},
+  CustomSettings in 'Utils\Settings\CustomSettings.pas';
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+
   CoreLoader.LoadCore;
   ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
   ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
   ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
+  ceflib.CefLogFile := LibFolder + 'Chrome\log.txt';
+  ceflib.CefLogSeverity := TCefLogSeverity.LOGSEVERITY_ERROR;
+  ceflib.CefSingleProcess := False;
+  ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
+
   Application.Title := 'CMDLauncher';
   Application.CreateForm(TOverviewF, OverviewF);
   Application.CreateForm(TLoadingScreen, LoadingScreen);
   Application.Run;
+
 end.

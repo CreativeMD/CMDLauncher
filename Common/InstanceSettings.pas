@@ -3,7 +3,7 @@ unit InstanceSettings;
 interface
 
 uses SettingUtils, System.Generics.Collections, InstanceUtils, IconUtils, SaveFileUtils,
-System.Classes, Vcl.Controls, Vcl.StdCtrls, Task, System.SysUtils;
+System.Classes, Vcl.Controls, Vcl.StdCtrls, Task, System.SysUtils, SideUtils;
 
 type
   TNumberSelect = class(TTextSelectSetting)
@@ -19,6 +19,8 @@ type
       procedure onChanged(Sender: TObject); override;
       function createCustomBox(Parent : TWinControl) : TGroupBox;
     public
+      function getSide : TSide;
+      procedure createControl(x, y : Integer; Parent : TWinControl); override;
       destructor Destroy; override;
       function getExpandedSettings : TList<TSetting>;
       function getGroupTitle : string;
@@ -37,7 +39,7 @@ function loadInstanceSettings(Instance : TInstance) : TInstanceSetting;
 
 implementation
 
-uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils;
+uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings;
 
 procedure TNumberSelect.onKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -73,6 +75,17 @@ begin
     Result := TList<TSetting>.Create;
 end;
 
+function TInstanceSelect.getSide : TSide;
+begin
+  Result := parseSide(TSetting<String>(GroupList.getSetting('itype')).Value);
+end;
+
+procedure TInstanceSelect.createControl(x, y : Integer; Parent : TWinControl);
+begin
+  Self.Items := InstanceUtils.getTypes(getSide);
+  inherited createControl(x, y, parent);
+end;
+
 destructor TInstanceSelect.Destroy;
 var
 Keys : TArray<string>;
@@ -91,7 +104,7 @@ i: Integer;
 begin
   if not SubSettings.ContainsKey(Value) then
   begin
-    Instance := InstanceUtils.getInstanceByUUID(Value);
+    Instance := InstanceUtils.getInstanceByUUIDIgnoreSide(Value);
     if Instance <> nil then
     begin
       SubSettings.Add(Value, Instance.getSettings);
@@ -123,8 +136,14 @@ begin
 end;
 
 procedure TInstanceSetting.onBeforeSaving(GroupList : TSettingGroupList);
+var
+ExternalFolder : String;
 begin
-  GroupList.SaveFile := TSaveFile.Create(CoreLoader.InstanceFolder + TSetting<string>(GroupList.getSetting('title')).Value + '\' + InstanceUtils.SaveFileName);
+  ExternalFolder := TSetting<String>(GroupList.getSetting('external')).Value;
+  if ExternalFolder <> '' then
+    GroupList.SaveFile := TSaveFile.Create(ExternalFolder + InstanceUtils.SaveFileName)
+  else
+    GroupList.SaveFile := TSaveFile.Create(InstanceFolder + TSetting<string>(GroupList.getSetting('title')).Value + '\' + InstanceUtils.SaveFileName);
 end;
 
 procedure TInstanceSetting.onSaved(GroupList : TSettingGroupList);
@@ -133,7 +152,8 @@ NewInstance, OldInstance : TInstance;
 Tasks : TList<TTask>;
 
 begin
-  NewInstance := CreateInstance(TSetting<string>(getSetting('title')).Value, TSetting<string>(getSetting('uuid')).Value);
+  NewInstance := CreateInstance(TSetting<string>(getSetting('title')).Value, TSetting<string>(getSetting('uuid')).Value, TSetting<String>(GroupList.getSetting('external')).Value);
+  NewInstance.LoadPost(NewInstance.getSaveFile);
 
   if Instance = nil then
     Instances.Add(NewInstance)
@@ -161,7 +181,9 @@ begin
     begin
       Tasks  := TList<TTask>.Create;
       ForceDirectories(NewInstance.getInstanceFolder + '\config\');
+      ForceDirectories(NewInstance.getInstanceFolder + '\mods\');
       Tasks.Add(TCopyFolder.Create('Copying folder', OldInstance.getInstanceFolder + '\config', NewInstance.getInstanceFolder + '\config\'));
+      Tasks.Add(TCopyFolder.Create('Copying folder', OldInstance.getInstanceFolder + '\mods', NewInstance.getInstanceFolder + '\mods\'));
       OverviewF.runForegroundTasks(Tasks);
     end;
   end;
@@ -185,6 +207,15 @@ begin
   Result.Add('16384');
 end;
 
+function getPerm : TStringList;
+begin
+  Result := TStringList.Create;
+  Result.Add('128');
+  Result.Add('256');
+  Result.Add('512');
+  Result.Add('1024');
+end;
+
 function loadInstanceSettings(Instance : TInstance) : TInstanceSetting;
 var
 Title: String;
@@ -192,8 +223,6 @@ SaveFile : TSaveFile;
 Groups : TList<TSettingGroup>;
 Group : TSettingGroup;
 Page : TSettingPage;
-UUIDs : TStringList;
-i: Integer;
 CheckExpand : TCheckExpand;
 begin
 
@@ -215,14 +244,11 @@ begin
   Page.AddSetting(TStringListSetting.Create('description', 'Description').setNotNeedFill);
   Page.AddSetting(TTextSelectSetting.Create('group', 'Group', OverviewF.Groups).setNotNeedFill);
   Page.AddSetting(TIconPicker.Create('icon', 'Icon', OverviewF.InstanceIcons, OverviewF.Icons).setNotNeedFill);
+  Page.AddSetting(TSelectDirSetting.Create('external', 'External Folder'));
   Group.AddPage(Page);
   Page := TSettingPage.Create('Custom', 'Edit.png');
 
-  UUIDs := TStringList.Create;
-  for i := 0 to InstanceTypes.Count-1 do
-    UUIDs.Add(InstanceTypes[i].getUUID);
-
-  Page.AddSetting(TInstanceSelect.Create('uuid', 'Typ', UUIDs, 'Vanilla', False));
+  Page.AddSetting(TInstanceSelect.Create('uuid', 'Typ', TStringList.Create, 'Vanilla', False));
 
   Group.AddPage(Page);
   Page := TSettingPage.Create('Client & Server', 'ClientServer.png');
@@ -230,8 +256,11 @@ begin
   Group.AddPage(Page);
   Page := TSettingPage.Create('Java', 'Java.png');
   Page.AddSetting(TNumberSelect.Create('ram', 'RAM', getRam, '1024'));
-  { TODO 2 : Add PermGenSpace and Custom Settings }
+
   Page.AddSetting(TStringSetting.Create('customcommand', 'Command', '', False, '').setWidth(300).setNotNeedFill);
+  Page.AddSetting(TCheckOption.Create('classunloading', 'Class Unloading', True));
+  Page.AddSetting(TNumberSelect.Create('permspace', 'PermGen Space', getPerm, '128'));
+
   CheckExpand := TCheckExpand.Create('cjava', 'Custom Java', False);
 
   CheckExpand.Settings.Add(TSelectSetting.Create('java', 'Java Version', getJavaVersions));

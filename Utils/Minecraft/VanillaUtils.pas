@@ -4,7 +4,7 @@ interface
 
 uses System.Generics.Collections, Task, ProgressBar, superobject, DownloadUtils,
 System.SysUtils, InstanceUtils, SaveFileUtils, MinecraftLaunchCommand,
-SettingUtils, JavaUtils, System.Classes, AccountUtils;
+SettingUtils, JavaUtils, System.Classes, AccountUtils, SideUtils;
 
 type
   TMinecraftTyp = (mvSnapshot, mvRelease, mvOld);
@@ -63,13 +63,13 @@ end;
 constructor TVanillaLaunch.Create(Java : TJava; mcversion : String; Instance : TInstance; LoginData : TLoginData);
 begin
   inherited Create(Java, mcversion);
-  if Instance.InstanceTyp = IClient then
+  if Instance.Side = TClient then
   begin
     Replacements.Add('${auth_player_name}', LoginData.getName);
     if not LoginData.isOffline then
     begin
       Replacements.Add('${auth_session}', LoginData.Session);
-      Replacements.Add('${auth_uuid}', LoginData.Session_ID);
+      Replacements.Add('${auth_uuid}', LoginData.UUID);
       Replacements.Add('${auth_access_token}', LoginData.Session);
     end;
 
@@ -88,6 +88,14 @@ begin
   end;
   SpecialArguments.Add('-Xmn128M');
   SpecialArguments.Add('-Xmx' + IntToStr(Instance.RAM) + 'm');
+
+  SpecialArguments.Add('-XX:MaxPermSize=' + IntToStr(Instance.getSaveFile.getInteger('permspace') ) + 'm');
+
+  if Instance.getSaveFile.getBoolean('classunloading') then
+  begin
+    SpecialArguments.Add('-XX:+CMSClassUnloadingEnabled');
+    SpecialArguments.Add('-XX:+UseConcMarkSweepGC');
+  end;
   SpecialArguments.Add(Instance.CustomCommand);
 end;
 
@@ -188,7 +196,7 @@ end;
 function TVanillaInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>;
 begin
   Result := TList<TTask>.Create;
-  if InstanceTyp = IClient then
+  if Side = TClient then
   begin
     if DatabaseConnection.online then
     begin
@@ -212,7 +220,7 @@ end;
 function TVanillaInstance.getLaunchSettings : TList<TSetting>;
 begin
   Result := TList<TSetting>.Create;
-  if InstanceTyp = IServer then
+  if Side = TServer then
   begin
     Result.AddRange(ServerUtils.getStandardServerSettings(Self));
   end;

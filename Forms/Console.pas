@@ -12,10 +12,12 @@ type
   TArg<T> = reference to procedure(const Arg: T);
   TLaunching = class(TThread)
     ACommand, AParameters, Folder: String;
-    Consol : TConsoleF;
-    CallBack: TArg<PAnsiChar>;
+    CallBack: TArg<AnsiString>;
     piProcess: TProcessInformation;
-    constructor Create(ACommand, AParameters, Folder: String; CallBack: TArg<PAnsiChar>);
+    hReadLine: THandle;
+    hWriteLine : THandle;
+    OnClosed : procedure of object;
+    constructor Create(ACommand, AParameters, Folder: String; CallBack: TArg<AnsiString>);
     procedure Execute; override;
   end;
   TConsoleF = class(TForm)
@@ -31,13 +33,19 @@ type
   public
     Launching : TLaunching;
     Instance : TInstance;
+    procedure onClosed;
   end;
 
 implementation
 
 {$R *.dfm}
 
-constructor TLaunching.Create(ACommand, AParameters, Folder: String; CallBack: TArg<PAnsiChar>);
+procedure TConsoleF.onClosed;
+begin
+  btnTerminate.Enabled := False;
+end;
+
+constructor TLaunching.Create(ACommand, AParameters, Folder: String; CallBack: TArg<AnsiString>);
 begin
   inherited Create;
   Self.ACommand := ACommand;
@@ -47,58 +55,66 @@ begin
 end;
 
 procedure TLaunching.Execute;
-const
-    CReadBuffer = 2400;
+//const
+//    CReadBuffer = 2400;
 var
   saSecurity: TSecurityAttributes;
-  hRead: THandle;
-  hWrite: THandle;
   suiStartup: TStartupInfo;
-  pBuffer: array [0 .. CReadBuffer] of AnsiChar;
-  dBuffer: array [0 .. CReadBuffer] of AnsiChar;
+  //pBuffer: array [0 .. CReadBuffer] of AnsiChar;
+  //dBuffer: array [0 .. CReadBuffer] of AnsiChar;
   dRead: DWord;
-  dRunning: DWord;
+  CurLine : Ansistring;
+  Zeichen : AnsiChar;
+  hRead: THandle;
+  hWrite : THandle;
 begin
-  saSecurity.nLength := SizeOf(TSecurityAttributes);
-  saSecurity.bInheritHandle := True;
-  saSecurity.lpSecurityDescriptor := nil;
+  FillChar(saSecurity, SizeOf(TSecurityAttributes), 0);
+  saSecurity.nLength := sizeof(SECURITY_ATTRIBUTES);
+  saSecurity.bInheritHandle := TRUE;
+
+  CreatePipe(hReadLine, hWriteLine, @saSecurity, 0);
 
   if CreatePipe(hRead, hWrite, @saSecurity, 0) then
   begin
       FillChar(suiStartup, SizeOf(TStartupInfo), #0);
       suiStartup.cb := SizeOf(TStartupInfo);
+      SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
       //suiStartup.hStdInput := hRead;
       suiStartup.hStdOutput := hWrite;
       suiStartup.hStdError := hWrite;
+      suiStartup.hStdInput := hReadLine;
       //suiStartup.dwXSize := 854;
       //suiStartup.dwYSize := 480;
       suiStartup.dwFlags := STARTF_USESTDHANDLES;
+
       if CreateProcess(nil, pChar(ACommand + ' ' + AParameters), @saSecurity, @saSecurity, True, NORMAL_PRIORITY_CLASS, nil, PChar(Folder), suiStartup, piProcess) then
       begin
-          repeat
-              dRunning := WaitForSingleObject(piProcess.hProcess, 0);
-              repeat
-                  if dRunning <> 0 then
-                  begin
-                    dRead := 0;
-                    ReadFile(hRead, pBuffer[0], CReadBuffer, dRead, nil);
-                    pBuffer[dRead] := #0;
-
-                    //OemToAnsi(pBuffer, pBuffer);
-                    //Unicode support by Lars Fosdal
-                    OemToCharA(pBuffer, dBuffer);
-                    CallBack(dBuffer);
-                  end;
-              until (dRead < CReadBuffer);
-              //Sleep(1);
-          until dRunning = 0;
+          CloseHandle(hWrite);
+          CurLine := '';
+          while ReadFile(hRead, Zeichen, 1, dRead, nil) do
+          begin
+            if dRead > 0 then
+            begin
+              if Zeichen = #$D then
+              begin
+                CallBack(CurLine);
+                CurLine := '';
+                Continue;
+              end;
+              if Zeichen = #$A then
+                Continue;
+              CurLine := CurLine + Zeichen;
+            end;
+          end;
+          WaitForSingleObject(piProcess.hThread,INFINITE);
+          WaitForSingleObject(piProcess.hProcess,INFINITE);
           CloseHandle(piProcess.hProcess);
           CloseHandle(piProcess.hThread);
       end;
-      CloseHandle(hRead);
-      CloseHandle(hWrite);
+      //CloseHandle(hRead);
+      //CloseHandle(hWrite);
   end;
-  Consol.btnTerminate.Enabled := False;
+  OnClosed;
   Terminate;
 end;
 

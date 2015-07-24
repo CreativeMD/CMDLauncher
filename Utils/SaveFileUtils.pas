@@ -2,7 +2,7 @@ unit SaveFileUtils;
 
 interface
 
-uses System.Classes, StringUtils, System.SysUtils, SuperObject;
+uses System.Classes, StringUtils, System.SysUtils, superobject;
 
 type
   TSaveFile = class
@@ -119,8 +119,15 @@ function TSaveFile.getStringList(Key : String) : TStringList;
 var
 Value : String;
 begin
-  Value := getString(Key);
-  Result := Explode(Value, ';');
+  if hasKey(Key) then
+  begin
+    Value := getString(Key);
+    Result := Explode(Value, ';');
+  end
+  else
+    Result := TStringList.Create;
+  if (Result.Count = 1) and (Result[0] = '') then
+    Result.Clear;
 end;
 
 function TSaveFile.getJson(Key : String) : ISuperObject;

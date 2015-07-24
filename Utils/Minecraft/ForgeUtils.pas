@@ -5,7 +5,7 @@ interface
 uses VanillaUtils, Task, ProgressBar, InstanceUtils, SaveFileUtils, System.Generics.Collections,
 MinecraftLaunchCommand, SettingUtils, JavaUtils, System.Classes, AccountUtils,
 System.SysUtils, superobject, Vcl.Controls, Vcl.StdCtrls, AssetUtils,
-MinecraftLibaryUtills, ModUtils;
+MinecraftLibaryUtills, ModUtils, System.UITypes, SideUtils;
 
 type
   TForge = class
@@ -29,10 +29,12 @@ type
   TForgeSelect = class(TSelectSetting)
     protected
       procedure onChanged(Sender: TObject); override;
+      procedure onChangedVersion(Sender: TObject);
     public
       constructor Create(Name, Title : String);
       procedure createControl(x, y : Integer; Parent : TWinControl); override;
       procedure destroyControl; override;
+      function getMCVersion : String; virtual;
   end;
   TForgeInstance = class(TInstance)
     protected
@@ -42,12 +44,14 @@ type
       procedure Save(SaveFile : TSaveFile); override;
     public
       Forge : TForge;
+      procedure LoadPost(SaveFile : TSaveFile); override;
       function getUUID : String; override;
       function getSettings : TList<TSetting>; override;
       function getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>; override;
       function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
       function getLaunchSettings : TList<TSetting>; override;
       function getLaunchSaveFile : TSaveFile; override;
+      function canInstanceLaunch : Boolean; override;
   end;
 
 function getForgeByUUID(UUID : string) : TForge;
@@ -59,7 +63,7 @@ SupportedMV : TStringList;
 implementation
 
 uses ServerUtils, DownloadUtils, CoreLoader, DatabaseConnection, StringUtils,
-ForgeInstallation, SortingUtils;
+ForgeInstallation, SortingUtils, ModSettings, Logger, ModDownload;
 
 function getForgeByUUID(UUID : string) : TForge;
 var
@@ -91,6 +95,7 @@ begin
   ComboBox.Top := y;
   ComboBox.Left := Controls[0].Left + Controls[0].Width + 5;
   ComboBox.Style := csOwnerDrawFixed;
+  ComboBox.OnChange := onChangedVersion;
   Controls.Add(ComboBox);
 
   Forge := getForgeByUUID(Value);
@@ -102,6 +107,16 @@ begin
   end
   else
     onChanged(Controls[0]);
+end;
+
+function TForgeSelect.getMCVersion : String;
+var
+TempForge : TForge;
+begin
+  TempForge := ForgeUtils.getForgeByUUID(Value);
+  Result := '';
+  if TempForge <> nil then
+    Result := TempForge.MV;
 end;
 
 procedure TForgeSelect.destroyControl;
@@ -132,6 +147,11 @@ begin
   end;
 end;
 
+procedure TForgeSelect.onChangedVersion(Sender: TObject);
+begin
+  Value := TComboBox(Sender).Text;
+end;
+
 constructor TForge.Create(UUID, MV : String; Branch : String = '');
 begin
   Self.FUUID := UUID;
@@ -156,7 +176,7 @@ end;
 
 constructor TLoadForge.Create;
 begin
-  inherited Create('Loading Forge', False);
+  inherited Create('Loading Forge', False, False);
 end;
 
 procedure TLoadForge.runTask(Bar : TCMDProgressBar);
@@ -172,12 +192,13 @@ begin
   ForgeList := TList<TForge>.Create;
   DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/json',
   FileName, True);
+  SupportedMV := TStringList.Create;
 
   if DatabaseConnection.online then
   begin
     DownloadTask.downloadFile(nil);
   end;
-  SupportedMV := TStringList.Create;
+
   if FileExists(FileName) and (VanillaUtils.MinecraftVersions <> nil) then
   begin
     JsonFile := TSuperObject.ParseFile(FileName, true);
@@ -210,26 +231,61 @@ begin
   Bar.FinishStep;
 end;
 
-procedure TForgeInstance.Load(SaveFile : TSaveFile);
+procedure TForgeInstance.LoadPost(SaveFile : TSaveFile);
 var
-ModArray : TSuperArray;
+i: Integer;
+Item : TPair<TMod, TModVersion>;
+Splits, Value : TStringList;
+begin
+  Mods := TDictionary<TMod, TModVersion>.Create;
+  Value := SaveFile.getStringList('mods');
+  for i := 0 to Value.Count-1 do
+  begin
+    Splits := Explode(Value[i], ':');
+    if Splits.Count = 2 then
+    begin
+      try
+        Item.Key := ModUtils.getModByID(StrtoInt(Splits[0]));
+      except
+        on E: Exception do
+        begin
+          Logger.Log.log('Failed to load a mod from data! data=' + Value[i]);
+        end;
+      end;
+      if (Item.Key <> nil) and (Item.Key.hasLoaded) then
+      begin
+        try
+          Item.Value := Item.Key.getVersionByID(StrToInt(Splits[1]));
+        except
+          on E: Exception do
+            Logger.Log.log('Failed to load mod version: ' + Splits[1]);
+        end;
+        if Item.Value <> nil then
+          Mods.Add(Item.Key, Item.Value);
+      end;
+    end;
+  end;
+end;
+
+procedure TForgeInstance.Load(SaveFile : TSaveFile);
 begin
   Forge := nil;
   if ForgeList <> nil then
     Forge := getForgeByUUID(SaveFile.getString('forge'));
   Custom := SaveFile.getBoolean('custom');
-  if not Custom then
-  begin
-    { TODO 2 : Load Mods }
-
-  end;
 end;
 
 procedure TForgeInstance.Save(SaveFile : TSaveFile);
+var
+Item : TPair<TMod, TModVersion>;
+Value : TStringList;
 begin
   SaveFile.setString('forge', Forge.UUID);
   SaveFile.setBoolean('custom', Custom);
-  { TODO 2 : Save Mods }
+  Value := TStringList.Create;
+  for Item in Mods do
+    Value.Add(InttoStr(Item.Key.ID) + ':' + InttoStr(Item.Value.ID));
+  SaveFile.setStringList('mods', Value);
 end;
 
 function TForgeInstance.getUUID : String;
@@ -238,11 +294,14 @@ begin
 end;
 
 function TForgeInstance.getSettings : TList<TSetting>;
+var
+ForgeSelect : TForgeSelect;
 begin
   Result := TList<TSetting>.Create;
-  Result.Add(TForgeSelect.Create('forge', 'Forge'));
-  Result.Add(TCheckOption.Create('custom', 'Custom Mods', True));
-  { TODO 2 : Add Mod Select Option }
+  ForgeSelect := TForgeSelect.Create('forge', 'Forge');
+  Result.Add(ForgeSelect);
+  Result.Add(TCheckOption.Create('custom', 'Allow Custom Mods', False));
+  Result.Add(TModSelect.Create('mods', 'Mods', false, Side = TServer, ForgeSelect));
 end;
 
 function TForgeInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>;
@@ -253,7 +312,7 @@ begin
   Result := TList<TTask>.Create;
   if Forge = nil then
     Exit(Result);
-  if InstanceTyp = IClient then
+  if Side = TClient then
   begin
     if DatabaseConnection.online then
     begin
@@ -276,6 +335,10 @@ begin
     DownloadLibary.IsServer := True;
     Result.Add(DownloadLibary);
   end;
+  if not Custom then
+    Result.Add(TModCleaning.Create(Mods, getInstanceFolder + 'mods\', Side = TServer));
+
+  Result.Add(TDownloadMods.Create(Mods, getInstanceFolder + 'mods\', Side = TServer));
 end;
 
 function TForgeInstance.getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch;
@@ -288,10 +351,15 @@ end;
 function TForgeInstance.getLaunchSettings : TList<TSetting>;
 begin
   Result := TList<TSetting>.Create;
-  if InstanceTyp = IServer then
+  if Side = TServer then
   begin
     Result.AddRange(ServerUtils.getStandardServerSettings(Self));
   end;
+end;
+
+function TForgeInstance.canInstanceLaunch : Boolean;
+begin
+  Result := LoadedInstances;
 end;
 
 function TForgeInstance.getLaunchSaveFile : TSaveFile;

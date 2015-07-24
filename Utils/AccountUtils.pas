@@ -12,14 +12,14 @@ type
       Failed, Offline : Boolean;
       Name : String;
     public
-      Error, Session, Session_ID : String;
+      Error, Session, UUID, clientToken : String;
       function hasFailed : Boolean;
       function isOffline : Boolean;
       function getName : String;
   end;
   TAccount = class
     protected
-      FLoginName, FPassword, FMinecraftName : String;
+      FLoginName, FPassword, FMinecraftName, UUID : String;
       LastLogin : TLoginData;
       function createToken : TLoginData;
       function refreshToken : TLoginData;
@@ -60,7 +60,7 @@ function getSelectedAccount : TAccount;
 implementation
 
 uses CoreLoader, StringUtils, DatabaseConnection, DownloadUtils,
-OfflineForm;
+OfflineForm, Logger;
 
 function getSelectedAccount : TAccount;
 var
@@ -94,9 +94,9 @@ begin
     Parameters.Add('    "version": "1"');
     Parameters.Add('},');
     Parameters.Add('    "username": "' + FLoginName + '",');
-    Parameters.Add('    "password": "' + FPassword + '",');
+    Parameters.Add('    "password": "' + FPassword + '"');
     if LastLogin <> nil then
-      Parameters.Add('    "clientToken": "' + LastLogin.Session + '"');
+      Parameters.Add('    ,"clientToken": "' + LastLogin.clientToken + '"');
     Parameters.Add('}');
     Parameters.SaveToFile(DownloadFolder + 'request.json');
     LoginFile := TFileStream.Create(DownloadFolder + 'login.json', fmCreate);
@@ -122,9 +122,12 @@ begin
   end
   else if not Result.Failed then
   begin
+
     Result.Session := LoginS.S['accessToken'];
+    Result.clientToken := LoginS.S['clientToken'];
     FMinecraftName := LoginS.O['selectedProfile'].S['name'];
-    Result.Session_id := LoginS.O['selectedProfile'].S['id'];
+    Result.UUID := LoginS.O['selectedProfile'].S['id'];
+    UUID := Result.UUID;
     Result.Name := FMinecraftName;
     LastLogin := Result;
     DeleteFile(DownloadFolder + 'login.json');
@@ -137,8 +140,61 @@ begin
 end;
 
 function TAccount.refreshToken : TLoginData;
+var
+HTTP : TIdHTTP;
+Parameters : TStringList;
+LoginFile, ParameterFile : TFileStream;
+LoginS : ISuperObject;
 begin
-  { TODO 2 : Refresh token }
+  Result := TLoginData.Create;
+  HTTP := TIdHTTP.Create;
+  LoginFile := nil;
+  ParameterFile := nil;
+  try
+    HTTP.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
+    Parameters := TStringList.Create;
+    Parameters.Add('{');
+    //Parameters.Add('{');
+    Parameters.Add('    "accessToken": "' + LastLogin.Session + '",');
+    Parameters.Add('    "clientToken": "' + LastLogin.clientToken + '",');
+    //Parameters.Add('},');
+    //Parameters.Add('    "username": "' + FLoginName + '",');
+    //Parameters.Add('    "password": "' + FPassword + '"');
+    Parameters.Add('"selectedProfile": {');
+    Parameters.Add('  "id": "' + UUID + '",');
+    Parameters.Add('  "name": "' + MinecraftName + '"');
+    Parameters.Add('}');
+    Parameters.Add('}');
+    Parameters.SaveToFile(DownloadFolder + 'request.json');
+    LoginFile := TFileStream.Create(DownloadFolder + 'login.json', fmCreate);
+    ParameterFile := TFileStream.Create(DownloadFolder + 'request.json', fmOpenRead);
+    HTTP.Post('https://authserver.mojang.com/refresh', ParameterFile, LoginFile);
+    ParameterFile.Free;
+    LoginFile.Free;
+  except
+    on E: Exception do
+    begin
+      ParameterFile.Free;
+      LoginFile.Free;
+      Result.Error := 'Bad Login';
+      Result.Failed := True;
+      Logger.Log.log('Failed to refresh token!!!');
+    end;
+  end;
+
+  LoginS := TSuperObject.ParseFile(DownloadFolder + 'login.json', true);
+  if (LoginS <> nil) and (LoginS.S['errorMessage'] <> '') then
+  begin
+    Result.Error := LoginS.S['errorMessage'];
+    Result.Failed := True;
+  end
+  else if not Result.Failed then
+  begin
+    Result.Session := LoginS.S['accessToken'];
+    Exit(Result);
+  end;
+  DeleteFile(DownloadFolder + 'login.json');
+  DeleteFile(DownloadFolder + 'request.json');
 end;
 
 function login(Account : TAccount; LoginForm : TLoginF = nil; Online : Boolean = True) : TLoginData;
@@ -162,7 +218,7 @@ begin
 
   PlayOffline := False;
 
-  if (DatabaseConnection.online) and (Online) then
+  if (DatabaseConnection.online) and (Online) and Result.Failed then
   begin
     if LoginForm = nil then
       LoginForm := TLoginF.Create(nil);
@@ -175,15 +231,15 @@ begin
       Account.FPassword := LoginForm.edtPassword.Text;
       Account.SavePassword := LoginForm.chkPassword.Checked;
       Result := login(Account, LoginForm);
-      if Assigned(LoginForm) then
-        LoginForm.Destroy;
+      //if Assigned(LoginForm) then
+        //FreeAndNil(LoginForm);
       Result.Offline := False;
       Result.Name := Account.MinecraftName;
       Exit(Result);
     end;
 
     if Assigned(LoginForm) then
-      LoginForm.Destroy;
+      FreeAndNil(LoginForm);
 
     if ModalResult = mrCancel then
     begin
@@ -501,6 +557,7 @@ begin
   Self.FMinecraftName := MinecraftName;
   Self.SavePassword := True;
   Self.LastLogin := nil;
+  Self.UUID := '';
 end;
 
 function TAccount.Equals(O : TObject) : Boolean;

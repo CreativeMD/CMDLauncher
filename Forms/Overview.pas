@@ -13,7 +13,7 @@ uses
   Vcl.Taskbar, Vcl.ToolWin, Vcl.ActnMan, Vcl.ActnCtrls, JvBackgrounds, JvMenus,
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
-  Vcl.Themes, superobject;
+  Vcl.Themes, superobject, SideUtils;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;
@@ -33,7 +33,6 @@ type
     lblRetry: TLabel;
     lblNotify: TLabel;
     BackgroundBar: TCMDProgressBar;
-    lblBackgroundTask: TLabel;
     pmInstance: TPopupMenu;
     Edit1: TMenuItem;
     Remove1: TMenuItem;
@@ -49,10 +48,10 @@ type
     Import1: TMenuItem;
     N3: TMenuItem;
     Taskbar: TTaskbar;
-    BackgroundImage: TJvBackground;
     StateIcons: TImageList;
     OpenFolder1: TMenuItem;
     N4: TMenuItem;
+    lblBackgroundTask: TLinkLabel;
     procedure FormCreate(Sender: TObject);
     procedure lblRetryClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -78,6 +77,8 @@ type
       var DefaultDraw: Boolean);
     procedure OpenFolder1Click(Sender: TObject);
     procedure Copy1Click(Sender: TObject);
+    procedure lvInstancesMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private-Deklarationen }
   public
@@ -104,7 +105,8 @@ implementation
 {$R *.dfm}
 
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
-InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils;
+InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
+  ModSelectForm, ForgeUtils, ModpackUtils;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -135,7 +137,9 @@ procedure TOverviewF.loadInstances;
 var
 i: Integer;
 begin
-  SendMessage(lvInstances.Handle, WM_SETREDRAW, WPARAM(False), 0);
+  ProgramSettings.setStringList('external', InstanceUtils.ExternalInstances);
+  lvInstances.Items.BeginUpdate;
+  //SendMessage(lvInstances.Handle, WM_SETREDRAW, WPARAM(False), 0);
   lvInstances.Clear;
   lvInstances.Groups.Clear;
   with lvInstances.Groups.Add do
@@ -161,6 +165,8 @@ begin
           Header := Instances[i].Group;
           State := [lgsNormal,lgsCollapsible];
           GroupID := Groups.Count+1;
+          if InstanceUtils.HiddenGroups.Contains(Instances[i].Group) then
+            State := State + [lgscollapsed];
         end;
         Groups.Add(Instances[i].Group);
       end;
@@ -170,14 +176,14 @@ begin
       Caption := Instances[i].Title;
       ImageIndex := Icons.IndexOf(Instances[i].IconName);
       GroupID := Groups.IndexOf(Instances[i].Group)+1;
-      if Instances[i].InstanceTyp = IClient then
+      if Instances[i].Side = TClient then
         StateIndex := 0
       else
         StateIndex := 1;
     end;
   end;
-  SendMessage(lvInstances.Canvas.Handle, WM_SETREDRAW, WPARAM(True), 0);
-  lvInstances.Repaint;
+  lvInstances.Items.EndUpdate;
+  //lvInstances.Repaint;
 end;
 
 procedure TOverviewF.lvInstancesChange(Sender: TObject; Item: TListItem;
@@ -229,7 +235,7 @@ begin
     Instance := getInstanceByName(Item.Caption);
     if Instance <> nil then
     begin
-      if Instance.InstanceTyp = IClient then
+      if Instance.Side = TClient then
         StateIcons.GetIcon(0, Bmp)
       else
         StateIcons.GetIcon(1, Bmp);
@@ -243,6 +249,36 @@ procedure TOverviewF.lvInstancesDblClick(Sender: TObject);
 begin
   if lvInstances.Selected <> nil then
     Launch1Click(pmInstance);
+end;
+
+procedure TOverviewF.lvInstancesMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+i: Integer;
+begin
+  if HiddenGroups <> nil then
+  begin
+    //Check if group changed
+    for i := 0 to lvInstances.Groups.Count-1 do
+    begin
+      if lgsCollapsed in lvInstances.Groups.Items[i].State then
+      begin
+        if not HiddenGroups.Contains(lvInstances.Groups.Items[i].Header) then
+        begin
+          HiddenGroups.Add(lvInstances.Groups.Items[i].Header);
+          ProgramSettings.setStringList('hidden', HiddenGroups);
+        end;
+      end
+      else
+      begin
+        if HiddenGroups.Contains(lvInstances.Groups.Items[i].Header) then
+        begin
+          HiddenGroups.Remove(lvInstances.Groups.Items[i].Header);
+          ProgramSettings.setStringList('hidden', HiddenGroups);
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure TOverviewF.OpenFolder1Click(Sender: TObject);
@@ -260,7 +296,7 @@ begin
     if MessageDlg('Do you really want to delete ' + getSelectedInstance.Title,mtCustom, [mbYes,mbNo], 0) = mrYes then
     begin
       Tasks := TList<TTask>.Create;
-      Tasks.Add(TDeleteFolder.Create('Delete Instance', InstanceFolder + getSelectedInstance.Title));
+      Tasks.Add(TDeleteFolder.Create('Delete Instance', getSelectedInstance.getInstanceFolder));
       Instance := getSelectedInstance;
       Instances.Remove(Instance);
       Instance.Destroy;
@@ -360,7 +396,7 @@ begin
     end;
     5: //Reload
     begin
-      runForegroundTasks(LauncherStartup.getStartupTasks);
+      lblRetryClick(lblRetry);
     end;
     6: //Accounts
     begin
@@ -386,8 +422,18 @@ begin
 end;
 
 procedure TOverviewF.lblRetryClick(Sender: TObject);
+var
+Tasks : TList<TTask>;
+i : Integer;
 begin
   runForegroundTasks(LauncherStartup.getStartupTasks);
+  if not CloseLauncher then
+  begin
+    BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
+    Tasks := LauncherStartup.getStartupPostTasks;
+    for i := 0 to Tasks.Count-1 do
+      BackgroundTask.addTask(Tasks[i]);
+  end;
 end;
 
 procedure TOverviewF.runForegroundTasks(Tasks : TList<TTask>);
@@ -403,12 +449,21 @@ begin
   begin
     if TaskManager.CurrentTask <> nil then
     begin
-      LoadingScreen.lblTask.Caption := TaskManager.CurrentTask.Title + ' ...';
-      LoadingScreen.lblLog.Caption := Logger.Log.getLastLog;
+      try //Can happen, caused by sleep(1)
+        LoadingScreen.lblTask.Caption := TaskManager.CurrentTask.Title + ' ...';
+        LoadingScreen.lblLog.Caption := Logger.Log.getLastLog;
+      except
+        on E: Exception do
+        begin
+          Sleep(1);
+          //Log.log('Failed to render label!');
+        end;
+      end;
     end;
     Taskbar.ProgressValue := LoadingScreen.TaskProgress.StepIndex;
     Application.ProcessMessages;
   end;
+  LoadedLauncher := True;
   Self.Enabled := True;
   LoadingScreen.Hide;
 
@@ -416,11 +471,6 @@ begin
 
   if LauncherStartup.CloseLauncher then
     Application.Terminate
-  else
-  begin
-    BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
-    BackgroundTask.addTask(ModUtils.TFullLoadMod.Create);
-  end;
 end;
 
 procedure TOverviewF.AddInstance1Click(Sender: TObject);
@@ -442,6 +492,7 @@ begin
   if lvInstances.Selected <> nil then
     InstanceSettings.loadInstanceSettings(getSelectedInstance);
 end;
+
 
 procedure TOverviewF.FormCreate(Sender: TObject);
 var
@@ -465,9 +516,19 @@ begin
 end;
 
 procedure TOverviewF.WmAfterShow(var Msg: TMessage);
+var
+Tasks : TList<TTask>;
+i : Integer;
 begin
   lvInstances.OnClick(lvInstances);
   runForegroundTasks(LauncherStartup.getStartupTasks);
+  if not CloseLauncher then
+  begin
+    BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
+    Tasks := LauncherStartup.getStartupPostTasks;
+    for i := 0 to Tasks.Count-1 do
+      BackgroundTask.addTask(Tasks[i]);
+  end;
 end;
 
 end.

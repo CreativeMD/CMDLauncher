@@ -2,10 +2,11 @@ unit MinecraftLaunchCommand;
 
 interface
 
-uses System.Classes, System.Generics.Collections, JavaUtils, System.SysUtils;
+uses System.Classes, System.Generics.Collections, JavaUtils, System.SysUtils, ProgressBar, Vcl.Forms;
 
 type
   TMinecraftLaunch = class abstract
+    Console : TForm;
     Java : TJava;
     MCVersion : String;
     Replacements : TDictionary<string, string>;
@@ -15,11 +16,40 @@ type
     function is64Bit : Boolean;
     function getLaunchCommand : String; overload;
     function getLaunchCommandList : TStringList; overload;
+    procedure buildListener(InstanceObject : TObject); virtual;
+    function createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar; virtual;
   end;
 
 implementation
 
-uses StringUtils;
+uses StringUtils, Console, InstanceUtils;
+
+function TMinecraftLaunch.createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar;
+
+begin
+  Console := TConsoleF.Create(nil);
+  Console.Caption := Title;
+  Listener := TConsoleF(Console).mmoLog.Lines;
+  Console.Show;
+  Result := TConsoleF(Console).ProgressBar;
+end;
+
+procedure TMinecraftLaunch.buildListener(InstanceObject : TObject);
+var
+Instance : TInstance;
+begin
+  Instance := TInstance(InstanceObject);
+  TConsoleF(Console).Instance := Instance;
+  TConsoleF(Console).Launching := TLaunching.Create('"' + Java.Path + '"', getLaunchCommand,
+  Instance.getInstanceFolder, procedure(const Line: AnsiString)
+      begin
+          if string(Line) <> '' then
+            TConsoleF(Console).mmoLog.Lines.Append(string(Line));
+      end);
+  TConsoleF(Console).mmoLog.Lines.Add('"' + Java.Path + '"');
+  TConsoleF(Console).mmoLog.Lines.AddStrings(getLaunchCommandList);
+  TConsoleF(Console).Launching.OnClosed := TConsoleF(Console).onClosed;
+end;
 
 function TMinecraftLaunch.getLaunchCommand : String;
 var

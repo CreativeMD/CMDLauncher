@@ -2,7 +2,7 @@ object ConsoleF: TConsoleF
   Left = 0
   Top = 0
   Caption = 'Console'
-  ClientHeight = 234
+  ClientHeight = 220
   ClientWidth = 521
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -3623,32 +3623,34 @@ object ConsoleF: TConsoleF
   OnClose = FormClose
   DesignSize = (
     521
-    234)
+    220)
   PixelsPerInch = 96
   TextHeight = 13
   object btnTerminate: TButton
     Left = 400
-    Top = 206
+    Top = 192
     Width = 113
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Terminate Minecraft'
     TabOrder = 0
     OnClick = btnTerminateClick
+    ExplicitTop = 233
   end
   object btnSettings: TButton
     Left = 8
-    Top = 205
+    Top = 191
     Width = 129
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Open Instance Settings'
     TabOrder = 1
     OnClick = btnSettingsClick
+    ExplicitTop = 232
   end
   object ProgressBar: TCMDProgressBar
     Left = 8
-    Top = 183
+    Top = 169
     Width = 505
     Height = 16
     Anchors = [akLeft, akRight, akBottom]
@@ -3657,15 +3659,17 @@ object ConsoleF: TConsoleF
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
+    ExplicitTop = 148
   end
   object mmoLog: TMemo
     Left = 8
     Top = 8
     Width = 505
-    Height = 169
+    Height = 155
     Anchors = [akLeft, akTop, akRight, akBottom]
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 3
+    ExplicitHeight = 134
   end
 end

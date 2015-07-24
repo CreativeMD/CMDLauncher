@@ -15,7 +15,7 @@ type
       procedure runTask(Bar : TCMDProgressBar); virtual; abstract;
     public
       Title : String;
-      online, multitasking : Boolean;
+      online, sync, multitasking : Boolean;
       constructor Create(Title : String; online : Boolean = False; multitasking : Boolean = True);
       procedure setLog(Log : TLog);
   end;
@@ -63,6 +63,7 @@ begin
   Self.online := online;
   Self.multitasking := multitasking;
   Self.Log := Logger.Log;
+  Self.sync := false;
 end;
 
 procedure TTask.setLog(Log : TLog);
@@ -194,7 +195,11 @@ begin
         TaskStartEvent;
         if isEndless then
           ProgressBar.StartProcess(1);
-        runTask;
+
+        if CurrentTask.sync then
+          Synchronize(runTask)
+        else
+          runTask;
         //Synchronize();
         TaskFinishedEvent;
       except
@@ -223,7 +228,9 @@ begin
       Tasks.Delete(0);
     end
     else
-      NoTaskFoundEvent;
+      Synchronize(NoTaskFoundEvent);
+    if isEndless then
+      Sleep(1);
   end;
   FinishedEvent;
   FActive := False;

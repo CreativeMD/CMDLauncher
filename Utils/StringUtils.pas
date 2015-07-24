@@ -4,6 +4,13 @@ interface
 
 uses System.Classes, System.SysUtils;
 
+
+type
+  TStringListHelper = class helper for TStringList
+    function Contains(Search : String) : Boolean;
+    function Remove(Item : String) : Boolean;
+  end;
+
 function ArrayToList(Value : array of String) : TStringList;
 function Explode(Input, Splitter : String) : TStringList;
 function Implode(Value : TStringList; Splitter : string) : string; overload;
@@ -11,12 +18,46 @@ function Implode(Value : array of string; Splitter : string) : string; overload;
 function onlyContains(Input, Chars : String) : Boolean;
 function isHigher(Lower, Higher : string) : Boolean;
 function ExtractUrlFileName(Url : string) : string;
+function ExtractLastFolder(Path : String) : string;
 function RemoveLastFolderSpliter(Input : String) : string;
+function isStringNumber(Input : String) : Boolean;
 
 const
 SplitReplacement : String = '§S';
 
 implementation
+
+function TStringListHelper.Contains(Search : String) : Boolean;
+begin
+  Result := Self.IndexOf(Search) <> -1;
+end;
+
+function TStringListHelper.Remove(Item : String) : Boolean;
+var
+index : Integer;
+begin
+  index := IndexOf(Item);
+  if index <> -1 then
+  begin
+    Delete(index);
+    Exit(True);
+  end;
+  Exit(False);
+end;
+
+function isStringNumber(Input : String) : Boolean;
+var
+P: PChar;
+begin
+  P := PChar(Input);
+  Result := False;
+  while P^ <> #0 do
+  begin
+    if not (P^ in ['0'..'9']) then Exit;
+    Inc(P);
+  end;
+  Result := True;
+end;
 
 function RemoveLastFolderSpliter(Input : String) : string;
 begin
@@ -62,6 +103,20 @@ begin
     i := i + 1;
   end;
 
+end;
+
+function ExtractLastFolder(Path : String) : string;
+var
+Folders : TStringList;
+begin
+  if Path.Contains('/') then
+    Folders := Explode(Path, '/')
+  else
+    Folders := Explode(Path, '\');
+
+  Result := '';
+  if Folders.Count > 0 then
+    Result := Folders[Folders.Count-1];
 end;
 
 function ExtractUrlFileName(Url : string) : string;

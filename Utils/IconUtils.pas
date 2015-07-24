@@ -115,6 +115,7 @@ end;
 constructor TLoadIcon.Create;
 begin
   inherited Create('Loading Icons');
+  Self.sync := True;
 end;
 
 procedure TLoadIcon.runTask(Bar : TCMDProgressBar);

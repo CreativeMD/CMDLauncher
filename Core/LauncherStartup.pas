@@ -17,12 +17,13 @@ var
 CloseLauncher : Boolean;
 
 function getStartupTasks : TList<TTask>;
+function getStartupPostTasks : TList<TTask>;
 
 implementation
 
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
-ZipUtils, ForgeUtils, ModUtils;
+ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron;
 
 constructor TUpdateTask.Create;
 begin
@@ -61,6 +62,14 @@ begin
   Bar.FinishStep;
 end;
 
+function getStartupPostTasks : TList<TTask>;
+begin
+  Result := TList<TTask>.Create;
+  Result.add(ModUtils.TFullLoadMod.Create);
+  Result.add(ModpackUtils.TFullLoadModpack.Create);
+  Result.add(InstanceUtils.TFinishLoadInstance.Create);
+end;
+
 function getStartupTasks : TList<TTask>;
 begin
   Result := TList<TTask>.Create;
@@ -68,7 +77,9 @@ begin
   Result.Add(TUpdateTask.Create);
   Result.Add(TLoadMV.Create);
   Result.Add(TLoadForge.Create);
+  Result.Add(TLoadCauldron.Create);
   Result.Add(TLoadMod.Create);
+  Result.Add(TLoadModpack.Create);
   Result.Add(TLoadIcon.Create);
   Result.Add(TLoadJava.Create);
   Result.Add(TLoadInstance.Create);
