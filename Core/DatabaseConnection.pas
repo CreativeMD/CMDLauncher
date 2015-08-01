@@ -27,6 +27,7 @@ dwindex,dwcodelen :dword;
 dwcode:array[1..20] of char;
 res : pchar;
 begin
+  try
   if pos('http://',url.ToLower)=0 then
     url := 'http://'+url;
   Result := false;
@@ -43,6 +44,10 @@ begin
     if assigned(hfile) then
       InternetCloseHandle(hfile);
     InternetCloseHandle(hsession);
+  end;
+  except
+    on E: Exception do
+      Exit(False);
   end;
 end;
 
