@@ -244,7 +244,7 @@ begin
   Page.AddSetting(TStringListSetting.Create('description', 'Description').setNotNeedFill);
   Page.AddSetting(TTextSelectSetting.Create('group', 'Group', OverviewF.Groups).setNotNeedFill);
   Page.AddSetting(TIconPicker.Create('icon', 'Icon', OverviewF.InstanceIcons, OverviewF.Icons).setNotNeedFill);
-  Page.AddSetting(TSelectDirSetting.Create('external', 'External Folder'));
+  Page.AddSetting(TSelectDirSetting.Create('external', 'External Folder').setNotNeedFill);
   Group.AddPage(Page);
   Page := TSettingPage.Create('Custom', 'Edit.png');
 
