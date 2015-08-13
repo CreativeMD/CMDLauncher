@@ -57,7 +57,8 @@ uses
   Cauldron in 'Utils\Minecraft\Special\Cauldron.pas',
   SideUtils in 'Utils\Minecraft\SideUtils.pas',
   ConsoleServer in 'Forms\ConsoleServer.pas' {ConsoleServerF},
-  CustomSettings in 'Utils\Settings\CustomSettings.pas';
+  CustomSettings in 'Utils\Settings\CustomSettings.pas',
+  ModDownloadProgress in 'Forms\Minecraft\ModDownloadProgress.pas' {ModProgress};
 
 {$R *.res}
 
@@ -69,7 +70,7 @@ begin
   ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
   ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
   ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
-  ceflib.CefLogFile := LibFolder + 'Chrome\log.txt';
+  //ceflib.CefLogFile := LibFolder + 'Chrome\log.txt';
   ceflib.CefLogSeverity := TCefLogSeverity.LOGSEVERITY_ERROR;
   ceflib.CefSingleProcess := False;
   ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
