@@ -360,7 +360,6 @@ begin
   ProgramFolder := ExtractFilePath(ParamStr(0));
   LibFolder := ProgramFolder + 'Lib\';
 
-  CefCache := 'cache';
   ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
   ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
   ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
