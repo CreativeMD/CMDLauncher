@@ -3635,8 +3635,6 @@ object ConsoleServerF: TConsoleServerF
     Caption = 'Terminate Minecraft'
     TabOrder = 0
     OnClick = btnTerminateClick
-    ExplicitLeft = 400
-    ExplicitTop = 233
   end
   object btnSettings: TButton
     Left = 8
@@ -3647,7 +3645,6 @@ object ConsoleServerF: TConsoleServerF
     Caption = 'Open Instance Settings'
     TabOrder = 1
     OnClick = btnSettingsClick
-    ExplicitTop = 232
   end
   object mmoLog: TMemo
     Left = 8
@@ -3658,8 +3655,6 @@ object ConsoleServerF: TConsoleServerF
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 3
-    ExplicitWidth = 485
-    ExplicitHeight = 125
   end
   object ProgressBar: TCMDProgressBar
     Left = 8
@@ -3672,8 +3667,6 @@ object ConsoleServerF: TConsoleServerF
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
-    ExplicitTop = 143
-    ExplicitWidth = 485
   end
   object edtConsole: TEdit
     Left = 8
@@ -3683,8 +3676,6 @@ object ConsoleServerF: TConsoleServerF
     Anchors = [akLeft, akRight, akBottom]
     TabOrder = 4
     OnKeyPress = edtConsoleKeyPress
-    ExplicitTop = 139
-    ExplicitWidth = 437
   end
   object btnEnter: TButton
     Left = 501
@@ -3695,7 +3686,5 @@ object ConsoleServerF: TConsoleServerF
     Caption = 'Send'
     TabOrder = 5
     OnClick = btnEnterClick
-    ExplicitLeft = 451
-    ExplicitTop = 139
   end
 end

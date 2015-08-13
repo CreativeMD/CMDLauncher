@@ -3656,6 +3656,8 @@ object LoginF: TLoginF
     Width = 158
     Height = 21
     TabOrder = 0
+    TextHint = 'E-Mail'
+    OnKeyPress = edtNameKeyPress
   end
   object edtPassword: TEdit
     Left = 101
@@ -3664,6 +3666,8 @@ object LoginF: TLoginF
     Height = 21
     PasswordChar = '*'
     TabOrder = 1
+    TextHint = '**************'
+    OnKeyPress = edtNameKeyPress
   end
   object btnLogin: TButton
     Left = 265

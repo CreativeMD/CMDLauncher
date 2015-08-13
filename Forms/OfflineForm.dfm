@@ -3638,6 +3638,7 @@ object OfflineF: TOfflineF
     Height = 21
     TabOrder = 0
     TextHint = 'Offline-Name'
+    OnKeyPress = edtNameKeyPress
   end
   object btnPlay: TButton
     Left = 81

@@ -74,7 +74,7 @@ procedure TConsoleServerF.edtConsoleKeyPress(Sender: TObject; var Key: Char);
 begin
   If Key = #13 then
   begin
-    btnEnterClick(btnEnter);
+    btnEnter.Click;
     Key := #0;
   end;
 end;

@@ -12,6 +12,7 @@ type
     lblOfflineName: TLabel;
     btnPlay: TButton;
     btnCancel: TButton;
+    procedure edtNameKeyPress(Sender: TObject; var Key: Char);
   private
     { Private-Deklarationen }
   public
@@ -21,5 +22,14 @@ type
 implementation
 
 {$R *.dfm}
+
+procedure TOfflineF.edtNameKeyPress(Sender: TObject; var Key: Char);
+begin
+  If Key = #13 then
+  begin
+    btnPlay.Click;
+    Key := #0;
+  end;
+end;
 
 end.

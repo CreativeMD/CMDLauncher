@@ -17,6 +17,7 @@ type
     btnCancel: TButton;
     btnOffline: TButton;
     lblError: TLabel;
+    procedure edtNameKeyPress(Sender: TObject; var Key: Char);
   private
     { Private-Deklarationen }
   public
@@ -26,5 +27,14 @@ type
 implementation
 
 {$R *.dfm}
+
+procedure TLoginF.edtNameKeyPress(Sender: TObject; var Key: Char);
+begin
+  If Key = #13 then
+  begin
+    btnLogin.Click;
+    Key := #0;
+  end;
+end;
 
 end.
