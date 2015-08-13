@@ -132,6 +132,8 @@ begin
     LastLogin := Result;
     DeleteFile(DownloadFolder + 'login.json');
     DeleteFile(DownloadFolder + 'request.json');
+    if getSelectedAccount = nil then
+      ProgramSettings.setString('selacc', FLoginName);
     SaveAccounts;
     Exit(Result);
   end;
@@ -385,6 +387,9 @@ begin
             TempAccount.SavePassword := Account.SavePassword;
             TListView(Controls[0]).Selected.Caption := TempAccount.FLoginName;
             TListView(Controls[0]).Selected.SubItems[0] := TempAccount.FMinecraftName;
+            if getSelectedAccount <> nil then
+              TListView(Controls[0]).Selected.Checked := TempAccount.MinecraftName = getSelectedAccount.MinecraftName;
+            TListView(Controls[0]).Selected.Checked := False;
             Account.Destroy;
           end
           else
@@ -394,6 +399,10 @@ begin
             begin
               Caption := Account.FLoginName;
               SubItems.Add(Account.FMinecraftName);
+              if getSelectedAccount <> nil then
+                Checked := Account.LoginName = getSelectedAccount.LoginName
+              else
+                Checked := False;
             end;
           end;
         end;
