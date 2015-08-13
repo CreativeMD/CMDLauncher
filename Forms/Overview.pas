@@ -509,8 +509,8 @@ begin
     SectionTitles.Add(HeaderControl.Sections.Items[i].Text);
     HeaderControl.Sections.Items[i].Text := '';
   end;
-  if not ProgramSettings.hasKey('style') then
-    ProgramSettings.setString('style', 'Light');
+  //if not ProgramSettings.hasKey('style') then
+    //ProgramSettings.setString('style', 'Light');
 
   TStyleManager.TrySetStyle(ProgramSettings.getString('style'), False);
 end;

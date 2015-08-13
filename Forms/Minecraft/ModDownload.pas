@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, cefvcl, ceflib,
   Task, Generics.Collections, ModUtils, ForgeUtils, ProgressBar, System.UITypes, StringUtils,
-  System.IOUtils, System.Types;
+  System.IOUtils, System.Types, LoadingForm;
 
 type
   TDownloadR = (drSuccess, drFail, drCancel, drNotFinished);
@@ -18,12 +18,6 @@ type
     lblProgress: TLabel;
     DownloadBar: TCMDProgressBar;
     chrmDownloader: TChromium;
-    procedure chrmDownloadBrowserBeforePopup(Sender: TObject;
-      const browser: ICefBrowser; const frame: ICefFrame; const targetUrl,
-      targetFrameName: ustring; var popupFeatures: TCefPopupFeatures;
-      var windowInfo: TCefWindowInfo; var client: ICefClient;
-      var settings: TCefBrowserSettings; var noJavascriptAccess: Boolean;
-      out Result: Boolean);
     procedure btnRedoClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure btnSkipClick(Sender: TObject);
@@ -37,13 +31,17 @@ type
     procedure chrmDownloaderBeforeBrowse(Sender: TObject;
       const browser: ICefBrowser; const frame: ICefFrame;
       const request: ICefRequest; isRedirect: Boolean; out Result: Boolean);
+    procedure chrmDownloaderBeforeUnloadDialog(Sender: TObject;
+      const browser: ICefBrowser; const messageText: ustring; isReload: Boolean;
+      const callback: ICefJsDialogCallback; out Result: Boolean);
   private
     { Private-Deklarationen }
   public
+    ForceReload : Boolean;
     DownloadResult : TDownloadR;
     Item : TPair<TMod, TModVersion>;
     ModObj : TModInstallObj;
-    PopUps : TList<ICefBrowser>;
+    Progress : TLoadingScreen;
     procedure loadPage;
     function cancelIt : Boolean;
     function downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
@@ -132,30 +130,79 @@ begin
   Result := MessageDlg('Do you really want to cancel all mods?',mtConfirmation, mbOKCancel, 0) = mrOK;
 end;
 
+procedure WindowInfo(hWnd: HWND; List: TStrings);
+var
+  TheClassName: array[0..255] of char;
+  TheInstance: cardinal;
+begin
+  GetClassName(hWnd, TheClassName, 255);
+  TheInstance := GetWindowLong(hWnd, GWL_HINSTANCE);
+  if (TheInstance <> 0) then begin
+    if (TheInstance = hInstance) then
+    begin
+      if string(TheClassName).Contains('CefBrowserWindow') then
+      begin
+        DestroyWindow(hWnd);
+      end;
+    end;
+  end;
+end;
+
+
+function EnumerateChildWindows(hWnd: HWND; lParam: LPARAM): BOOL; stdcall;
+begin
+  WindowInfo(hWnd, nil);
+  EnumChildWindows(hWnd, @EnumerateChildWindows, 0);
+  Result := TRUE;
+end;
+
+function EnumerateWindows(hWnd: HWND; lParam: LPARAM): BOOL; stdcall;
+begin
+  Result := TRUE;
+  WindowInfo(hWnd, nil);
+  EnumChildWindows(hWnd, @EnumerateChildWindows, 0);
+end;
+
 function TModDownloaderF.downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
+var
+timeToWait : Integer;
+WindowHandle : HWND;
 begin
   DownloadResult := drNotFinished;
   Self.ModObj := ModObj;
   Self.Item := Item;
 
+  Progress := nil;
+
   loadPage;
 
   while (DownloadResult = drNotFinished) and not Application.Terminated do
+  begin
+    if ForceReload then
+    begin
+      timeToWait := 1000;
+      while timeToWait > 0 do
+      begin
+        Application.ProcessMessages;
+        timeToWait := timeToWait - 1;
+        Sleep(1);
+      end;
+      loadPage;
+    end;
     Application.ProcessMessages;
+    Sleep(1);
+  end;
 
   Result := DownloadResult;
-  {while PopUps.Count > 0 do
-  begin
-    try
-      while (Assigned(PopUps[0])) do// and (PopUps[0].RefCount > 0) do
-        PopUps[0]._Release;
-    except
-      on E: Exception do
-        PopUps[0] := nil;
 
-    end;
-    PopUps.Delete(0);
-  end;     }
+  repeat
+    WindowHandle := FindWindow('CefBrowserWindow', '');
+    if IsWindow(WindowHandle) then
+      DestroyWindow(WindowHandle);
+  until not IsWindow(WindowHandle);
+
+  //FindWindow()
+  //EnumWindows(@EnumerateWindows, 0);
 end;
 
 procedure TModDownloaderF.FormCloseQuery(Sender: TObject;
@@ -170,7 +217,7 @@ procedure TModDownloaderF.loadPage;
 begin
   chrmDownloader.Load('http://launcher.creativemd.de/service/moddownloadservice.php?modid=' + IntToStr(Item.Key.ID)
   + '&versionID=' + Item.Value.Name + '&url=' + ModObj.DownloadLink);
-
+  ForceReload := False;
 end;
 
 constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; isServer : Boolean);
@@ -204,7 +251,6 @@ begin
     Downloader := TModDownloaderF.Create(nil);
     Downloader.Show;
     Downloader.DownloadBar.StartProcess(Mods.Count);
-    Downloader.PopUps := TList<ICefBrowser>.Create;
     Bar.StartStep(Mods.Count);
     for Item in Mods do
     begin
@@ -225,16 +271,28 @@ begin
             DResult := Downloader.downloadModVersion(Item.Value.Files[i], Item);
             if DResult = drCancel then
             begin
+              if Downloader.Progress <> nil then
+                Downloader.Progress.Destroy;
               Downloader.Destroy;
               Exit;
             end;
             if DResult = drFail then
+            begin
+              if Downloader.Progress <> nil then
+                Downloader.Progress.Destroy;
               Self.Log.log('Failed to download mod! ' + Item.Key.Title);
+            end;
 
             if DResult = drSuccess then
             begin
+              Downloader.Progress.lblTask.Caption := 'Installing Mod';
+              Application.ProcessMessages;
               Item.Value.Files[i].installObj(TempFolder, ModsFolder);
+              Downloader.Progress.Destroy;
             end;
+            Downloader.chrmDownloader.ReCreateBrowser('');
+            //Downloader.chrmDownloader := TChromium.Create(Downloader);
+            //Downloader.chrmDownloader.Parent := Downloader;
           end;
         end;
 
@@ -275,38 +333,32 @@ begin
   else
   begin
     callback.Cont(TempFolder + ModObj.DFileName, False);
-    DownloadBar.StartStep(downloadItem.TotalBytes);
   end;
-end;
-
-procedure TModDownloaderF.chrmDownloadBrowserBeforePopup(Sender: TObject;
-  const browser: ICefBrowser; const frame: ICefFrame; const targetUrl,
-  targetFrameName: ustring; var popupFeatures: TCefPopupFeatures;
-  var windowInfo: TCefWindowInfo; var client: ICefClient;
-  var settings: TCefBrowserSettings; var noJavascriptAccess: Boolean;
-  out Result: Boolean);
-begin
-  PopUps.Add(browser);
-  {if string(frame.Url).Contains('mediafire.com') then
-  begin
-    frame.Browser.
-    chrmDownloader.Load(frame.Url);
-    Result := True;
-  end
-  else
-    Result := False;     }
 end;
 
 procedure TModDownloaderF.chrmDownloadBrowserDownloadUpdated(Sender: TObject;
   const browser: ICefBrowser; const downloadItem: ICefDownloadItem;
   const callback: ICefDownloadItemCallback);
 begin
+  if Progress = nil then
+  begin
+    Progress := TLoadingScreen.Create(Self);
+    Progress.Position := poOwnerFormCenter;
+    Progress.lblTask.Caption := 'Downloading ' + ModObj.DFileName + ' ...';
+    Progress.lblLog.Caption := '0 / ' + IntToStr(downloadItem.TotalBytes) + ' Bytes (0%)';
+    Progress.TaskProgress.StartProcess(1);
+    Progress.TaskProgress.StartStep(downloadItem.TotalBytes);
+    Progress.Show;
+    //Progress.SetFocus;
+  end;
   if not downloadItem.IsComplete then
   begin
-    DownloadBar.StepPos := downloadItem.ReceivedBytes;
+    Progress.TaskProgress.StepPos := downloadItem.ReceivedBytes;
+    Progress.lblLog.Caption := IntToStr(downloadItem.ReceivedBytes) + ' / ' + IntToStr(downloadItem.TotalBytes) + ' Bytes (' + IntToStr(round(downloadItem.ReceivedBytes / downloadItem.TotalBytes * 100)) + '%)';
   end
   else
   begin
+    Progress.TaskProgress.FinishStep;
     DownloadResult := drSuccess;
   end;
 end;
@@ -316,16 +368,32 @@ procedure TModDownloaderF.chrmDownloaderBeforeBrowse(Sender: TObject;
   const request: ICefRequest; isRedirect: Boolean; out Result: Boolean);
 var
 URL : String;
+
 begin
   if String(request.Url).Contains('://www.dropbox.com') then
   begin
-    Url := string(request.Url).Replace('dl=0', 'dl=1').Replace('dl=', 'dl=1').Replace('dl', 'dl=1');
+    Url := string(request.Url).Replace('dl=0', 'dl=1');
 
-    if not string(request.Url).Contains('dl=1') then
+    if string(request.Url).Contains('dl=0') then
     begin
+      //request.Url := URL;
+      //isRedirect := True;
       frame.LoadUrl(Url);
+      //frame.LoadRequest(request);
       Result := True;
     end;
+  end;
+end;
+
+procedure TModDownloaderF.chrmDownloaderBeforeUnloadDialog(Sender: TObject;
+  const browser: ICefBrowser; const messageText: ustring; isReload: Boolean;
+  const callback: ICefJsDialogCallback; out Result: Boolean);
+begin
+  if messageText = 'You are about to be redirected.'#$A'In order to reach your destination link, please click to stay on the page and then click our Skip Ad button.' then
+  begin
+    callback.Cont(True, 'Ok');
+    //Result := True;
+    ForceReload := True;
   end;
 end;
 

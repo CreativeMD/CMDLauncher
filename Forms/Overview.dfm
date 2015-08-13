@@ -3711,25 +3711,25 @@ object OverviewF: TOverviewF
         ImageIndex = 0
         ParentBiDiMode = False
         Text = 'Create'
-        Width = 40
+        Width = 45
       end
       item
         Alignment = taCenter
         ImageIndex = 8
         Text = 'Launch'
-        Width = 40
+        Width = 45
       end
       item
         Alignment = taCenter
         ImageIndex = 1
         Text = 'Edit'
-        Width = 38
+        Width = 45
       end
       item
         Alignment = taCenter
         ImageIndex = 2
         Text = 'Remove'
-        Width = 40
+        Width = 45
       end
       item
         Alignment = taCenter
@@ -3737,19 +3737,19 @@ object OverviewF: TOverviewF
         ImageIndex = 3
         ParentBiDiMode = False
         Text = 'Settings'
-        Width = 40
+        Width = 45
       end
       item
         Alignment = taCenter
         ImageIndex = 10
         Text = 'Reload'
-        Width = 40
+        Width = 45
       end
       item
         Alignment = taCenter
         ImageIndex = 5
         Text = 'Accounts'
-        Width = 40
+        Width = 45
       end>
     OnSectionClick = HeaderControlSectionClick
     NoSizing = True
@@ -3791,7 +3791,7 @@ object OverviewF: TOverviewF
     Left = 64
     Top = 112
     Bitmap = {
-      494C01010B006000F80020002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01010B006000000120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000008000000060000000010020000000000000C0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -5459,7 +5459,7 @@ object OverviewF: TOverviewF
     Left = 208
     Top = 112
     Bitmap = {
-      494C010102000800780010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010102000800800010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
