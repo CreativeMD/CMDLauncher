@@ -56,6 +56,7 @@ begin
     end
     else
     begin
+      Self.Log.log('No new version available! Newest version=' + ServerVersion);
       ChangeLog := HTTP.Get('http://creativemd.de/service/changelog_new.php?name=' + ProgramName);
       LauncherSettings.Changelog := Explode(ChangeLog, '<br>');
     end;
