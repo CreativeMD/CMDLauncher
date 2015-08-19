@@ -336,9 +336,9 @@ begin
     Result.Add(DownloadLibary);
   end;
   if not Custom then
-    Result.Add(TModCleaning.Create(Mods, getInstanceFolder + 'mods\', Side = TServer));
+    Result.Add(TModCleaning.Create(Mods, getInstanceFolder + 'mods\', Side));
 
-  Result.Add(TDownloadMods.Create(Mods, getInstanceFolder + 'mods\', Side = TServer));
+  Result.Add(TDownloadMods.Create(Mods, getInstanceFolder + 'mods\', Side));
 end;
 
 function TForgeInstance.getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch;

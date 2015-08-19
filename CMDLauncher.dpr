@@ -57,8 +57,7 @@ uses
   Cauldron in 'Utils\Minecraft\Special\Cauldron.pas',
   SideUtils in 'Utils\Minecraft\SideUtils.pas',
   ConsoleServer in 'Forms\ConsoleServer.pas' {ConsoleServerF},
-  CustomSettings in 'Utils\Settings\CustomSettings.pas',
-  ModDownloadProgress in 'Forms\Minecraft\ModDownloadProgress.pas' {ModProgress};
+  CustomSettings in 'Utils\Settings\CustomSettings.pas';
 
 {$R *.res}
 

@@ -14,6 +14,8 @@ type
   TSideHelper = record helper for TSide
     function isCompatible(SideType : TSideType) : Boolean;
     function toString : String;
+    function isServer : Boolean;
+    function isClient : Boolean;
   end;
 
 function parseSide(Input : string) : TSide;
@@ -50,6 +52,16 @@ begin
     Exit('Server')
   else
     Exit('Client');
+end;
+
+function TSideHelper.isServer : Boolean;
+begin
+  Result := Self = TServer;
+end;
+
+function TSideHelper.isClient : Boolean;
+begin
+  Result := Self = TClient;
 end;
 
 function TSideTypeHelper.toString : String;

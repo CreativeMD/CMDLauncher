@@ -14,7 +14,7 @@ type
       constructor Create(DownloadLink, DFileName : String; SideType : TSideType);
       function installObj(TempFolder : String; Folder : String) : Boolean; virtual; abstract;
       function isInstalled(Folder : String) : Boolean; virtual; abstract;
-      function isFile(FileName : String) : Boolean; virtual; abstract;
+      function isFile(FileName : String; Side : TSide) : Boolean; virtual; abstract;
   end;
   TModFile = class(TModInstallObj)
     private
@@ -24,7 +24,7 @@ type
       constructor Create(DownloadLink, DFileName, FileName : String; SideType : TSideType); overload;
       function installObj(TempFolder : String; Folder : String) : Boolean; override;
       function isInstalled(Folder : String) : Boolean; override;
-      function isFile(FileName : String) : Boolean; override;
+      function isFile(FileName : String; Side : TSide) : Boolean; override;
   end;
   TModArchive = class(TModInstallObj)
     private
@@ -33,7 +33,7 @@ type
       constructor Create(Json : ISuperObject);
       function installObj(TempFolder : String; Folder : String) : Boolean; override;
       function isInstalled(Folder : String) : Boolean; override;
-      function isFile(FileName : String) : Boolean; override;
+      function isFile(FileName : String; Side : TSide) : Boolean; override;
   end;
   TModVersion = class
     private
@@ -44,7 +44,7 @@ type
       constructor Create(Json : ISuperObject);
       function isInstalled(Folder : String) : Boolean;
       function isForgeValid(Version : string) : Boolean;
-      function isModFile(FileName : string) : Boolean;
+      function isModFile(FileName : string; Side : TSide) : Boolean;
       function getMCVersion : String;
       property ID : Integer read FID;
       property Name : String read FName;
@@ -394,12 +394,12 @@ begin
   Result := isHigher(Min, Version) and (isHigher(Version, Max) or (Version = Max));
 end;
 
-function TModVersion.isModFile(FileName : string) : Boolean;
+function TModVersion.isModFile(FileName : string; Side : TSide) : Boolean;
 var
 i : Integer;
 begin
   for i := 0 to InstallObjs.Count-1 do
-    if InstallObjs[i].isFile(FileName) then
+    if InstallObjs[i].isFile(FileName, Side) then
       Exit(True);
   Exit(false);
 end;
@@ -450,9 +450,11 @@ begin
   Result := FileExists(PWideChar(FilePath));
 end;
 
-function TModFile.isFile(FileName : String) : Boolean;
+function TModFile.isFile(FileName : String; Side : TSide) : Boolean;
 begin
   Result := Self.FileName = FileName;
+  if Result then
+    Exit(SideType.isCompatible(Side));
 end;
 
 constructor TModArchive.Create(Json : ISuperObject);
@@ -498,12 +500,12 @@ begin
   end;
 end;
 
-function TModArchive.isFile(FileName : String) : Boolean;
+function TModArchive.isFile(FileName : String; Side : TSide) : Boolean;
 var
 i : Integer;
 begin
   for i := 0 to InstallObjs.Count-1 do
-    if InstallObjs[i].isFile(FileName) then
+    if InstallObjs[i].isFile(FileName, Side) then
       Exit(True);
   Exit(false);
 end;

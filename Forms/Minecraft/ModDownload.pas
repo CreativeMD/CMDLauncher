@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, cefvcl, ceflib,
   Task, Generics.Collections, ModUtils, ForgeUtils, ProgressBar, System.UITypes, StringUtils,
-  System.IOUtils, System.Types, LoadingForm;
+  System.IOUtils, System.Types, LoadingForm, SideUtils;
 
 type
   TDownloadR = (drSuccess, drFail, drCancel, drNotFinished);
@@ -49,21 +49,21 @@ type
   TDownloadMods = class(TTask)
     protected
       ModsFolder : String;
-      isServer : Boolean;
+      Side : TSide;
       procedure runTask(Bar : TCMDProgressBar); override;
     public
       Mods : TDictionary<TMod, TModVersion>;
-      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; isServer : Boolean);
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
   end;
   TModCleaning = class(TTask)
     protected
       ModsFolders : TStringList;
-      isServer : Boolean;
+      Side : TSide;
       procedure runTask(Bar : TCMDProgressBar); override;
     public
       Mods : TDictionary<TMod, TModVersion>;
-      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; isServer : Boolean); overload;
-      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; isServer : Boolean); overload;
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; Side : TSide); overload;
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide); overload;
   end;
 
 implementation
@@ -72,19 +72,26 @@ implementation
 
 uses CoreLoader;
 
-constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; isServer : Boolean);
+constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList;  Side : TSide);
+var
+Item : TPair<TMod, TModVersion>;
 begin
   inherited Create('Clean Mods', True);
   Self.ModsFolders := ModsFolders;
-  Self.isServer := isServer;
-  Self.Mods := TDictionary<TMod, TModVersion>.Create(Mods);
+  Self.Side := Side;
+  //Self.Mods := TDictionary<TMod, TModVersion>.Create(Mods);
+  for Item in Mods do
+  begin
+    if Item.Key.ModType.isCompatible(Side) then
+      Self.Mods.Add(Item.Key, Item.Value);
+  end;
 end;
 
-constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; isServer : Boolean);
+constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String;  Side : TSide);
 begin
   Self.ModsFolders := TStringList.Create;
   Self.ModsFolders.Add(ModsFolder);
-  Create(Mods, Self.ModsFolders, isServer);
+  Create(Mods, Self.ModsFolders, Side);
 end;
 
 procedure TModCleaning.runTask(Bar : TCMDProgressBar);
@@ -106,7 +113,7 @@ begin
         isFileOfMod := False;
 
         for Item in Mods do
-          if Item.Value.isModFile(Files[j].Replace(ModsFolders[i], '').Replace('\', '/')) then
+          if Item.Value.isModFile(Files[j].Replace(ModsFolders[i], '').Replace('\', '/'), Side) then
           begin
             isFileOfMod := True;
             Break;
@@ -128,39 +135,6 @@ end;
 function TModDownloaderF.cancelIt : Boolean;
 begin
   Result := MessageDlg('Do you really want to cancel all mods?',mtConfirmation, mbOKCancel, 0) = mrOK;
-end;
-
-procedure WindowInfo(hWnd: HWND; List: TStrings);
-var
-  TheClassName: array[0..255] of char;
-  TheInstance: cardinal;
-begin
-  GetClassName(hWnd, TheClassName, 255);
-  TheInstance := GetWindowLong(hWnd, GWL_HINSTANCE);
-  if (TheInstance <> 0) then begin
-    if (TheInstance = hInstance) then
-    begin
-      if string(TheClassName).Contains('CefBrowserWindow') then
-      begin
-        DestroyWindow(hWnd);
-      end;
-    end;
-  end;
-end;
-
-
-function EnumerateChildWindows(hWnd: HWND; lParam: LPARAM): BOOL; stdcall;
-begin
-  WindowInfo(hWnd, nil);
-  EnumChildWindows(hWnd, @EnumerateChildWindows, 0);
-  Result := TRUE;
-end;
-
-function EnumerateWindows(hWnd: HWND; lParam: LPARAM): BOOL; stdcall;
-begin
-  Result := TRUE;
-  WindowInfo(hWnd, nil);
-  EnumChildWindows(hWnd, @EnumerateChildWindows, 0);
 end;
 
 function TModDownloaderF.downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
@@ -220,13 +194,19 @@ begin
   ForceReload := False;
 end;
 
-constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; isServer : Boolean);
+constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
+var
+Item : TPair<TMod, TModVersion>;
 begin
   inherited Create('Downloading Mods', True);
-  Self.Mods := TDictionary<TMod, TModVersion>.Create(Mods);
+  for Item in Mods do
+  begin
+    if Item.Key.ModType.isCompatible(Side) then
+      Self.Mods.Add(Item.Key, Item.Value);
+  end;
   Self.ModsFolder := ModsFolder;
   Self.sync := True;
-  Self.isServer := isServer;
+  Self.Side := Side;
 end;
 
 procedure TDownloadMods.runTask(Bar : TCMDProgressBar);
@@ -255,17 +235,12 @@ begin
     for Item in Mods do
     begin
       IsModValid := True;
-      if isServer and not Item.Key.isServerCompatible then
-        IsModValid := False;
-
-      if not isServer and not Item.Key.isClientCompatible then
-        IsModValid := False;
 
       if IsModValid and not Item.Value.isInstalled(ModsFolder) then
       begin
         for i := 0 to Item.Value.Files.Count-1 do
         begin
-          if not Item.Value.Files[i].isInstalled(ModsFolder) then
+          if not Item.Value.Files[i].isInstalled(ModsFolder) and Item.Value.Files[i].SideType.isCompatible(Side) then
           begin
             Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
             DResult := Downloader.downloadModVersion(Item.Value.Files[i], Item);

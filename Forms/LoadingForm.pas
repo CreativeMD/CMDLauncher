@@ -25,12 +25,16 @@ var
 
 implementation
 
+uses Overview;
+
 {$R *.dfm}
 
 procedure TLoadingScreen.FormShow(Sender: TObject);
 begin
   (imgLoading.Picture.Graphic as TGIFImage).AnimateLoop := glEnabled;
   (imgLoading.Picture.Graphic as TGIFImage).Animate := True;
+  Left := OverviewF.Left + OverviewF.Width div 2 - Self.Width div 2;
+  Top := OverviewF.Top + OverviewF.Height div 2 - Self.Height div 2;
 end;
 
 end.
