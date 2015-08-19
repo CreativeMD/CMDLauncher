@@ -242,6 +242,7 @@ begin
         begin
           if not Item.Value.Files[i].isInstalled(ModsFolder) and Item.Value.Files[i].SideType.isCompatible(Side) then
           begin
+            Self.Log.log('Downloading ' + Item.Key.Title);
             Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
             DResult := Downloader.downloadModVersion(Item.Value.Files[i], Item);
             if DResult = drCancel then
@@ -249,13 +250,14 @@ begin
               if Downloader.Progress <> nil then
                 Downloader.Progress.Destroy;
               Downloader.Destroy;
+              Self.Log.log('Canceled mod download ');
               Exit;
             end;
             if DResult = drFail then
             begin
               if Downloader.Progress <> nil then
                 Downloader.Progress.Destroy;
-              Self.Log.log('Failed to download mod! ' + Item.Key.Title);
+              Self.Log.logLastLine('Failed to download mod! ' + Item.Key.Title);
             end;
 
             if DResult = drSuccess then
@@ -264,6 +266,7 @@ begin
               Application.ProcessMessages;
               Item.Value.Files[i].installObj(TempFolder, ModsFolder);
               Downloader.Progress.Destroy;
+              Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
             end;
             Downloader.chrmDownloader.ReCreateBrowser('');
             //Downloader.chrmDownloader := TChromium.Create(Downloader);
