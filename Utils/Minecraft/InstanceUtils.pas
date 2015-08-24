@@ -65,7 +65,7 @@ procedure registerInstanceTyp(Instance : TInstance; SideType : TSideType);
 
 implementation
 
-uses CoreLoader, FileUtils, Overview, Logger, VanillaUtils, ForgeUtils, ModpackUtils, Cauldron;
+uses CoreLoader, FileUtils, Overview, Logger, VanillaUtils, ForgeUtils, ModpackUtils, Cauldron, SnapshotUtils;
 
 function getTypes(Side : TSide) : TStringList;
 var
@@ -168,6 +168,7 @@ begin
   registerInstanceTyp(TForgeInstance.Create('ForgeTyp', False), Universal);
   registerInstanceTyp(TModpackInstance.Create('ModpackTyp', False), Universal);
   registerInstanceTyp(TCauldronInstance.Create('CauldronTyp', False), OnlyServer);
+  registerInstanceTyp(TSnapshotInstance.Create('SnapshotTyp', False), Universal);
 
   if Assigned(Instances) then
   begin

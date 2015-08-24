@@ -79,7 +79,7 @@ begin
   inherited Create('Clean Mods', True);
   Self.ModsFolders := ModsFolders;
   Self.Side := Side;
-  //Self.Mods := TDictionary<TMod, TModVersion>.Create(Mods);
+  Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
     if Item.Key.ModType.isCompatible(Side) then
@@ -199,6 +199,7 @@ var
 Item : TPair<TMod, TModVersion>;
 begin
   inherited Create('Downloading Mods', True);
+  Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
     if Item.Key.ModType.isCompatible(Side) then

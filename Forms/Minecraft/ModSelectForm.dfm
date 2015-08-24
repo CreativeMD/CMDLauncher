@@ -3630,6 +3630,7 @@ object ModSelectF: TModSelectF
     Top = 425
     Width = 187
     Height = 26
+    Anchors = [akLeft, akBottom]
     Caption = 'nothing here?'#13#10'wait a sec until the browser has loaded'
   end
   object lvMods: TListView

@@ -171,6 +171,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\Settings\CustomSettings.pas"/>
+        <DCCReference Include="Utils\Minecraft\SnapshotUtils.pas"/>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">

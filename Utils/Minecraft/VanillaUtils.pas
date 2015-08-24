@@ -46,7 +46,7 @@ MinecraftVersions : TList<TMinecraftVersion>;
 implementation
 
 uses CoreLoader, AssetUtils, MinecraftVersionFileUtils, MinecraftLibaryUtills,
-DatabaseConnection, ServerUtils, StringUtils;
+DatabaseConnection, ServerUtils, StringUtils, SnapshotUtils;
 
 function getMinecraftVersion(UUID : String) : TMinecraftVersion;
 var
@@ -146,6 +146,7 @@ begin
         MinecraftTyp := mvSnapshot
       else
         MinecraftTyp := mvOld;
+
       MinecraftVersions.Add(TMinecraftVersion.Create(MCVA[i].S['id'], MinecraftTyp, LaunchTyp));
       Bar.StepPos := i;
     end;
