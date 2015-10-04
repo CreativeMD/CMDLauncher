@@ -259,7 +259,7 @@ begin
 
   Page.AddSetting(TStringSetting.Create('customcommand', 'Command', '', False, '').setWidth(300).setNotNeedFill);
   Page.AddSetting(TCheckOption.Create('classunloading', 'Class Unloading', True));
-  Page.AddSetting(TNumberSelect.Create('permspace', 'PermGen Space', getPerm, '128'));
+  Page.AddSetting(TNumberSelect.Create('permspace', 'PermGen Space', getPerm, '256'));
 
   CheckExpand := TCheckExpand.Create('cjava', 'Custom Java', False);
 

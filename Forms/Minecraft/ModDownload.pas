@@ -173,6 +173,7 @@ begin
     WindowHandle := FindWindow('CefBrowserWindow', '');
     if IsWindow(WindowHandle) then
       DestroyWindow(WindowHandle);
+    Application.ProcessMessages;
   until not IsWindow(WindowHandle);
 
   //FindWindow()
@@ -269,7 +270,7 @@ begin
               Downloader.Progress.Destroy;
               Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
             end;
-            Downloader.chrmDownloader.ReCreateBrowser('');
+            //Downloader.chrmDownloader.ReCreateBrowser('');
             //Downloader.chrmDownloader := TChromium.Create(Downloader);
             //Downloader.chrmDownloader.Parent := Downloader;
           end;

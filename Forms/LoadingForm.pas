@@ -31,6 +31,8 @@ uses Overview;
 
 procedure TLoadingScreen.FormShow(Sender: TObject);
 begin
+  SetWindowPos(Application.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NoMove or SWP_NoSize);
+
   (imgLoading.Picture.Graphic as TGIFImage).AnimateLoop := glEnabled;
   (imgLoading.Picture.Graphic as TGIFImage).Animate := True;
   Left := OverviewF.Left + OverviewF.Width div 2 - Self.Width div 2;
