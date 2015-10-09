@@ -121,7 +121,7 @@ begin
       except
         on E: Exception do
         begin
-          Logger.Log.log('Failed to load a mod from data! data=' + Value[i]);
+          Logger.MainLog.log('Failed to load a mod from data! data=' + Value[i]);
         end;
       end;
       if Item.Key <> nil then

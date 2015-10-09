@@ -249,7 +249,7 @@ begin
       except
         on E: Exception do
         begin
-          Logger.Log.log('Failed to load a mod from data! data=' + Value[i]);
+          Logger.MainLog.log('Failed to load a mod from data! data=' + Value[i]);
         end;
       end;
       if (Item.Key <> nil) and (Item.Key.hasLoaded) then
@@ -258,7 +258,7 @@ begin
           Item.Value := Item.Key.getVersionByID(StrToInt(Splits[1]));
         except
           on E: Exception do
-            Logger.Log.log('Failed to load mod version: ' + Splits[1]);
+            Logger.MainLog.log('Failed to load mod version: ' + Splits[1]);
         end;
         if Item.Value <> nil then
           Mods.Add(Item.Key, Item.Value);

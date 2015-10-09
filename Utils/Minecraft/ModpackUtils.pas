@@ -4,7 +4,7 @@ interface
 
 uses ForgeUtils, System.Generics.Collections, Task, ModUtils, ProgressBar, DownloadUtils,
 superobject, System.SysUtils, System.Classes, SaveFileUtils, SettingUtils,
-AccountUtils, MinecraftLaunchCommand, JavaUtils, StringUtils, SideUtils;
+AccountUtils, MinecraftLaunchCommand, JavaUtils, StringUtils, SideUtils, LaunchTaskUtils;
 
 type
   TModpackVersion = class;
@@ -29,12 +29,15 @@ type
       FID : Integer;
       FName, FForge : String;
       FMods : TDictionary<TMod, TModVersion>;
+      FArchiveURL : String;
     public
       constructor Create(Json : ISuperObject);
+      function hasArchive : Boolean;
       property ID : Integer read FID;
       property Forge : String read FForge;
       property Name : String read FName;
       property Mods : TDictionary<TMod, TModVersion> read FMods;
+      property ArchiveURL : String read FArchiveURL;
   end;
   TLoadModpack = class(TTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -55,6 +58,11 @@ type
       function getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>; override;
       //function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
   end;
+   TDownloadModpackArchive = class(TLaunchTask)
+    Instance : TModpackInstance;
+    constructor Create(Instance : TModpackInstance; Command : TMinecraftLaunch);
+    procedure runTask(Bar : TCMDProgressBar); override;
+  end;
 
 function createModpack(Json : ISuperObject) : TModpack;
 function getModPackByID(ID : Integer) : TModpack;
@@ -65,7 +73,8 @@ ModPacksLoaded : Boolean;
 
 implementation
 
-uses CoreLoader, DatabaseConnection, Logger, InstanceUtils, ModDownload, ModSettings, ModpackSettings;
+uses CoreLoader, DatabaseConnection, Logger, InstanceUtils, ModDownload,
+ModSettings, ModpackSettings, ZipUtils;
 
 function getModPackByID(ID : Integer) : TModpack;
 var
@@ -135,7 +144,7 @@ begin
       except
         on E: Exception do
         begin
-          Logger.Log.log('Failed to load a mod from data! data=' + Value[i]);
+          Logger.MainLog.log('Failed to load a mod from data! data=' + Value[i]);
         end;
       end;
       if (Item.Key <> nil) and (Item.Key.hasLoaded) then
@@ -144,7 +153,7 @@ begin
           Item.Value := Item.Key.getVersionByID(StrToInt(Splits[1]));
         except
           on E: Exception do
-            Logger.Log.log('Failed to load mod version: ' + Splits[1]);
+            Logger.MainLog.log('Failed to load mod version: ' + Splits[1]);
         end;
         if Item.Value <> nil then
           Mods.Add(Item.Key, Item.Value);
@@ -176,17 +185,23 @@ function TModPackInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : T
 var
   i: Integer;
   Item : TPair<TMod, TModVersion>;
+  Added : Boolean;
 begin
+  Added := False;
   Result := inherited getStartupTasks(MinecrafComand);
   for i := 0 to Result.Count-1 do
   begin
     if Result[i] is TDownloadMods then
     begin
+      if not Added then
+        Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
       for Item in Modpack.Value.Mods do
         TDownloadMods(Result[i]).Mods.Add(Item.Key, Item.Value);
     end;
     if Result[i] is TModCleaning then
     begin
+      Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
+      Added := True;
       for Item in Modpack.Value.Mods do
         TModCleaning(Result[i]).Mods.Add(Item.Key, Item.Value);
     end;
@@ -205,6 +220,7 @@ i : Integer;
 Item : TPair<TMod, TModVersion>;
 begin
   FID := Json.I['id'];
+  FArchiveURL := Json.S['archive'];
   FName := Json.S['name'];
   FForge := Json.S['forge'];
   InstallArray := Json.A['mods'];
@@ -219,12 +235,17 @@ begin
         Item.Value := Item.Key.getVersionByID(StrtoInt(InstallArray.O[i].S['vid']));
       end
       else
-        Logger.Log.log('Failed to load a mod in modpack!');
+        Logger.MainLog.log('Failed to load a mod in modpack!');
       if (Item.Key <> nil) and (Item.Value <> nil) then
         FMods.Add(Item.Key, Item.Value);
     end;
 
   end;
+end;
+
+function TModpackVersion.hasArchive : Boolean;
+begin
+  Result := ArchiveURL <> '';
 end;
 
 constructor TModpack.Create(Json : ISuperObject);
@@ -314,6 +335,47 @@ begin
   end;
   ModPacksLoaded := True;
   Self.Log.log('Loaded ' + InttoStr(ModPacks.Count) + ' modpacks');
+end;
+
+constructor TDownloadModpackArchive.Create(Instance : TModpackInstance; Command : TMinecraftLaunch);
+begin
+  inherited Create('Download Modpack Archive', Command, True);
+  Self.Instance := Instance;
+end;
+
+procedure TDownloadModpackArchive.runTask(Bar : TCMDProgressBar);
+var
+DownloadTask : TDownloadTask;
+Extractor : TExtractZip;
+FileName, SaveFileName : String;
+InstalledArchive : TSaveFile;
+ShouldInstall : Boolean;
+begin
+  if Instance.Modpack.Value.hasArchive then
+  begin
+    ShouldInstall := True;
+    SaveFileName := Instance.getInstanceFolder + 'lastinstalled.cfg';
+    InstalledArchive := TSaveFile.Create(SaveFileName);
+
+    if InstalledArchive.getInteger('last-installed') <> Instance.Modpack.Value.ID then
+
+
+    if ShouldInstall then
+    begin
+      FileName := TempFolder + 'modpack-archive.zip';
+      DownloadTask := TDownloadTask.Create(Instance.Modpack.Value.ArchiveURL, FileName);
+      DownloadTask.setLog(Self.Log);
+      if DownloadTask.downloadFile(bar) then
+      begin
+        Extractor := TExtractZip.Create(FileName, Instance.getInstanceFolder);
+        Extractor.setLog(log);
+        Extractor.runTask(nil);
+        InstalledArchive.setInteger('last-installed', Instance.Modpack.Value.ID);
+      end;
+      DeleteFile(FileName);
+    end;
+  end;
+  Bar.FinishStep;
 end;
 
 constructor TLoadModpack.Create;

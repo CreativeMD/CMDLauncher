@@ -91,6 +91,7 @@ type
     function getSectionIndex : Integer;
     function getSelectedInstance : TInstance;
     function getInstanceByName(Name : String) : TInstance;
+    procedure onException(Sender : TObject; E : Exception);
   end;
   TForegroundTaskManager = class(TTaskManager)
     function isEndless : Boolean; override;
@@ -106,7 +107,7 @@ implementation
 
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
 InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
-  ModSelectForm, ForgeUtils, ModpackUtils;
+  ModSelectForm, ForgeUtils, ModpackUtils, LauncherException;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -363,6 +364,16 @@ begin
   Exit(nil);
 end;
 
+procedure TOverviewF.onException(Sender : TObject; E : Exception);
+var
+LauncherException : TErrorDialog;
+begin
+  LauncherException := TErrorDialog.Create(nil);
+  LauncherException.mmoLog.Lines.Add(E.Message);
+  LauncherException.mmoLog.Lines.Add(E.StackTrace);
+  LauncherException.Show;
+end;
+
 function TOverviewF.getSelectedInstance : TInstance;
 begin
   Result := nil;
@@ -451,7 +462,7 @@ begin
     begin
       try //Can happen, caused by sleep(1)
         LoadingScreen.lblTask.Caption := TaskManager.CurrentTask.Title + ' ...';
-        LoadingScreen.lblLog.Caption := Logger.Log.getLastLog;
+        LoadingScreen.lblLog.Caption := Logger.MainLog.getLastLog;
       except
         on E: Exception do
         begin
@@ -509,6 +520,8 @@ begin
     SectionTitles.Add(HeaderControl.Sections.Items[i].Text);
     HeaderControl.Sections.Items[i].Text := '';
   end;
+
+  Application.OnException := onException;
   //if not ProgramSettings.hasKey('style') then
     //ProgramSettings.setString('style', 'Light');
 

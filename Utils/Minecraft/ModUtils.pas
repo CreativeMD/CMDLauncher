@@ -260,7 +260,7 @@ begin
         Required.Add(RequiredArray.I[i]);
       except
         on E : Exception do
-          Logger.Log.log('Failed to add required mod!');
+          Logger.MainLog.log('Failed to add required mod!');
 
       end;
     end;

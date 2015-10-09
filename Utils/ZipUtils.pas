@@ -36,6 +36,7 @@ UnZipper : TAbUnZipper;
 i: Integer;
 canExtract : Boolean;
 begin
+  Self.Log.log('Extracting ' + ExtractFileName(ZipFile) + ' 0%');
   UnZipper := TAbUnZipper.Create(nil);
   UnZipper.OpenArchive(ZipFile);
   UnZipper.ExtractOptions := [eoCreateDirs,eoRestorePath];
@@ -49,7 +50,9 @@ begin
       UnZipper.ExtractAt(i, '');
     if Bar <> nil then
       Bar.StepPos := i;
+    Self.Log.logLastLine('Extracting ' + ExtractFileName(ZipFile) + IntToStr(Round(i/UnZipper.Count*100)));
   end;
+  Self.Log.logLastLine('Extracted ' + ExtractFileName(ZipFile));
   UnZipper.CloseArchive;
   UnZipper.Destroy;
   if Bar <> nil then
@@ -73,6 +76,7 @@ FileStream : TFileStream;
 FileName : String;
 canArchive : Boolean;
 begin
+  Self.Log.log('Zipping ' + ExtractFileName(ZipFile) + ' 0%');
   Zipper := TAbZipper.Create(nil);
   Zipper.AutoSave := True;
   Zipper.FileName := ZipFile;
@@ -93,12 +97,14 @@ begin
     end;
     if Bar <> nil then
       Bar.StepPos := i;
+    Self.Log.logLastLine('Zipping ' + ExtractFileName(ZipFile) + IntToStr(Round(i/Length(Files)*100)));
   end;
   Zipper.Save;
   Zipper.CloseArchive;
   Zipper.Destroy;
   if Bar <> nil then
     Bar.FinishStep;
+  Self.Log.logLastLine('Zipped ' + ExtractFileName(ZipFile));
 end;
 
 end.

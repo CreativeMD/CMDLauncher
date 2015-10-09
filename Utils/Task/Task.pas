@@ -62,7 +62,7 @@ begin
   Self.Title := Title;
   Self.online := online;
   Self.multitasking := multitasking;
-  Self.Log := Logger.Log;
+  Self.Log := Logger.MainLog;
   Self.sync := false;
 end;
 
@@ -127,7 +127,7 @@ begin
   Self.Tasks := Tasks;
   if Self.Tasks = nil then
     Self.Tasks := TList<TTask>.Create;
-  Self.FLog := Logger.Log;
+  Self.FLog := Logger.MainLog;
   for i := 0 to Self.Tasks.Count-1 do
     Self.Tasks[i].Log := Self.FLog;
   TaskEvent := niL;

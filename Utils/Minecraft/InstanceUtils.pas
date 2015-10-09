@@ -232,11 +232,11 @@ begin
       if (ExternalFolder <> '') and not ExternalInstances.Contains(ExternalFolder) then
         ExternalInstances.Add(ExternalFolder);
     except
-      Logger.Log.log('Failed to create class uuid=' + UUID + ' (title=' + Title + ')');
+      Logger.MainLog.log('Failed to create class uuid=' + UUID + ' (title=' + Title + ')');
     end;
   end
   else
-    Logger.Log.log('Found invalid uuid=' + UUID + ' (title=' + Title + ')');
+    Logger.MainLog.log('Found invalid uuid=' + UUID + ' (title=' + Title + ')');
 end;
 
 constructor TInstance.Create(Title : String; read : Boolean = True; ExternalFolder : String = '');

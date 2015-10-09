@@ -92,15 +92,15 @@ begin
     Memo.Lines.AddStrings(Lines)
   else
   begin
-    Memo.Lines := Logger.Log.Content;
-    Logger.Log.Listener.Add(Memo.Lines);
+    Memo.Lines := Logger.MainLog.Content;
+    Logger.MainLog.Listener.Add(Memo.Lines);
   end;
   Controls.Add(Memo);
 end;
 
 procedure TLogger.destroyControl;
 begin
-  Logger.Log.Listener.Remove(TMemo(Controls[0]).Lines);
+  Logger.MainLog.Listener.Remove(TMemo(Controls[0]).Lines);
 end;
 
 function TLogger.getUUID : string;

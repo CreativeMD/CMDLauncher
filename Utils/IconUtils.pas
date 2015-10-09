@@ -159,10 +159,10 @@ begin
       Result.Add(Images[i].Replace(IconPath, ''));
     except
       on E : Exception do
-        Logger.Log.log('Could not load image: ' + Images[i]);
+        Logger.MainLog.log('Could not load image: ' + Images[i]);
     end;
   end;
-  Logger.Log.log('Loaded ' + IntToStr(Images.Count) + ' Icon(s)');
+  Logger.MainLog.log('Loaded ' + IntToStr(Images.Count) + ' Icon(s)');
 end;
 
 end.

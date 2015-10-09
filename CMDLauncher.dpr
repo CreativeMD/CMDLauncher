@@ -58,7 +58,8 @@ uses
   SideUtils in 'Utils\Minecraft\SideUtils.pas',
   ConsoleServer in 'Forms\ConsoleServer.pas' {ConsoleServerF},
   CustomSettings in 'Utils\Settings\CustomSettings.pas',
-  SnapshotUtils in 'Utils\Minecraft\SnapshotUtils.pas';
+  SnapshotUtils in 'Utils\Minecraft\SnapshotUtils.pas',
+  LauncherException in 'Forms\LauncherException.pas' {ErrorDialog};
 
 {$R *.res}
 

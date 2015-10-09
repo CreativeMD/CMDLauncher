@@ -180,7 +180,7 @@ begin
       LoginFile.Free;
       Result.Error := 'Bad Login';
       Result.Failed := True;
-      Logger.Log.log('Failed to refresh token!!!');
+      Logger.MainLog.log('Failed to refresh token!!!');
     end;
   end;
 

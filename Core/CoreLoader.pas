@@ -29,7 +29,7 @@ begin
   DownloadFolder := ProgramFolder + 'Download\';
   TempFolder := DownloadFolder + 'Temp\';
   MinecraftFolder := GetSpecialFolderLocation(CSIDL_APPDATA) + '\.minecraft\';
-  Log := TLog.Create;
+  MainLog := TLog.Create;
   ProgramSettings := TSaveFile.Create(ProgramFolder + 'CMDLauncher.cfg');
   ProgramSettings.setString('version', ProgramVersion);
   try

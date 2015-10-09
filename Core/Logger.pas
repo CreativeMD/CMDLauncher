@@ -17,7 +17,7 @@ type
   end;
 
 var
-Log : TLog;
+MainLog : TLog;
 
 implementation
 

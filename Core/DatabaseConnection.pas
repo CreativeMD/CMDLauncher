@@ -124,7 +124,7 @@ begin
   DatabaseConnection.online := IsConnected;
   if DatabaseConnection.online then
   begin
-    Logger.Log.log('Connected to Database successfully! Launcher is running in online mode!');
+    Logger.MainLog.log('Connected to Database successfully! Launcher is running in online mode!');
     OverviewF.lblNotify.Caption := 'Launcher is running in online mode.';
     OverviewF.lblNotify.Hint := 'You have fully access to all elements of this launcher.';
     OverviewF.lblNotify.Left := OverviewF.lblRetry.Left;
@@ -132,7 +132,7 @@ begin
   end
   else
   begin
-    Logger.Log.log('Failed to connect to Database! Launcher is running in offline mode!');
+    Logger.MainLog.log('Failed to connect to Database! Launcher is running in offline mode!');
     OverviewF.lblNotify.Caption := 'Launcher is running in offline mode.';
     OverviewF.lblNotify.Hint := 'Some elements of this launcher are unaccessible.';
     OverviewF.lblNotify.Left := OverviewF.lblRetry.Left + OverviewF.lblRetry.Width + 5;

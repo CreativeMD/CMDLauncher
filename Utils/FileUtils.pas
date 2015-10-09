@@ -122,7 +122,7 @@ begin
   for i := 0 to Length(Files)-1 do
   begin
     if not DeleteFile(PChar(Files[i])) then
-      Logger.Log.log('Could not delete file: ' + Files[i]);
+      Logger.MainLog.log('Could not delete file: ' + Files[i]);
     if ProgressBar <> nil then
       ProgressBar.StepPos := i;
   end;
