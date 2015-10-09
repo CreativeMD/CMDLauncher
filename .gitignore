@@ -53,6 +53,7 @@
 __history/
 Instances/
 Download/
+cache/
 CMDLauncher.cfg
 CMDLauncher.exe
 *.~*
