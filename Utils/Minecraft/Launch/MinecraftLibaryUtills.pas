@@ -176,6 +176,7 @@ begin
           begin
             ExcludeArray := Extract.A['exclude'];
             Extractor := TExtractZip.Create(LibFileName, NativeFolder);
+            Extractor.setLog(Self.Log);
             for j := 0 to ExcludeArray.Length-1 do
               Extractor.Exclude.Add(ExcludeArray[j].AsString);
             Extractor.runTask(nil);

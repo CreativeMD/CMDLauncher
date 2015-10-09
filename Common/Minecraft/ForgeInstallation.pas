@@ -119,6 +119,7 @@ begin
         Bar.StepPos := 3;
         ForceDirectories(TempFolder);
         UnZipper := TExtractZip.Create(DownloadFolder + 'forge-universal.jar', TempFolder);
+        UnZipper.setLog(Self.Log);
         UnZipper.Exclude.ListType := ltWhite;
         UnZipper.Exclude.Add('version.json');
         UnZipper.runTask(nil);
