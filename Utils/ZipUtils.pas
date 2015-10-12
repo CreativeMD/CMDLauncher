@@ -50,7 +50,7 @@ begin
       UnZipper.ExtractAt(i, '');
     if Bar <> nil then
       Bar.StepPos := i;
-    Self.Log.logLastLine('Extracting ' + ExtractFileName(ZipFile) + ' ' + IntToStr(Round(i/UnZipper.Count*100)));
+    Self.Log.logLastLine('Extracting ' + ExtractFileName(ZipFile) + ' ' + IntToStr(Round(i/UnZipper.Count*100)) + '%');
   end;
   Self.Log.logLastLine('Extracted ' + ExtractFileName(ZipFile));
   UnZipper.CloseArchive;
