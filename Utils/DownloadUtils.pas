@@ -96,6 +96,7 @@ begin
   repeat
     try
       Self.Log.log('Downloading ' + ExtractFileName(DownloadPath));
+      Http.HandleRedirects := True;
       Http.Get(DownloadLink, FileStream);
       Tries := 10;
       FileStream.Destroy;

@@ -189,7 +189,8 @@ var
 begin
   Added := False;
   Result := inherited getStartupTasks(MinecrafComand);
-  for i := 0 to Result.Count-1 do
+  i := 0;
+  while i < Result.Count do
   begin
     if Result[i] is TDownloadMods then
     begin
@@ -200,11 +201,13 @@ begin
     end;
     if Result[i] is TModCleaning then
     begin
-      Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
       Added := True;
       for Item in Modpack.Value.Mods do
         TModCleaning(Result[i]).Mods.Add(Item.Key, Item.Value);
+      Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
+      i := i + 1;
     end;
+    i := i + 1;
   end;
 end;
 
@@ -357,7 +360,8 @@ begin
     SaveFileName := Instance.getInstanceFolder + 'lastinstalled.cfg';
     InstalledArchive := TSaveFile.Create(SaveFileName);
 
-    if InstalledArchive.getInteger('last-installed') <> Instance.Modpack.Value.ID then
+    if InstalledArchive.getInteger('last-installed') = Instance.Modpack.Value.ID then
+      ShouldInstall := False;
 
 
     if ShouldInstall then
