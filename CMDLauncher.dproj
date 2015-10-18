@@ -187,6 +187,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\Minecraft\Special\Bukkit.pas"/>
+        <DCCReference Include="Utils\Minecraft\Special\Sponge.pas"/>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">

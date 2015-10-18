@@ -5,7 +5,7 @@ interface
 uses InstanceUtils, ForgeUtils, Generics.Collections, superobject, SaveFileUtils, JavaUtils, AccountUtils,
 Task, MinecraftLaunchCommand;
 
-type
+{type
   TTechnicModpackVersion = class
     private
       FModpackName, FVersionName, FURL, FArchiveDownload : String;
@@ -28,12 +28,14 @@ type
       property Version : TTechnicModpackVersion read FVersion;
   end;
 
-function getTechnicModpack(ModpackName, VersionName : String) : TTechnicModpackVersion;
+//function getTechnicModpack(ModpackName, VersionName : String) : TTechnicModpackVersion;
 
 var
-LoadedTechnicModpacks : TList<TTechnicModpackVersion>;
+LoadedTechnicModpacks : TList<TTechnicModpackVersion>;        }
 
 implementation
+
+{
 
 procedure TTechnicInstance.Save(SaveFile : TSaveFile);
 var
@@ -52,5 +54,5 @@ function TTechnicInstance.getUUID : String;
 begin
   Result := 'Technic';
 end;
-
+     }
 end.

@@ -92,6 +92,9 @@ begin
   Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
   ForceDirectories(ExtractFilePath(DownloadPath));
   FileStream := TFileStream.Create(DownloadPath, fmCreate);
+
+  Logger.MainLog.log('Downloading FileName=' + DownloadPath + ';DownloadLink=' + DownloadLink);
+
   Tries := 0;
   repeat
     try

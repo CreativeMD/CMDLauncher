@@ -60,7 +60,8 @@ uses
   CustomSettings in 'Utils\Settings\CustomSettings.pas',
   SnapshotUtils in 'Utils\Minecraft\SnapshotUtils.pas',
   LauncherException in 'Forms\LauncherException.pas' {ErrorDialog},
-  Bukkit in 'Utils\Minecraft\Special\Bukkit.pas';
+  Bukkit in 'Utils\Minecraft\Special\Bukkit.pas',
+  Sponge in 'Utils\Minecraft\Special\Sponge.pas';
 
 {$R *.res}
 
