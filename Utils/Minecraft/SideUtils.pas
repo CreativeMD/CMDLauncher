@@ -33,9 +33,9 @@ end;
 
 function parseSideType(Input : string) : TSideType;
 begin
-  if Input.ToLower = 'only client' then
+  if (Input.ToLower = 'only client') or (Input.ToLower = 'client only') then
     Exit(OnlyClient)
-  else  if Input.ToLower = 'only server' then
+  else  if (Input.ToLower = 'only server') or (Input.ToLower = 'server only') then
     Exit(OnlyServer)
   else
     Exit(Universal);
@@ -82,6 +82,7 @@ begin
     Exit(Self = OnlyClient);
   if Side = TServer then
     Exit(Self = OnlyServer);
+  Exit(False);
 end;
 
 end.
