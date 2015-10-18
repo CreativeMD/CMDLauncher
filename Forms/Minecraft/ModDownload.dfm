@@ -3677,6 +3677,7 @@ object ModDownloaderF: TModDownloaderF
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Help?'
+    Enabled = False
     TabOrder = 3
   end
   object DownloadBar: TCMDProgressBar
