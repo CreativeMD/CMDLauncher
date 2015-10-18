@@ -36,7 +36,6 @@ SPage : TSettingPage;
 Setting : TLogger;
 Styles : TStringList;
 
-i : Integer;
 begin
   Groups := TList<TSettingGroup>.Create;
   Group := TSettingGroup.Create('Minecraft');
