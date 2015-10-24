@@ -52,7 +52,7 @@ TInstallServerCauldron = class(TLaunchTask)
 end;
 TCauldronLaunch = class(TForgeLaunch)
   procedure buildListener(InstanceObject : TObject); override;
-  function createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar; override;
+  function createWindow(InstanceObject : TObject; out Listener : TStrings) : TCMDProgressBar; override;
 end;
 
 function getCauldronByVersion(Version : string) : TCauldron;
@@ -237,11 +237,12 @@ begin
     Result := TCauldronLaunch.Create(Java, Cauldron.MC, Self, LoginData);
 end;
 
-function TCauldronLaunch.createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar;
+function TCauldronLaunch.createWindow(InstanceObject : TObject; out Listener : TStrings) : TCMDProgressBar;
 
 begin
   Console := TConsoleServerF.Create(nil);
-  Console.Caption := Title;
+  Console.Caption := TInstance(InstanceObject).Title;
+  TConsoleServerF(Console).Instance := TInstance(InstanceObject);
   Listener := TConsoleServerF(Console).mmoLog.Lines;
   Console.Show;
   Result := TConsoleServerF(Console).ProgressBar;
@@ -302,7 +303,7 @@ begin
     FileString.LoadFromFile(FileName);
     FileJsonData := '';
     for i := 0 to FileString.Count-1 do
-      FileJsonData := FileJsonData + FileString[i];
+      FileJsonData := FileJsonData + Trim(FileString[i]).Replace(#$FEFF, '');
     JsonFile := TSuperObject.ParseString(PWideChar(FileJsonData), False);
     JsonArray := JsonFile.AsArray;
     for I := 0 to JsonArray.Length-1 do

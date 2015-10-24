@@ -61,7 +61,8 @@ uses
   SnapshotUtils in 'Utils\Minecraft\SnapshotUtils.pas',
   LauncherException in 'Forms\LauncherException.pas' {ErrorDialog},
   Bukkit in 'Utils\Minecraft\Special\Bukkit.pas',
-  Sponge in 'Utils\Minecraft\Special\Sponge.pas';
+  SpongeForge in 'Utils\Minecraft\Special\SpongeForge.pas',
+  BuildUtils in 'Utils\Minecraft\BuildUtils.pas';
 
 {$R *.res}
 

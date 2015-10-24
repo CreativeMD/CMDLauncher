@@ -17,18 +17,19 @@ type
     function getLaunchCommand : String; overload;
     function getLaunchCommandList : TStringList; overload;
     procedure buildListener(InstanceObject : TObject); virtual;
-    function createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar; virtual;
+    function createWindow(InstanceObject : TObject; out Listener : TStrings) : TCMDProgressBar; virtual;
   end;
 
 implementation
 
 uses StringUtils, Console, InstanceUtils;
 
-function TMinecraftLaunch.createWindow(Title : String; out Listener : TStrings) : TCMDProgressBar;
+function TMinecraftLaunch.createWindow(InstanceObject : TObject; out Listener : TStrings) : TCMDProgressBar;
 
 begin
   Console := TConsoleF.Create(nil);
-  Console.Caption := Title;
+  Console.Caption := TInstance(InstanceObject).Title;
+  TConsoleF(Console).Instance := TInstance(InstanceObject);
   Listener := TConsoleF(Console).mmoLog.Lines;
   Console.Show;
   Result := TConsoleF(Console).ProgressBar;

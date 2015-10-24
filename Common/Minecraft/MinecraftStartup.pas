@@ -3,7 +3,8 @@ unit MinecraftStartup;
 interface
 
 uses Task, InstanceUtils, Logger, System.Generics.Collections, MinecraftLaunchCommand,
-Console, System.SysUtils, SettingUtils, SideUtils, System.Classes;
+Console, System.SysUtils, SettingUtils, SideUtils, System.Classes, SaveFileUtils, Vcl.Controls,
+Vcl.StdCtrls;
 
 type
   TLaunchTaskManager = class(TTaskManager)
@@ -11,6 +12,16 @@ type
     Instance : TInstance;
     function isEndless : Boolean; override;
     procedure FinishedEvent; override;
+  end;
+  TServerConfigEdit = class(TStringListSetting)
+    Group : TSettingGroupList;
+    ServerFile : string;
+    constructor Create(Name, Title, ServerFile : String);
+    procedure createControl(x, y : Integer; Parent : TWinControl); override;
+    procedure destroyControl; override;
+    function getUUID : string; override;
+    procedure SaveToFile(SaveFile : TSaveFile); override;
+    procedure LoadFromFile(SaveFile : TSaveFile); override;
   end;
   TInstanceStartupSettings = class(TSettingGroupList)
     Instance : TInstance;
@@ -23,7 +34,7 @@ procedure launchInstance(Instance : TInstance; Online : Boolean = True; ShowSett
 implementation
 
 uses DatabaseConnection, AssetUtils, JavaUtils, LauncherSettings,
-Vcl.Dialogs, AccountUtils, CoreLoader, StringUtils;
+Vcl.Dialogs, AccountUtils, CoreLoader, StringUtils, IconUtils;
 
 procedure TInstanceStartupSettings.onSaved(GroupList : TSettingGroupList);
 begin
@@ -46,20 +57,25 @@ Page : TSettingPage;
 i: Integer;
 Java : TJava;
 Listener : TStrings;
+FullServerEdit : TServerConfigEdit;
 begin
   Settings := Instance.getLaunchSettings;
   if ShowSettings and (Settings.Count > 0) and Instance.canInstanceLaunch then
   begin
     Group := TSettingGroup.Create('Default');
-    Page := TSettingPage.Create('StartupConfig', '');
+    Page := TSettingPage.Create('Easy Config', 'Settings.png');
     for i := 0 to Settings.Count-1 do
       Page.AddSetting(Settings[i]);
     Group.AddPage(Page);
+    Page := TSettingPage.Create('Full Config', 'Changelog.png');
+    FullServerEdit := TServerConfigEdit.Create('SConfig', 'SConfig', Instance.getLaunchSaveFile.getFileName);
+    Page.AddSetting(FullServerEdit);
+    Group.AddPage(Page);
     Groups := TList<TSettingGroup>.Create;
     Groups.Add(Group);
-    StartupSettings := TInstanceStartupSettings.Create('Startup Config', '', Instance.getLaunchSaveFile, '', Groups);
-    StartupSettings.hideGroups;
-    StartupSettings.SettingForm.Width := 400;
+    StartupSettings := TInstanceStartupSettings.Create('Server-Config', LauncherIcons, Instance.getLaunchSaveFile, '', Groups);
+    FullServerEdit.Group := StartupSettings;
+    StartupSettings.SettingForm.Width := 600;
     StartupSettings.SettingForm.Height := 450;
     StartupSettings.Instance := Instance;
     StartupSettings.Online := Online;
@@ -134,13 +150,55 @@ begin
 
     Tasks := TList<TTask>.Create;
     Tasks.AddRange(Instance.getStartupTasks(Command));
-    LaunchManager := TLaunchTaskManager.Create(Tasks, Command.createWindow(Instance.Title, Listener));
+    LaunchManager := TLaunchTaskManager.Create(Tasks, Command.createWindow(Instance, Listener));
     LaunchManager.Log := TLog.Create;
     LaunchManager.Log.Listener.Add(Listener);
     //LaunchManager.Console := Console;
     LaunchManager.Command := Command;
     LaunchManager.Instance := Instance;
   end;
+end;
+
+constructor TServerConfigEdit.Create(Name, Title, ServerFile : String);
+begin
+  inherited Create(Name, Title);
+  Self.ServerFile := ServerFile;
+  Self.setHideTitle;
+end;
+
+procedure TServerConfigEdit.destroyControl;
+var
+i, j, h : Integer;
+begin
+  inherited destroyControl;
+  Value.SaveToFile(ServerFile);
+  for i := 0 to Group.Groups.Count-1 do
+    for j := 0 to Group.Groups[i].Pages.Count-1 do
+      for h := 0 to Group.Groups[i].Pages[j].Settings.Count-1 do
+        Group.Groups[i].Pages[j].Settings[h].LoadFromFile(Group.SaveFile);
+end;
+
+function TServerConfigEdit.getUUID : string;
+begin
+  Result := 'SConfigEdit';
+end;
+
+procedure TServerConfigEdit.createControl(x, y : Integer; Parent : TWinControl);
+begin
+  inherited createControl(x, y, Parent);
+  TMemo(Controls[0]).Align := alClient;
+  Value.LoadFromFile(ServerFile);
+end;
+
+procedure TServerConfigEdit.SaveToFile(SaveFile : TSaveFile);
+begin
+
+end;
+
+procedure TServerConfigEdit.LoadFromFile(SaveFile : TSaveFile);
+begin
+  Value := TStringList.Create;
+  Value.LoadFromFile(ServerFile);
 end;
 
 function TLaunchTaskManager.isEndless : Boolean;

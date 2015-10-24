@@ -324,7 +324,7 @@ begin
     FileString.LoadFromFile(FileName);
     FileJsonData := '';
     for i := 0 to FileString.Count-1 do
-      FileJsonData := FileJsonData + FileString[i];
+      FileJsonData := FileJsonData + Trim(FileString[i]).Replace(#$FEFF, '');
     JsonFile := TSuperObject.ParseString(PWideChar(FileJsonData), False);
     ModPackArray := JsonFile.AsArray;
     for i := 0 to ModPackArray.Length-1 do
@@ -412,7 +412,7 @@ begin
     FileString.LoadFromFile(FileName);
     FileJsonData := '';
     for i := 0 to FileString.Count-1 do
-      FileJsonData := FileJsonData + FileString[i];
+      FileJsonData := FileJsonData + Trim(FileString[i]).Replace(#$FEFF, '');
     JsonFile := TSuperObject.ParseString(PWideChar(FileJsonData), False);
     //JsonFile := TSuperObject.ParseFile(FileName, true);
     ModArray := JsonFile.AsArray;

@@ -23,7 +23,7 @@ implementation
 
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
-ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron;
+ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils;
 
 constructor TUpdateTask.Create;
 begin
@@ -79,10 +79,12 @@ begin
   Result.Add(TLoadMV.Create);
   Result.Add(TLoadForge.Create);
   Result.Add(TLoadCauldron.Create);
+  Result.Add(TLoadSpongeForge.Create);
   Result.Add(TLoadMod.Create);
   Result.Add(TLoadModpack.Create);
   Result.Add(TLoadIcon.Create);
   Result.Add(TLoadJava.Create);
+  Result.Add(TLoadResourcePacks.Create);
   Result.Add(TLoadInstance.Create);
   Result.Add(TLoadAccount.Create);
 end;

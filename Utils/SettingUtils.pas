@@ -3,7 +3,8 @@ unit SettingUtils;
 interface
 
 uses Vcl.Controls, System.Generics.Collections, Vcl.Forms, Vcl.StdCtrls, SaveFileUtils,
-System.Classes, JvListView, System.SysUtils, Vcl.Dialogs, JvGroupBox;
+System.Classes, JvListView, System.SysUtils, Vcl.Dialogs, JvGroupBox, System.Types, Vcl.Graphics,
+Winapi.Windows;
 
 const
 standardChars = 'abcdefghijklmnopqrstuvwzxy1234567890- .!|/&%()[]ß';
@@ -57,6 +58,7 @@ type
       SaveNumber : Boolean;
       function isFilled : Boolean; override;
       procedure onChanged(Sender: TObject); virtual;
+      procedure drawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState); virtual;
     public
       Items : TStringList;
       constructor Create(Name, Title : String; Items : TStringList; Default : string = ''; Online : Boolean = False);
@@ -194,7 +196,7 @@ xLabelSpace : Integer = 10;
 
 implementation
 
-uses Settings, IconUtils, StringUtils, DatabaseConnection;
+uses Settings, IconUtils, StringUtils, DatabaseConnection, BuildUtils;
 
 
 
@@ -783,8 +785,32 @@ begin
   ComboBox.Items.AddStrings(Items);
   ComboBox.ItemIndex := Items.IndexOf(Value);
   ComboBox.Style := csOwnerDrawFixed;
+  ComboBox.OnDrawItem := drawItem;
   ComboBox.OnChange := onChanged;
   Controls.Add(ComboBox);
+end;
+
+procedure TSelectSetting.drawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+begin
+  if Controls.Count > 0 then
+  begin
+    with TComboBox(Control) do
+    begin
+      if TObject(Items.Objects[Index]) <> nil then
+      begin
+        Canvas.Brush.Color := TBuildTypeObject(Items.Objects[Index]).BuildType.getColor;
+        Canvas.Font.Color := clBlack;
+      end;
+
+      Canvas.FillRect(Rect);
+      if Index >= 0 then
+        if odComboBoxEdit in State then
+          Canvas.TextOut(Rect.Left + 1, Rect.Top + 1, Items[Index]) //Visual state of the text in the edit control
+        else
+          Canvas.TextOut(Rect.Left + 2, Rect.Top, Items[Index]); //Visual state of the text(items) in the deployed list
+    end;
+  end;
+
 end;
 
 procedure TSelectSetting.onChanged(Sender: TObject);

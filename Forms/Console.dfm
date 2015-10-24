@@ -3635,7 +3635,6 @@ object ConsoleF: TConsoleF
     Caption = 'Terminate Minecraft'
     TabOrder = 0
     OnClick = btnTerminateClick
-    ExplicitTop = 233
   end
   object btnSettings: TButton
     Left = 8
@@ -3646,7 +3645,6 @@ object ConsoleF: TConsoleF
     Caption = 'Open Instance Settings'
     TabOrder = 1
     OnClick = btnSettingsClick
-    ExplicitTop = 232
   end
   object ProgressBar: TCMDProgressBar
     Left = 8
@@ -3659,7 +3657,6 @@ object ConsoleF: TConsoleF
     ParentShowHint = False
     ShowHint = True
     TabOrder = 2
-    ExplicitTop = 148
   end
   object mmoLog: TMemo
     Left = 8
@@ -3670,6 +3667,15 @@ object ConsoleF: TConsoleF
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 3
-    ExplicitHeight = 134
+  end
+  object btnOpenFolder: TButton
+    Left = 143
+    Top = 191
+    Width = 74
+    Height = 25
+    Anchors = [akLeft, akBottom]
+    Caption = 'Open Folder'
+    TabOrder = 4
+    OnClick = btnOpenFolderClick
   end
 end

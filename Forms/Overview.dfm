@@ -3668,35 +3668,6 @@ object OverviewF: TOverviewF
     OnClick = lblRetryClick
     ExplicitTop = 390
   end
-  object lvInstances: TListView
-    Left = 0
-    Top = 66
-    Width = 505
-    Height = 304
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    Columns = <>
-    DoubleBuffered = True
-    Groups = <
-      item
-        Header = 'Ungrouped'
-        GroupID = 0
-        State = [lgsNormal, lgsNoHeader]
-        HeaderAlign = taLeftJustify
-        FooterAlign = taLeftJustify
-        TitleImage = -1
-      end>
-    LargeImages = InstanceIcons
-    GroupView = True
-    ReadOnly = True
-    ParentDoubleBuffered = False
-    TabOrder = 0
-    OnAdvancedCustomDrawItem = lvInstancesAdvancedCustomDrawItem
-    OnChange = lvInstancesChange
-    OnClick = lvInstancesClick
-    OnContextPopup = lvInstancesContextPopup
-    OnDblClick = lvInstancesDblClick
-    OnMouseDown = lvInstancesMouseDown
-  end
   object HeaderControl: THeaderControl
     Left = 0
     Top = 0
@@ -3770,7 +3741,7 @@ object OverviewF: TOverviewF
     ParentDoubleBuffered = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 2
+    TabOrder = 1
   end
   object lblBackgroundTask: TLinkLabel
     AlignWithMargins = True
@@ -3782,7 +3753,38 @@ object OverviewF: TOverviewF
     Anchors = [akRight, akBottom]
     AutoSize = False
     Caption = 'Launcher is starting'
+    TabOrder = 2
+  end
+  object lvInstances: TJvListView
+    Left = 0
+    Top = 66
+    Width = 505
+    Height = 304
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Columns = <>
+    DoubleBuffered = True
+    Groups = <
+      item
+        Header = 'Ungrouped'
+        GroupID = 0
+        State = [lgsNormal, lgsNoHeader]
+        HeaderAlign = taLeftJustify
+        FooterAlign = taLeftJustify
+        TitleImage = -1
+      end>
+    IconOptions.AutoArrange = True
+    LargeImages = InstanceIcons
+    GroupView = True
+    ReadOnly = True
+    ParentDoubleBuffered = False
     TabOrder = 3
+    OnAdvancedCustomDrawItem = lvInstancesAdvancedCustomDrawItem
+    OnChange = lvInstancesChange
+    OnClick = lvInstancesClick
+    OnContextPopup = lvInstancesContextPopup
+    OnDblClick = lvInstancesDblClick
+    OnMouseDown = lvInstancesMouseDown
+    ExtendedColumns = <>
   end
   object HeaderIcons: TImageList
     ColorDepth = cd32Bit
@@ -3791,7 +3793,7 @@ object OverviewF: TOverviewF
     Left = 64
     Top = 112
     Bitmap = {
-      494C01010B006000100120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01010B006000240120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000008000000060000000010020000000000000C0
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -5459,7 +5461,7 @@ object OverviewF: TOverviewF
     Left = 208
     Top = 112
     Bitmap = {
-      494C010102000800900010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010102000800A40010001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

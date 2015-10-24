@@ -13,7 +13,7 @@ uses
   Vcl.Taskbar, Vcl.ToolWin, Vcl.ActnMan, Vcl.ActnCtrls, JvBackgrounds, JvMenus,
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
-  Vcl.Themes, superobject, SideUtils;
+  Vcl.Themes, superobject, SideUtils, commctrl, JvCombobox, JvColorCombo;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;
@@ -25,7 +25,6 @@ type
     procedure NoTaskFoundEvent; override;
   end;
   TOverviewF = class(TForm)
-    lvInstances: TListView;
     HeaderControl: THeaderControl;
     lblVersion: TLabel;
     HeaderIcons: TImageList;
@@ -52,6 +51,7 @@ type
     OpenFolder1: TMenuItem;
     N4: TMenuItem;
     lblBackgroundTask: TLinkLabel;
+    lvInstances: TJvListView;
     procedure FormCreate(Sender: TObject);
     procedure lblRetryClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -526,6 +526,8 @@ begin
     //ProgramSettings.setString('style', 'Light');
 
   TStyleManager.TrySetStyle(ProgramSettings.getString('style'), False);
+
+  ListView_SetIconSpacing(lvInstances.Handle, 100, 64);
 end;
 
 procedure TOverviewF.WmAfterShow(var Msg: TMessage);

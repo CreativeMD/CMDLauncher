@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, ProgressBar,
-  InstanceUtils, InstanceSettings, JvExStdCtrls;
+  InstanceUtils, InstanceSettings, JvExStdCtrls, shellapi;
 
 type
   TConsoleF = class;
@@ -25,9 +25,11 @@ type
     btnSettings: TButton;
     ProgressBar: TCMDProgressBar;
     mmoLog: TMemo;
+    btnOpenFolder: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnTerminateClick(Sender: TObject);
     procedure btnSettingsClick(Sender: TObject);
+    procedure btnOpenFolderClick(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -116,6 +118,11 @@ begin
   end;
   OnClosed;
   Terminate;
+end;
+
+procedure TConsoleF.btnOpenFolderClick(Sender: TObject);
+begin
+  ShellExecute(Application.Handle,PChar('explore'),PChar(Instance.getInstanceFolder),nil,nil,SW_NORMAL);
 end;
 
 procedure TConsoleF.btnSettingsClick(Sender: TObject);

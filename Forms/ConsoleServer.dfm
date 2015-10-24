@@ -3681,10 +3681,20 @@ object ConsoleServerF: TConsoleServerF
     Left = 501
     Top = 188
     Width = 42
-    Height = 25
+    Height = 22
     Anchors = [akRight, akBottom]
     Caption = 'Send'
     TabOrder = 5
     OnClick = btnEnterClick
+  end
+  object btnOpenFolder: TButton
+    Left = 143
+    Top = 215
+    Width = 74
+    Height = 25
+    Anchors = [akLeft, akBottom]
+    Caption = 'Open Folder'
+    TabOrder = 6
+    OnClick = btnOpenFolderClick
   end
 end

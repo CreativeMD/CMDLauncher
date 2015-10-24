@@ -47,7 +47,7 @@ type
       procedure LoadPost(SaveFile : TSaveFile); override;
       function getUUID : String; override;
       function getSettings : TList<TSetting>; override;
-      function getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>; override;
+      function getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>; override;
       function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
       function getLaunchSettings : TList<TSetting>; override;
       function getLaunchSaveFile : TSaveFile; override;
@@ -55,6 +55,7 @@ type
   end;
 
 function getForgeByUUID(UUID : string) : TForge;
+function getForgeByBuildID(BuildID : string) : TForge;
 
 var
 ForgeList : TList<TForge>;
@@ -64,6 +65,24 @@ implementation
 
 uses ServerUtils, DownloadUtils, CoreLoader, DatabaseConnection, StringUtils,
 ForgeInstallation, SortingUtils, ModSettings, Logger, ModDownload;
+
+function getForgeByBuildID(BuildID : string) : TForge;
+var
+  i: Integer;
+  Data : TStringList;
+begin
+  if ForgeList = nil then
+    Exit(nil);
+
+  for i := 0 to ForgeList.Count-1 do
+  begin
+    Data := Explode(ForgeList[i].UUID, '.');
+    if (Data.Count > 0) and (Data[Data.Count-1] = BuildID) then
+      Exit(ForgeList[i]);
+  end;
+
+  Exit(nil);
+end;
 
 function getForgeByUUID(UUID : string) : TForge;
 var
@@ -304,7 +323,7 @@ begin
   Result.Add(TModSelect.Create('mods', 'Mods', false, Side = TServer, ForgeSelect));
 end;
 
-function TForgeInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>;
+function TForgeInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;
 var
 DownloadLibary : TDownloadFLibary;
 DownloadAssets : TLoadAssets;
@@ -316,20 +335,20 @@ begin
   begin
     if DatabaseConnection.online then
     begin
-      Result.Add(TInstallForge.Create(TForgeLaunch(MinecrafComand)));
+      Result.Add(TInstallForge.Create(TForgeLaunch(MinecraftComand)));
     end;
-    DownloadAssets := TLoadAssets.Create(MinecrafComand, Forge.getMinecraftVersion.LaunchTyp);
+    DownloadAssets := TLoadAssets.Create(MinecraftComand, Forge.getMinecraftVersion.LaunchTyp);
     DownloadAssets.CustomJsonPath := Forge.getJsonFileName;
     Result.Add(DownloadAssets);
-    DownloadLibary := TDownloadFLibary.Create(MinecrafComand);
+    DownloadLibary := TDownloadFLibary.Create(MinecraftComand);
     DownloadLibary.CustomJsonPath := Forge.getJsonFileName;
     Result.Add(DownloadLibary);
   end
   else
   begin
-    Result.Add(TInstallForge.Create(TForgeLaunch(MinecrafComand)));
-    Result.Add(TInstallServerForge.Create(getInstanceFolder, TForgeLaunch(MinecrafComand)));
-    DownloadLibary := TDownloadFLibary.Create(MinecrafComand);
+    Result.Add(TInstallForge.Create(TForgeLaunch(MinecraftComand)));
+    Result.Add(TInstallServerForge.Create(getInstanceFolder, TForgeLaunch(MinecraftComand)));
+    DownloadLibary := TDownloadFLibary.Create(MinecraftComand);
     DownloadLibary.CustomJsonPath := Forge.getJsonFileName;
     DownloadLibary.CustomLibaryFolder := getInstanceFolder + 'libraries\';
     DownloadLibary.IsServer := True;

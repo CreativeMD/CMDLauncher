@@ -3,7 +3,7 @@ unit DownloadUtils;
 interface
 
 uses Task, ProgressBar, idHttp, IdSSLOpenSSL, System.Classes, IdException,
-IdExceptionCore, System.SysUtils, IdComponent;
+IdExceptionCore, System.SysUtils, IdComponent, idGlobal;
 
 type
   TDownloadTask = class(TTask)
@@ -33,9 +33,9 @@ procedure TDownloadTask.IdHTTPWorkBegin(ASender: TObject; AWorkMode: TWorkMode; 
 begin
   LastPercent := 0;
   if Bar <> nil then
-    Bar.StartStep(AWorkCountMax)
-  else
-    MaxWork := AWorkCountMax;
+    Bar.StartStep(AWorkCountMax);
+
+  MaxWork := AWorkCountMax;
 end;
 
 procedure TDownloadTask.IdHTTPWork(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
@@ -43,8 +43,9 @@ var
 NewPercent : Integer;
 begin
   if Bar <> nil then
-    Bar.StepPos := AWorkCount
-  else if MaxWork > 0 then
+    Bar.StepPos := AWorkCount;
+
+  if MaxWork > 0 then
   begin
     NewPercent := Round(AWorkCount/MaxWork*100);
     if NewPercent <> LastPercent then
@@ -100,6 +101,7 @@ begin
     try
       Self.Log.log('Downloading ' + ExtractFileName(DownloadPath));
       Http.HandleRedirects := True;
+      //Http.Request.IPVersion := Id_IPv4;
       Http.Get(DownloadLink, FileStream);
       Tries := 10;
       FileStream.Destroy;
