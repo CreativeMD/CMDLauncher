@@ -62,6 +62,7 @@ type
       procedure runTask(Bar : TCMDProgressBar); override;
     public
       Mods : TDictionary<TMod, TModVersion>;
+      Exclude : TStringList;
       constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; Side : TSide); overload;
       constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide); overload;
   end;
@@ -77,6 +78,7 @@ var
 Item : TPair<TMod, TModVersion>;
 begin
   inherited Create('Clean Mods', True);
+  Self.Exclude := TStringList.Create;
   Self.ModsFolders := ModsFolders;
   Self.Side := Side;
   Self.Mods := TDictionary<TMod, TModVersion>.Create;
@@ -119,7 +121,7 @@ begin
             Break;
           end;
 
-        if not isFileOfMod then
+        if not isFileOfMod and not Exclude.Contains(Files[j].Replace(ModsFolders[i], '').Replace('\', '/')) then
         begin
           DeleteFile(Files[j]);
           Self.Log.log('Deleted ' + Files[j].Replace(ModsFolders[i], '').Replace('\', '/'));

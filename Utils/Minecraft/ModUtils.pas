@@ -87,6 +87,9 @@ function getModByName(Name : String) : TMod;
 function createMod(Json : ISuperObject) : TMod;
 function createModObj(Json : ISuperObject) : TModInstallObj;
 
+const
+quoteString : String = '&#039;';
+
 var
 ModList : TList<TMod>;
 ModsLoaded : Boolean;
@@ -161,7 +164,7 @@ begin
     FileString.LoadFromFile(FileName);
     FileJsonData := '';
     for i := 0 to FileString.Count-1 do
-      FileJsonData := FileJsonData + FileString[i];
+      FileJsonData := FileJsonData + Trim(FileString[i]).Replace(#$FEFF, '');
     JsonFile := TSuperObject.ParseString(PWideChar(FileJsonData), False);
     ModArray := JsonFile.AsArray;
     for i := 0 to ModArray.Length-1 do
@@ -222,7 +225,7 @@ begin
     FileString.LoadFromFile(FileName);
     FileJsonData := '';
     for i := 0 to FileString.Count-1 do
-      FileJsonData := FileJsonData + FileString[i];
+      FileJsonData := FileJsonData + Trim(FileString[i]).Replace(#$FEFF, '');
     JsonFile := TSuperObject.ParseString(PWideChar(FileJsonData), False); //.ParseFile(FileName, False);
     ModArray := JsonFile.AsArray;
     for i := 0 to ModArray.Length-1 do
@@ -416,8 +419,8 @@ end;
 
 constructor TModFile.Create(Json : ISuperObject);
 begin
-  inherited Create(Json.S['url'], Json.S['filename'], parseSideType(Json.S['type']));
-  Self.FileName := Json.S['ifilename'];
+  inherited Create(Json.S['url'].Replace(quoteString, ''''), Json.S['filename'].Replace(quoteString, ''''), parseSideType(Json.S['type']));
+  Self.FileName := Json.S['ifilename'].Replace(quoteString, '''');
   if Self.FileName = '' then
     Self.FileName := Self.DFileName;
 end;
@@ -463,14 +466,14 @@ InstallArray : TSuperArray;
 i : Integer;
 //InstallObj : TModInstallObj;
 begin
-  inherited Create(Json.S['url'], Json.S['filename'], parseSideType(Json.S['type']));
+  inherited Create(Json.S['url'].Replace(quoteString, ''''), Json.S['filename'].Replace(quoteString, ''''), parseSideType(Json.S['type']));
   InstallObjs := TList<TModInstallObj>.Create;
   InstallArray := Json.A['subfiles'];
   if InstallArray <> nil then
   begin
     for i := 0 to InstallArray.Length-1 do
     begin
-      InstallObjs.Add(TModFile.Create('', InstallArray.O[i].S['afilename'], InstallArray.O[i].S['filename'], parseSideType(InstallArray.O[i].S['type'])));
+      InstallObjs.Add(TModFile.Create('', InstallArray.O[i].S['afilename'].Replace(quoteString, ''''), InstallArray.O[i].S['filename'].Replace(quoteString, ''''), parseSideType(InstallArray.O[i].S['type'])));
       {InstallObj := createModObj(InstallArray[i]);
       if InstallObj <> nil then
         InstallObjs.Add(InstallObj); }

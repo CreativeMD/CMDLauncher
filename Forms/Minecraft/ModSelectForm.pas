@@ -44,9 +44,9 @@ var
 begin
   for i := 0 to lvMods.Items.Count-1 do
   begin
-    ComboBox := TComboBox(lvMods.Items.Item[i]);
-    if ComboBox <> nil then
+    if lvMods.Items.Item[i].Data <> nil then
     begin
+      ComboBox := TComboBox(lvMods.Items.Item[i].Data);
       r := lvMods.Items.Item[i].DisplayRect(drBounds);
       r.Left  := r.Left + lvMods.columns[0].Width;
       r.Right := r.Left + lvMods.columns[1].Width;
