@@ -54,6 +54,11 @@ __history/
 Instances/
 Download/
 cache/
+Lib/
+mysql.pas
+mysql_win32.inc
+superobject.pas
+superxmlparser.pas
 CMDLauncher.cfg
 CMDLauncher.exe
 *.~*
