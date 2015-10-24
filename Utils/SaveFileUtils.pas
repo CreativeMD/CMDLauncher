@@ -15,6 +15,7 @@ type
       function getFile : TStringList;
       function getIndex(Key : String) : Integer;
       function hasKey(Key : string) : Boolean;
+      function getFileName : String;
 
       function getString(Key : String) : String;
       function getInteger(Key : String) : Integer;
@@ -55,6 +56,11 @@ begin
     Result.SaveToFile(FileName);
   end;
   Result.LoadFromFile(FileName);
+end;
+
+function TSaveFile.getFileName : String;
+begin
+  Result := Self.FileName;
 end;
 
 function TSaveFile.hasKey(Key : string) : Boolean;
