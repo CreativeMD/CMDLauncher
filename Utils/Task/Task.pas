@@ -139,7 +139,8 @@ begin
   if DatabaseConnection.online or (not CurrentTask.online) then
   begin
     Self.FLog.log('==== ' + CurrentTask.Title + ' ====');
-    CurrentTask.runTask(ProgressBar)
+    CurrentTask.runTask(ProgressBar);
+    Self.ProgressBar.FinishStep;
   end
   else
   begin
