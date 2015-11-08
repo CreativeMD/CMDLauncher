@@ -61,6 +61,7 @@ superobject.pas
 superxmlparser.pas
 CMDLauncher.cfg
 CMDLauncher.exe
+debug.log
 *.~*
 
 # Castalia statistics file
