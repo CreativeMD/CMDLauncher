@@ -37,3 +37,8 @@
 [1024/224414:ERROR:renderer_main.cc(207)] Running without renderer sandbox
 [1024/224613:ERROR:renderer_main.cc(207)] Running without renderer sandbox
 [1024/224756:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[1029/163538:ERROR:renderer_main.cc(207)] Running without renderer sandbox
+[1029/163545:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 3 1 F F F 1 0
+[1029/163545:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 0 1 F F F 1 0
+[1029/163545:VERBOSE2:scheduler.cc(647)] Scheduler::ProcessScheduledActions: ACTION_NONE F 0 1 1 F F F 1 0
+[1029/164346:ERROR:renderer_main.cc(207)] Running without renderer sandbox
