@@ -54,6 +54,7 @@ type
     public
       Mods : TDictionary<TMod, TModVersion>;
       constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
+      procedure addMod(PMod : TPair<TMod, TModVersion>);
   end;
   TModCleaning = class(TTask)
     protected
@@ -65,6 +66,7 @@ type
       Exclude : TStringList;
       constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; Side : TSide); overload;
       constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide); overload;
+      procedure addMod(PMod : TPair<TMod, TModVersion>);
   end;
 
 implementation
@@ -84,9 +86,14 @@ begin
   Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
-    if Item.Key.ModType.isCompatible(Side) then
-      Self.Mods.Add(Item.Key, Item.Value);
+    addMod(Item);
   end;
+end;
+
+procedure TModCleaning.addMod(PMod : TPair<TMod, TModVersion>);
+begin
+  if PMod.Key.ModType.isCompatible(Side) then
+      Self.Mods.Add(PMod.Key, PMod.Value);
 end;
 
 constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String;  Side : TSide);
@@ -197,6 +204,12 @@ begin
   ForceReload := False;
 end;
 
+procedure TDownloadMods.addMod(PMod : TPair<TMod, TModVersion>);
+begin
+  if PMod.Key.ModType.isCompatible(Side) then
+      Self.Mods.Add(PMod.Key, PMod.Value);
+end;
+
 constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
 var
 Item : TPair<TMod, TModVersion>;
@@ -224,7 +237,7 @@ begin
   NeedInstallation := False;
   for Item in Mods do
   begin
-    if not Item.Value.isInstalled(ModsFolder) then
+    if not Item.Value.isInstalled(ModsFolder, Side) then
     begin
       NeedInstallation := True;
     end;
@@ -240,11 +253,11 @@ begin
     begin
       IsModValid := True;
 
-      if IsModValid and not Item.Value.isInstalled(ModsFolder) then
+      if IsModValid and not Item.Value.isInstalled(ModsFolder, Side) then
       begin
         for i := 0 to Item.Value.Files.Count-1 do
         begin
-          if not Item.Value.Files[i].isInstalled(ModsFolder) and Item.Value.Files[i].SideType.isCompatible(Side) then
+          if not Item.Value.Files[i].isInstalled(ModsFolder, Side) and Item.Value.Files[i].SideType.isCompatible(Side) then
           begin
             Self.Log.log('Downloading ' + Item.Key.Title);
             Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
@@ -268,7 +281,7 @@ begin
             begin
               Downloader.Progress.lblTask.Caption := 'Installing Mod';
               Application.ProcessMessages;
-              Item.Value.Files[i].installObj(TempFolder, ModsFolder);
+              Item.Value.Files[i].installObj(TempFolder, ModsFolder, Side);
               Downloader.Progress.Destroy;
               Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
             end;

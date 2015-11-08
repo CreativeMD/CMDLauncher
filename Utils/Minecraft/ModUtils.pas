@@ -12,8 +12,8 @@ type
       SideType : TSideType;
       DownloadLink, DFileName : String;
       constructor Create(DownloadLink, DFileName : String; SideType : TSideType);
-      function installObj(TempFolder : String; Folder : String) : Boolean; virtual; abstract;
-      function isInstalled(Folder : String) : Boolean; virtual; abstract;
+      function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; virtual; abstract;
+      function isInstalled(Folder : String; Side : TSide) : Boolean; virtual; abstract;
       function isFile(FileName : String; Side : TSide) : Boolean; virtual; abstract;
   end;
   TModFile = class(TModInstallObj)
@@ -22,8 +22,8 @@ type
     public
       constructor Create(Json : ISuperObject); overload;
       constructor Create(DownloadLink, DFileName, FileName : String; SideType : TSideType); overload;
-      function installObj(TempFolder : String; Folder : String) : Boolean; override;
-      function isInstalled(Folder : String) : Boolean; override;
+      function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; override;
+      function isInstalled(Folder : String; Side : TSide) : Boolean; override;
       function isFile(FileName : String; Side : TSide) : Boolean; override;
   end;
   TModArchive = class(TModInstallObj)
@@ -31,8 +31,8 @@ type
       InstallObjs : TList<TModInstallObj>;
     public
       constructor Create(Json : ISuperObject);
-      function installObj(TempFolder : String; Folder : String) : Boolean; override;
-      function isInstalled(Folder : String) : Boolean; override;
+      function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; override;
+      function isInstalled(Folder : String; Side : TSide) : Boolean; override;
       function isFile(FileName : String; Side : TSide) : Boolean; override;
   end;
   TModVersion = class
@@ -42,7 +42,7 @@ type
       InstallObjs : TList<TModInstallObj>;
     public
       constructor Create(Json : ISuperObject);
-      function isInstalled(Folder : String) : Boolean;
+      function isInstalled(Folder : String; Side : TSide) : Boolean;
       function isForgeValid(Version : string) : Boolean;
       function isModFile(FileName : string; Side : TSide) : Boolean;
       function getMCVersion : String;
@@ -353,7 +353,7 @@ begin
   begin
     Versions := getValidVersions(TForgeInstance(Instance).Forge.UUID);
     for i := 0 to Versions.Count-1 do
-      if Versions[i].isInstalled(Instance.getInstanceFolder + 'mods\') then
+      if Versions[i].isInstalled(Instance.getInstanceFolder + 'mods\', Instance.Side) then
         Exit(True);
   end;
   Exit(False);
@@ -407,12 +407,12 @@ begin
   Exit(false);
 end;
 
-function TModVersion.isInstalled(Folder : String) : Boolean;
+function TModVersion.isInstalled(Folder : String; Side : TSide) : Boolean;
 var
 i : Integer;
 begin
   for i := 0 to InstallObjs.Count-1 do
-    if not InstallObjs[i].isInstalled(Folder) then
+    if not InstallObjs[i].isInstalled(Folder, Side) then
       Exit(False);
   Exit(True);
 end;
@@ -433,8 +433,10 @@ begin
     Self.FileName := Self.DFileName;
 end;
 
-function TModFile.installObj(TempFolder : String; Folder : String) : Boolean;
+function TModFile.installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean;
 begin
+  if not SideType.isCompatible(Side) then
+    Exit(True);
   Result := False;
   if FileExists(TempFolder + DFileName) then
   begin
@@ -443,14 +445,14 @@ begin
   end;
 end;
 
-function TModFile.isInstalled(Folder : String) : Boolean;
+function TModFile.isInstalled(Folder : String; Side : TSide) : Boolean;
 var
 FilePath  : String;
 begin
   FilePath := Folder + FileName;
   if GetSizeOfFile(FilePath) = 0 then
     DeleteFile(PWideChar(FilePath));
-  Result := FileExists(PWideChar(FilePath));
+  Result := not SideType.isCompatible(Side) or FileExists(PWideChar(FilePath));
 end;
 
 function TModFile.isFile(FileName : String; Side : TSide) : Boolean;
@@ -481,12 +483,14 @@ begin
   end;
 end;
 
-function TModArchive.installObj(TempFolder : String; Folder : String) : Boolean;
+function TModArchive.installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean;
 var
 Zipper : TExtractZip;
 NewTempFolder : String;
 i: Integer;
 begin
+  if SideType.isCompatible(Side) then
+    Exit(True);
   Result := False;
   if FileExists(TempFolder + DFileName) then
   begin
@@ -496,8 +500,9 @@ begin
     Zipper.runTask(nil);
     Result := True;
     for i := 0 to InstallObjs.Count-1 do
-      if not InstallObjs[i].installObj(NewTempFolder, Folder) then
-        Result := False;
+      if InstallObjs[i].SideType.isCompatible(Side) then
+        if not InstallObjs[i].installObj(NewTempFolder, Folder, Side) then
+          Result := False;
     DeleteFolder(NewTempFolder, nil);
     DeleteFile(PWideChar(TempFolder + DFileName));
   end;
@@ -513,12 +518,14 @@ begin
   Exit(false);
 end;
 
-function TModArchive.isInstalled(Folder : String) : Boolean;
+function TModArchive.isInstalled(Folder : String; Side : TSide) : Boolean;
 var
 i : Integer;
 begin
+  if not SideType.isCompatible(Side) then
+    Exit(True);
   for i := 0 to InstallObjs.Count-1 do
-    if not InstallObjs[i].isInstalled(Folder) then
+    if not InstallObjs[i].isInstalled(Folder, Side) then
       Exit(False);
   Exit(True);
 end;
