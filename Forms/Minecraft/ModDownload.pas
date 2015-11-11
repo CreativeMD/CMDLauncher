@@ -92,7 +92,7 @@ end;
 
 procedure TModCleaning.addMod(PMod : TPair<TMod, TModVersion>);
 begin
-  if PMod.Key.ModType.isCompatible(Side) then
+  if PMod.Key.ModType.isCompatible(Side) and not Self.Mods.ContainsKey(PMod.Key) then
       Self.Mods.Add(PMod.Key, PMod.Value);
 end;
 
@@ -206,7 +206,7 @@ end;
 
 procedure TDownloadMods.addMod(PMod : TPair<TMod, TModVersion>);
 begin
-  if PMod.Key.ModType.isCompatible(Side) then
+  if PMod.Key.ModType.isCompatible(Side) and not Self.Mods.ContainsKey(PMod.Key) then
       Self.Mods.Add(PMod.Key, PMod.Value);
 end;
 
@@ -218,8 +218,7 @@ begin
   Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
-    if Item.Key.ModType.isCompatible(Side) then
-      Self.Mods.Add(Item.Key, Item.Value);
+    addMod(Item);
   end;
   Self.ModsFolder := ModsFolder;
   Self.sync := True;
