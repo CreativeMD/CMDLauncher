@@ -489,7 +489,7 @@ Zipper : TExtractZip;
 NewTempFolder : String;
 i: Integer;
 begin
-  if SideType.isCompatible(Side) then
+  if not SideType.isCompatible(Side) then
     Exit(True);
   Result := False;
   if FileExists(TempFolder + DFileName) then
