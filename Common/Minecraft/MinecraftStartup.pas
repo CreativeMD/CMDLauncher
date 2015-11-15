@@ -68,7 +68,7 @@ begin
       Page.AddSetting(Settings[i]);
     Group.AddPage(Page);
     Page := TSettingPage.Create('Full Config', 'Changelog.png');
-    FullServerEdit := TServerConfigEdit.Create('SConfig', 'SConfig', Instance.getLaunchSaveFile.getFileName).setNotNeedFill;
+    FullServerEdit := TServerConfigEdit(TServerConfigEdit.Create('SConfig', 'SConfig', Instance.getLaunchSaveFile.getFileName).setNotNeedFill);
     Page.AddSetting(FullServerEdit);
     Group.AddPage(Page);
     Groups := TList<TSettingGroup>.Create;

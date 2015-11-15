@@ -32,7 +32,7 @@ begin
   if LibInfo.Count = 3 then
   begin
     if LibInfo[0].StartsWith('com.typesafe') then
-      Result := 'http://minecraft-safe.de/downloads/Forge.Server/forge-1.7.10/libraries/';
+      Result := 'http://central.maven.org/maven2/';
   end;
 end;
 
