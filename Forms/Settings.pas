@@ -57,6 +57,7 @@ procedure TSettingsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if SettingGroup.CurrentPage <> nil then
     SettingGroup.CurrentPage.unloadPage(grpSetting, ScrollBox);
+  SettingGroup.onCancel;
   SettingGroup.Destroy;
   Self.Destroy;
 end;

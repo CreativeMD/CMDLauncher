@@ -30,12 +30,14 @@ type
   TInstanceSetting = class(TSettingGroupList)
     Instance : TInstance;
     copyOf : String;
+    TempInstance : Boolean;
     procedure onBeforeSaving(GroupList : TSettingGroupList); override;
     procedure onSaved(GroupList : TSettingGroupList); override;
     function getErrors : TStringList; override;
+    procedure onCancel; override;
   end;
 
-function loadInstanceSettings(Instance : TInstance) : TInstanceSetting;
+function loadInstanceSettings(Instance : TInstance; tempInstance : Boolean = False) : TInstanceSetting;
 
 implementation
 
@@ -197,6 +199,19 @@ begin
     Result.Add('This name is already taken!');
 end;
 
+procedure TInstanceSetting.onCancel;
+var
+Tasks : TList<TTask>;
+begin
+  if TempInstance then
+  begin
+    Tasks  := TList<TTask>.Create;
+    Tasks.Add(TDeleteFolder.Create('Copying folder', InstanceFolder + copyOf + '\'));
+    OverviewF.runForegroundTasks(Tasks);
+    //DeleteFolder(copyOf, nil);
+  end;
+end;
+
 function getRam : TStringList;
 begin
   Result := TStringList.Create;
@@ -216,7 +231,7 @@ begin
   Result.Add('1024');
 end;
 
-function loadInstanceSettings(Instance : TInstance) : TInstanceSetting;
+function loadInstanceSettings(Instance : TInstance; tempInstance : Boolean = False) : TInstanceSetting;
 var
 Title: String;
 SaveFile : TSaveFile;
@@ -279,7 +294,11 @@ begin
   Groups.Add(Group);
 
   Result := TInstanceSetting.Create(Title, LauncherIcons, SaveFile, '', Groups);
-  Result.Instance := Instance;
+  if not tempInstance then
+    Result.Instance := Instance
+  else
+    Result.copyOf := Instance.Title;
+  Result.TempInstance := tempInstance;
 end;
 
 end.

@@ -52,7 +52,7 @@ uses
   ShaderPackUtils in 'Utils\Minecraft\Custom\ShaderPackUtils.pas',
   ModSettings in 'Common\Minecraft\ModSettings.pas',
   ModSelectForm in 'Forms\Minecraft\ModSelectForm.pas' {ModSelectF},
-  ModDownload in 'Forms\Minecraft\ModDownload.pas' {ModDownloaderF},
+  FileDownload in 'Forms\Minecraft\FileDownload.pas' {ModDownloaderF},
   ModpackSettings in 'Common\Minecraft\ModpackSettings.pas',
   Cauldron in 'Utils\Minecraft\Special\Cauldron.pas',
   SideUtils in 'Utils\Minecraft\SideUtils.pas',
@@ -62,7 +62,8 @@ uses
   LauncherException in 'Forms\LauncherException.pas' {ErrorDialog},
   Bukkit in 'Utils\Minecraft\Special\Bukkit.pas',
   SpongeForge in 'Utils\Minecraft\Special\SpongeForge.pas',
-  BuildUtils in 'Utils\Minecraft\BuildUtils.pas';
+  BuildUtils in 'Utils\Minecraft\BuildUtils.pas',
+  ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer};
 
 {$R *.res}
 

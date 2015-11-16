@@ -141,6 +141,7 @@ type
     procedure loadPage(Title : string);
     procedure refreshPage;
     function Save : Boolean;
+    procedure onCancel; virtual;
     function getErrors : TStringList; virtual;
     function getAllSettings : TList<TSetting>;
     function getNormalGroupedAllSettings : TList<TSetting>;
@@ -674,6 +675,11 @@ begin
     ShowMessage('Errors: ' + Implode(Errors, sLineBreak));
     Result := False;
   end;
+end;
+
+procedure TSettingGroupList.onCancel;
+begin
+
 end;
 
 function TSettingGroupList.getErrors : TStringList;
