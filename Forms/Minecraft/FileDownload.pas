@@ -1,4 +1,4 @@
-unit ModDownload;
+unit FileDownload;
 
 interface
 
@@ -10,6 +10,10 @@ uses
 
 type
   TDownloadR = (drSuccess, drFail, drCancel, drNotFinished);
+  TDownloadItem = class
+    URL, FileName : String;
+    constructor Create(URL, FileName : String);
+  end;
   TModDownloaderF = class(TForm)
     btnCancel: TButton;
     btnSkip: TButton;
@@ -18,6 +22,7 @@ type
     lblProgress: TLabel;
     DownloadBar: TCMDProgressBar;
     chrmDownloader: TChromium;
+    lblFile: TLabel;
     procedure btnRedoClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure btnSkipClick(Sender: TObject);
@@ -39,12 +44,14 @@ type
   public
     ForceReload : Boolean;
     DownloadResult : TDownloadR;
-    Item : TPair<TMod, TModVersion>;
-    ModObj : TModInstallObj;
+    Item : TDownloadItem;
+    //Item : TPair<TMod, TModVersion>;
+    //ModObj : TModInstallObj;
     Progress : TLoadingScreen;
     procedure loadPage;
     function cancelIt : Boolean;
-    function downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
+    function downloadItem(DownloadItem : TDownloadItem) : TDownloadR;
+    //function downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
   end;
   TDownloadMods = class(TTask)
     protected
@@ -74,6 +81,12 @@ implementation
 {$R *.dfm}
 
 uses CoreLoader;
+
+constructor TDownloadItem.Create(URL, FileName : String);
+begin
+  Self.URL := URL;
+  Self.FileName := FileName;
+end;
 
 constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList;  Side : TSide);
 var
@@ -146,7 +159,48 @@ begin
   Result := MessageDlg('Do you really want to cancel all mods?',mtConfirmation, mbOKCancel, 0) = mrOK;
 end;
 
-function TModDownloaderF.downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
+function TModDownloaderF.downloadItem(DownloadItem : TDownloadItem) : TDownloadR;
+var
+timeToWait : Integer;
+WindowHandle : HWND;
+begin
+  DownloadResult := drNotFinished;
+  Self.Item := DownloadItem;
+
+  lblFile.Caption := Item.FileName;
+
+  Progress := nil;
+
+  loadPage;
+
+  while (DownloadResult = drNotFinished) and not Application.Terminated do
+  begin
+    if ForceReload then
+    begin
+      timeToWait := 1000;
+      while timeToWait > 0 do
+      begin
+        Application.ProcessMessages;
+        timeToWait := timeToWait - 1;
+        Sleep(1);
+      end;
+      loadPage;
+    end;
+    Application.ProcessMessages;
+    Sleep(1);
+  end;
+
+  Result := DownloadResult;
+
+  repeat
+    WindowHandle := FindWindow('CefBrowserWindow', '');
+    if IsWindow(WindowHandle) then
+      DestroyWindow(WindowHandle);
+    Application.ProcessMessages;
+  until not IsWindow(WindowHandle);
+end;
+
+{function TModDownloaderF.downloadModVersion(ModObj : TModInstallObj; Item : TPair<TMod, TModVersion>) : TDownloadR;
 var
 timeToWait : Integer;
 WindowHandle : HWND;
@@ -154,6 +208,8 @@ begin
   DownloadResult := drNotFinished;
   Self.ModObj := ModObj;
   Self.Item := Item;
+  'http://launcher.creativemd.de/service/moddownloadservice.php?modid=' + IntToStr(Item.Key.ID)
+  + '&versionID=' + Item.Value.Name + '&url=' + ModObj.DownloadLink
 
   Progress := nil;
 
@@ -187,7 +243,7 @@ begin
 
   //FindWindow()
   //EnumWindows(@EnumerateWindows, 0);
-end;
+end;        }
 
 procedure TModDownloaderF.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
@@ -199,8 +255,7 @@ end;
 
 procedure TModDownloaderF.loadPage;
 begin
-  chrmDownloader.Load('http://launcher.creativemd.de/service/moddownloadservice.php?modid=' + IntToStr(Item.Key.ID)
-  + '&versionID=' + Item.Value.Name + '&url=' + ModObj.DownloadLink);
+  chrmDownloader.Load(Self.Item.URL);
   ForceReload := False;
 end;
 
@@ -260,7 +315,7 @@ begin
           begin
             Self.Log.log('Downloading ' + Item.Key.Title);
             Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
-            DResult := Downloader.downloadModVersion(Item.Value.Files[i], Item);
+            DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/moddownloadservice.php?modid=' + IntToStr(Item.Key.ID) + '&versionID=' + Item.Value.Name + '&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
             if DResult = drCancel then
             begin
               if Downloader.Progress <> nil then
@@ -321,12 +376,12 @@ procedure TModDownloaderF.chrmDownloadBrowserBeforeDownload(Sender: TObject;
   const browser: ICefBrowser; const downloadItem: ICefDownloadItem;
   const suggestedName: ustring; const callback: ICefBeforeDownloadCallback);
 begin
-  if string(suggestedName).Replace(' ', '').Replace('''', '') <> ModObj.DFileName.Replace(' ', '') then
-    ShowMessage('Invalid file! ' + suggestedName + ' does not match to ' + ModObj.DFileName + '.' + sLineBreak
+  if string(suggestedName).Replace(' ', '').Replace('''', '') <> Item.FileName.Replace(' ', '') then
+    ShowMessage('Invalid file! ' + suggestedName + ' does not match to ' + Item.FileName + '.' + sLineBreak
     + 'You do have the option to skip this mod or cancel all mods.')
   else
   begin
-    callback.Cont(TempFolder + ModObj.DFileName, False);
+    callback.Cont(TempFolder + Item.FileName, False);
   end;
 end;
 
@@ -338,7 +393,7 @@ begin
   begin
     Progress := TLoadingScreen.Create(Self);
     Progress.Position := poOwnerFormCenter;
-    Progress.lblTask.Caption := 'Downloading ' + ModObj.DFileName + ' ...';
+    Progress.lblTask.Caption := 'Downloading ' + Item.FileName + ' ...';
     Progress.lblLog.Caption := '0 / ' + IntToStr(downloadItem.TotalBytes) + ' Bytes (0%)';
     Progress.TaskProgress.StartProcess(1);
     Progress.TaskProgress.StartStep(downloadItem.TotalBytes);

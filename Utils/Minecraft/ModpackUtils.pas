@@ -73,7 +73,7 @@ ModPacksLoaded : Boolean;
 
 implementation
 
-uses CoreLoader, DatabaseConnection, Logger, InstanceUtils, ModDownload,
+uses CoreLoader, DatabaseConnection, Logger, InstanceUtils, FileDownload,
 ModSettings, ModpackSettings, ZipUtils;
 
 function getModPackByID(ID : Integer) : TModpack;

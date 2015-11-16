@@ -1,7 +1,7 @@
 object ModDownloaderF: TModDownloaderF
   Left = 0
   Top = 0
-  Caption = 'Downloading Mods ...'
+  Caption = 'Downloading Files ...'
   ClientHeight = 653
   ClientWidth = 1006
   Color = clBtnFace
@@ -3627,7 +3627,7 @@ object ModDownloaderF: TModDownloaderF
   PixelsPerInch = 96
   TextHeight = 13
   object lblProgress: TLabel
-    Left = 272
+    Left = 255
     Top = 622
     Width = 87
     Height = 23
@@ -3640,13 +3640,23 @@ object ModDownloaderF: TModDownloaderF
     Font.Style = []
     ParentFont = False
   end
+  object lblFile: TLabel
+    Left = 348
+    Top = 625
+    Width = 430
+    Height = 13
+    Alignment = taRightJustify
+    Anchors = [akRight, akBottom]
+    AutoSize = False
+    Caption = 'File to download'
+  end
   object btnCancel: TButton
     Left = 8
     Top = 620
     Width = 115
     Height = 25
     Anchors = [akLeft, akBottom]
-    Caption = 'Cancel All Mods'
+    Caption = 'Cancel All Files'
     TabOrder = 0
     OnClick = btnCancelClick
   end
@@ -3656,7 +3666,7 @@ object ModDownloaderF: TModDownloaderF
     Width = 120
     Height = 25
     Anchors = [akLeft, akBottom]
-    Caption = 'Skip Mod'
+    Caption = 'Skip File'
     TabOrder = 1
     OnClick = btnSkipClick
   end

@@ -4,7 +4,7 @@ interface
 
 uses ForgeUtils, Task, ProgressBar, System.Generics.Collections, superobject, VanillaUtils, System.Classes, DownloadUtils,
 System.SysUtils, StringUtils, SettingUtils, MinecraftLaunchCommand, ForgeInstallation, LaunchTaskUtils, ZipUtils, SaveFileUtils,
-Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, ModDownload, SideUtils, InstanceUtils;
+Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils;
 
 type
 TCauldron = class

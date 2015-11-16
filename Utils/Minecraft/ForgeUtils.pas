@@ -64,7 +64,7 @@ SupportedMV : TStringList;
 implementation
 
 uses ServerUtils, DownloadUtils, CoreLoader, DatabaseConnection, StringUtils,
-ForgeInstallation, SortingUtils, ModSettings, Logger, ModDownload;
+ForgeInstallation, SortingUtils, ModSettings, Logger, FileDownload;
 
 function getForgeByBuildID(BuildID : string) : TForge;
 var

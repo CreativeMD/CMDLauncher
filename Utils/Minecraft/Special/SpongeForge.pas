@@ -4,7 +4,7 @@ interface
 
 uses ForgeUtils, Task, ProgressBar, System.Generics.Collections, superobject, superxmlparser, VanillaUtils, System.Classes, DownloadUtils,
 System.SysUtils, StringUtils, SettingUtils, MinecraftLaunchCommand, ForgeInstallation, LaunchTaskUtils, ZipUtils, SaveFileUtils,
-Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, ModDownload, SideUtils, InstanceUtils, BuildUtils;
+Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils, BuildUtils;
 
 type
 TSpongeForge = class
