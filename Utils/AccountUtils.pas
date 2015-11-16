@@ -328,7 +328,7 @@ begin
   for i := 0 to Accounts.Count-1 do
   begin
     Account := CreateFromFile(Accounts[i]);
-    if Account <> nil then
+    if (Account <> nil) and (Account.FLoginName <> '') then
       MinecraftAccounts.Add(Account);
     Bar.StepPos := i;
   end;
