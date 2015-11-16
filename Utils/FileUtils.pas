@@ -89,6 +89,7 @@ procedure RenameFolder(OldPath, NewPath : string; ProgressBar : TCMDProgressBar 
 var
 Files : TStringDynArray;
   i: Integer;
+  FileName : String;
 begin
   Files := TDirectory.GetFiles(OldPath, '*', TSearchOption.soAllDirectories);
 
@@ -97,7 +98,9 @@ begin
 
   for i := 0 to Length(Files)-1 do
   begin
-    RenameFile(Files[i], NewPath + '\' + Files[i].Replace(OldPath, ''));
+    FileName := NewPath + '\' + Files[i].Replace(OldPath, '');
+    ForceDirectories(ExtractFilePath(FileName));
+    RenameFile(Files[i], FileName);
     if ProgressBar <> nil then
       ProgressBar.StepPos := i;
   end;
