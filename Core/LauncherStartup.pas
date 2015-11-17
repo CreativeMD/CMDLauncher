@@ -23,7 +23,7 @@ implementation
 
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
-ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils;
+ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils, CommandUtils;
 
 constructor TUpdateTask.Create;
 begin
@@ -36,6 +36,9 @@ HTTP : TIdHTTP;
 ServerVersion, Changelog : String;
 DownloadTask : TDownloadTask;
 begin
+  //Command
+  CommandUtils.loadLauncherCommands;
+
   HTTP := TIdHTTP.Create;
   CloseLauncher := False;
   try

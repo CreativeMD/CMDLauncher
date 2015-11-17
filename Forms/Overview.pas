@@ -53,7 +53,7 @@ type
     N4: TMenuItem;
     lblBackgroundTask: TLinkLabel;
     lvInstances: TJvListView;
-    SaveDialog1: TSaveDialog;
+    dlgSaveInstance: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure lblRetryClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -81,6 +81,7 @@ type
     procedure Copy1Click(Sender: TObject);
     procedure lvInstancesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure Export1Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -575,6 +576,19 @@ begin
     InstanceSettings.loadInstanceSettings(getSelectedInstance);
 end;
 
+
+procedure TOverviewF.Export1Click(Sender: TObject);
+var
+FileName : String;
+begin
+  if dlgSaveInstance.Execute then
+  begin
+    FileName := dlgSaveInstance.FileName;
+    if not FileName.EndsWith('.cfg') then
+      FileName := FileName + '.cfg';
+    CopyFile(PWideChar(getSelectedInstance.getSaveFile.getFileName), PWideChar(FileName), False);
+  end;
+end;
 
 procedure TOverviewF.FormCreate(Sender: TObject);
 var

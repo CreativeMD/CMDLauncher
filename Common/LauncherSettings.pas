@@ -13,6 +13,7 @@ type
     function getUUID : string; override;
     procedure SaveToFile(SaveFile : TSaveFile); override;
     procedure LoadFromFile(SaveFile : TSaveFile); override;
+    procedure onKeyPress(Sender : TObject; var Key : Char);
   end;
   TLauncherSetting = class(TSettingGroupList)
     destructor Destroy; override;
@@ -26,7 +27,7 @@ ChangeLog : TStringList;
 
 implementation
 
-uses CoreLoader, Logger, IconUtils, AccountUtils, JavaUtils;
+uses CoreLoader, Logger, IconUtils, AccountUtils, JavaUtils, CommandUtils;
 
 procedure openSettings(Page : String);
 var
@@ -81,20 +82,59 @@ end;
 procedure TLogger.createControl(x, y : Integer; Parent : TWinControl);
 var
 Memo : TMemo;
+Edit : TEdit;
 begin
+  ;
   Memo := TMemo.Create(Parent);
   Memo.Parent := Parent;
-  Memo.Align := alClient;
+  Memo.Anchors := [akLeft, akRight, akTop, akBottom];
+  Memo.Top := 0;
+  Memo.Left := 0;
+  Memo.Width := Parent.Width;
+  Memo.Height := Parent.Height;
+
+
+  //Memo.Align := alClient;
   Memo.ReadOnly := True;
   Memo.ScrollBars := ssVertical;
+  Controls.Add(Memo);
   if Lines <> nil then
     Memo.Lines.AddStrings(Lines)
   else
   begin
     Memo.Lines := Logger.MainLog.Content;
     Logger.MainLog.Listener.Add(Memo.Lines);
+
+    Edit := TEdit.Create(Parent);
+    Edit.Parent := Parent;
+
+    Memo.Height := Parent.Height-Edit.Height;
+
+    Edit.Anchors := [akLeft, akRight, akBottom];
+    Edit.Top := Memo.Height + Memo.Top;
+    Edit.Text := '';
+    Edit.Width := Parent.Width;
+    Edit.OnKeyPress := onKeyPress;
+
+
+    Controls.Add(Edit);
   end;
-  Controls.Add(Memo);
+end;
+
+procedure TLogger.onKeyPress(Sender : TObject; var Key : Char);
+var
+Edit : TEdit;
+begin
+  Edit := TEdit(Sender);
+  If Key = #13 then
+  begin
+    if Edit.Text <> '' then
+    begin
+      Logger.MainLog.log(CommandUtils.processCommand(Edit.Text));
+      Edit.Text := '';
+    end;
+    Key := #0;
+  end;
 end;
 
 procedure TLogger.destroyControl;
