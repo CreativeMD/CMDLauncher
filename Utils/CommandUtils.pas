@@ -20,7 +20,7 @@ var
 Commands : TList<TCommand>;
 
 implementation
-uses Overview;
+uses Overview, Task;
 
 function processCommand(Command : String) : String;
 var
@@ -45,10 +45,29 @@ end;
 procedure loadLauncherCommands;
 begin
   Commands := TList<TCommand>.Create;
+  registerCommand(TCommand.Create('tasks', function(args : TStringList) : String
+  var
+    i: Integer;begin
+    Result :=  'Found ' + IntToStr(MultiTasks.Count) + ' Tasks';
+    for i := 0 to MultiTasks.Count-1 do
+      Result := sLineBreak + MultiTasks[i].ClassName;
+  end));
   registerCommand(TCommand.Create('reload', function(args : TStringList) : String
-  begin
-    Result := 'Reloading Launcher';
+     begin
+     Result := 'Reloading Launcher';
     OverviewF.lblRetryClick(OverviewF.lblRetry);
+  end));
+  registerCommand(TCommand.Create('help', function(args : TStringList) : String
+
+  var
+    i: Integer;begin
+    Result := '';
+    for i := 0 to Commands.Count-1 do
+    begin
+      if i > 0 then
+        Result := Result + ',';
+      Result := Result + Commands[i].Name;
+    end;
   end));
   registerCommand(TCommand.Create('exit', function(args : TStringList) : String
   begin
