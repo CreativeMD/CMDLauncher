@@ -154,7 +154,7 @@ begin
   Key := ModUtils.getModByName(lvMods.Items.Item[ID].Caption);
   if Key <> nil then
   begin
-    Value := Key.getVersionByName(TComboBox(lvMods.Items.Item[ID].Data).Text);
+    Value := Key.getVersionByName(TComboBox(lvMods.Items.Item[ID].Data).Text, SelectedMC);
     if Value <> nil then
       Exit(TPair<TMod, TModVersion>.Create(Key, Value));
   end;

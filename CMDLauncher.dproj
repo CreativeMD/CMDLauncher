@@ -193,6 +193,7 @@
             <Form>Importer</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Utils\CommandUtils.pas"/>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">

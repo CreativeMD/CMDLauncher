@@ -63,7 +63,8 @@ uses
   Bukkit in 'Utils\Minecraft\Special\Bukkit.pas',
   SpongeForge in 'Utils\Minecraft\Special\SpongeForge.pas',
   BuildUtils in 'Utils\Minecraft\BuildUtils.pas',
-  ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer};
+  ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer},
+  CommandUtils in 'Utils\CommandUtils.pas';
 
 {$R *.res}
 

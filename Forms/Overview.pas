@@ -13,8 +13,7 @@ uses
   Vcl.Taskbar, Vcl.ToolWin, Vcl.ActnMan, Vcl.ActnCtrls, JvBackgrounds, JvMenus,
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
-  Vcl.Themes, superobject, SideUtils, commctrl, JvCombobox, JvColorCombo,
-  CnShellCtrls;
+  Vcl.Themes, superobject, SideUtils, commctrl, JvCombobox, JvColorCombo;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;

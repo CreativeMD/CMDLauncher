@@ -62,7 +62,8 @@ type
       constructor Create(Json : ISuperObject);
     public
       function getVersionByID(ID : Integer) : TModVersion;
-      function getVersionByName(Name : String) : TModVersion;
+      function getVersionByName(Name : String) : TModVersion; overload;
+      function getVersionByName(Name, MC : String) : TModVersion; overload;
       function getValidVersionsMC(MC : String) : TList<TModVersion>;
       function getValidVersions(Version : String) : TList<TModVersion>;
       function isInstalled(Instance : TInstance) : Boolean;
@@ -311,6 +312,16 @@ begin
   Result := nil;
   for i := 0 to Versions.Count-1 do
     if Versions[i].Name = Name then
+      Exit(Versions[i]);
+end;
+
+function TMod.getVersionByName(Name, MC : String) : TModVersion;
+var
+i: Integer;
+begin
+  Result := nil;
+  for i := 0 to Versions.Count-1 do
+    if (Versions[i].Name = Name) and (Versions[i].getMCVersion = MC) then
       Exit(Versions[i]);
 end;
 
