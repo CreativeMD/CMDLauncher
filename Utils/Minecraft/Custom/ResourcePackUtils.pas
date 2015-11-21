@@ -3,7 +3,8 @@ unit ResourcePackUtils;
 interface
 
 uses Task, System.Generics.Collections, VanillaUtils, ProgressBar, superobject, System.Classes, DownloadUtils, System.SysUtils,
-SettingUtils;
+SettingUtils, SaveFileUtils, ceflib, Vcl.Controls, StringUtils, cefvcl, InstanceUtils, Vcl.Dialogs, Winapi.Windows,
+Vcl.Forms;
 
 type
   TLoadResourcePacks = class(TTask)
@@ -20,6 +21,7 @@ type
     public
       Versions : TList<TResourcePackVersion>;
       constructor Create(Json : ISuperObject);
+      function getVersion(Name, MC : string) : TResourcePackVersion;
       property ID : Integer read FID;
       property Name : String read FName;
   end;
@@ -38,16 +40,38 @@ type
       property ID : Integer read FID;
       property Name : String read FName;
   end;
-  TResourcepackSelect = class(TSetting<TStringList>)
-
+  TResourcepackSelect = class(TSetting)
+    Folder : String;
+    constructor Create(Name, Title, Folder : String);
+    procedure createControl(x, y : Integer; Parent : TWinControl); override;
+    procedure destroyControl; override;
+    function getUUID : string; override;
+    procedure SaveToFile(SaveFile : TSaveFile); override;
+    procedure LoadFromFile(SaveFile : TSaveFile); override;
+    procedure chrmModsAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
+    function isFilled : Boolean; override;
+    procedure downloadRVersion(ResourceSelect : TForm);
   end;
+
+
+function getResourcePackByID(ID : Integer) : TResourcePack;
 
 var
 ResourcePacks : TList<TResourcePack>;
 
 implementation
 
-uses CoreLoader, DatabaseConnection;
+uses CoreLoader, DatabaseConnection, ResourcePackSelect, FileDownload;
+
+function getResourcePackByID(ID : Integer) : TResourcePack;
+var
+  i: Integer;
+begin
+  for i := 0 to ResourcePacks.Count-1 do
+    if ResourcePacks[i].ID = ID then
+      Exit(ResourcePacks[i]);
+  Exit(nil);
+end;
 
 constructor TLoadResourcePacks.Create;
 begin
@@ -111,6 +135,16 @@ begin
   FName := Json.S['name'];
 end;
 
+function TResourcePack.getVersion(Name, MC : string) : TResourcePackVersion;
+var
+  i: Integer;
+begin
+  for i := 0 to Versions.Count-1 do
+    if (Versions[i].Name = Name) and (Versions[i].MC.Contains(MC)) then
+      Exit(Versions[i]);
+  Exit(nil);
+end;
+
 constructor TResourcePackVersion.Create(Json : ISuperObject);
 var
 MCArray : TSuperArray;
@@ -141,6 +175,121 @@ begin
       Result.Add(MCVersion);
   end;
 
+end;
+
+constructor TResourcepackSelect.Create(Name, Title, Folder : String);
+begin
+  inherited Create(Name, Title, True);
+  Self.Folder := Folder;
+  setHideTitle;
+end;
+
+function TResourcepackSelect.isFilled : Boolean;
+begin
+  Result := True;
+end;
+
+procedure TResourcepackSelect.chrmModsAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
+var
+data : TStringList;
+ResourcePackSelect : TResourceSelect;
+ResourcePack : TResourcePack;
+  I: Integer;
+begin
+  if string(url).Contains('#add') then
+  begin
+    data := Explode(url, '#add');
+    if (data.Count = 2) and isStringNumber(data[1]) then
+    begin
+      ResourcePack := getResourcePackByID(StrToInt(data[1]));
+      if ResourcePack <> nil then
+      begin
+        ResourcePackSelect := TResourceSelect.Create(nil);
+        for I := 0 to ResourcePack.Versions.Count-1 do
+          ResourcePackSelect.lstVersions.Items.AddObject('(' + Implode(ResourcePack.Versions[i].MC, '-', False) + ')-' + ResourcePack.Versions[i].Name, ResourcePack.Versions[i]);
+        ResourcePackSelect.ResourceSelect := Self;
+        ResourcePackSelect.ShowModal;
+      end;
+    end;
+  end;
+end;
+
+procedure TResourcepackSelect.downloadRVersion(ResourceSelect : TForm);
+var
+ResourcePackSelect : TResourceSelect;
+ResourcePackVersion : TResourcePackVersion;
+Downloader : TDownloaderF;
+downloadItem : TDownloadItem;
+begin
+  ResourcePackSelect := TResourceSelect(ResourceSelect);
+  if ResourcePackSelect.lstVersions.ItemIndex <> -1 then
+  begin
+    ResourcePackVersion := TResourcePackVersion(ResourcePackSelect.lstVersions.Items.Objects[ResourcePackSelect.lstVersions.ItemIndex]);
+    if ResourcePackVersion <> nil then
+    begin
+      if not FileExists(Folder + 'resourcepacks\' + ResourcePackVersion.IFileName) then
+      begin
+        Downloader := TDownloaderF.Create(nil);
+        Downloader.Show;
+        downloadItem := TDownloadItem.Create(ResourcePackVersion.URL, ResourcePackVersion.FileName);
+        TThread.CreateAnonymousThread(procedure
+        begin
+          if Downloader.downloadItem(downloadItem) = drSuccess then
+          begin
+            ForceDirectories(ExtractFilePath(Folder + 'resourcepacks\' + ResourcePackVersion.FileName));
+            RenameFile(TempFolder + ResourcePackVersion.FileName, Folder + 'resourcepacks\' + ResourcePackVersion.IFileName);
+          end;
+          try
+            Downloader.Progress.Destroy;
+          except
+            on E : Exception do
+          end;
+          //Downloader.DestroyComponents;
+          //Downloader.Close;
+          Downloader.Destroy;
+        end).Start;
+
+      end
+      else
+        ShowMessage('Already downloaded!');
+    end;
+  end;
+end;
+
+procedure TResourcepackSelect.createControl(x, y : Integer; Parent : TWinControl);
+var
+Chromium : TChromium;
+begin
+  Chromium := TChromium.Create(Parent);
+  Chromium.Parent := Parent;
+  Chromium.Left := SettingUtils.xOffset;
+  Chromium.Top := y;
+  Chromium.OnAddressChange := chrmModsAddressChange;
+  Chromium.Align := alClient;
+  Chromium.Load('http://launcher.creativemd.de/index.php?cat=resourcepack&launcher=yes');
+  //Chromium.Visible := False;
+  Controls.Add(Chromium);
+end;
+
+procedure TResourcepackSelect.destroyControl;
+begin
+  TChromium(Controls[0]).Destroying;
+  Controls[0] := nil;
+end;
+
+function TResourcepackSelect.getUUID : string;
+begin
+  Result := 'resourcepackselect';
+end;
+
+procedure TResourcepackSelect.SaveToFile(SaveFile : TSaveFile);
+begin
+
+end;
+
+procedure TResourcepackSelect.LoadFromFile(SaveFile : TSaveFile);
+begin
+  
 end;
 
 
