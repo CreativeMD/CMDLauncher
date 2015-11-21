@@ -194,6 +194,10 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\CommandUtils.pas"/>
+        <DCCReference Include="Forms\Minecraft\ResourcePackSelect.pas">
+            <Form>ResourceSelect</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">

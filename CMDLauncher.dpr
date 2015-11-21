@@ -64,7 +64,8 @@ uses
   SpongeForge in 'Utils\Minecraft\Special\SpongeForge.pas',
   BuildUtils in 'Utils\Minecraft\BuildUtils.pas',
   ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer},
-  CommandUtils in 'Utils\CommandUtils.pas';
+  CommandUtils in 'Utils\CommandUtils.pas',
+  ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect};
 
 {$R *.res}
 
@@ -84,6 +85,7 @@ begin
   Application.Title := 'CMDLauncher';
   Application.CreateForm(TOverviewF, OverviewF);
   Application.CreateForm(TLoadingScreen, LoadingScreen);
+  Application.CreateForm(TResourceSelect, ResourceSelect);
   Application.Run;
 
 end.
