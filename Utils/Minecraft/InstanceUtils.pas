@@ -22,6 +22,7 @@ type
       constructor Create(Title : String; read : Boolean = True; ExternalFolder : String = '');
       function isExternal : Boolean;
       function getInstanceFolder : string;
+      function getInstanceModsFolder : string;
       function getUUID : String; virtual; abstract;
       function getSettings : TList<TSetting>; virtual; abstract;
       function getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>; virtual; abstract;
@@ -301,6 +302,11 @@ begin
     Result := ExternalFolder
   else
     Result := CoreLoader.InstanceFolder + Self.FTitle + '\';
+end;
+
+function TInstance.getInstanceModsFolder : string;
+begin
+  Result := getInstanceFolder + 'mods\';
 end;
 
 procedure TInstance.SaveInstance;
