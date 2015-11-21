@@ -13,8 +13,8 @@ type
 
 function ArrayToList(Value : array of String) : TStringList;
 function Explode(Input, Splitter : String) : TStringList;
-function Implode(Value : TStringList; Splitter : string) : string; overload;
-function Implode(Value : array of string; Splitter : string) : string; overload;
+function Implode(Value : TStringList; Splitter : string; EndWithSplitter : Boolean = True) : string; overload;
+function Implode(Value : array of string; Splitter : string; EndWithSplitter : Boolean = True) : string; overload;
 function onlyContains(Input, Chars : String) : Boolean;
 function isHigher(Lower, Higher : string) : Boolean;
 function ExtractUrlFileName(Url : string) : string;
@@ -146,18 +146,22 @@ begin
   Result := ArrayToList(Split);
 end;
 
-function Implode(Value : TStringList; Splitter : string) : string;
+function Implode(Value : TStringList; Splitter : string; EndWithSplitter : Boolean = True) : string;
 var
   i: Integer;
 begin
   Result := '';
   for i := 0 to Value.Count-1 do
-    Result := Result + Value[i].Replace(Splitter, SplitReplacement) + Splitter;
+  begin
+    Result := Result + Value[i].Replace(Splitter, SplitReplacement);
+    if EndWithSplitter or (i < Value.Count-1) then
+      Result := Result + Splitter;
+  end;
 end;
 
-function Implode(Value : array of string; Splitter : string) : string;
+function Implode(Value : array of string; Splitter : string; EndWithSplitter : Boolean = True) : string;
 begin
-  Result := Implode(ArrayToList(Value), Splitter);
+  Result := Implode(ArrayToList(Value), Splitter, EndWithSplitter);
 end;
 
 function onlyContains(Input, Chars : String) : Boolean;
