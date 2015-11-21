@@ -135,12 +135,16 @@ begin
 end;
 
 procedure TTaskManager.runTask;
+var
+progressBefore : Integer;
 begin
   if DatabaseConnection.online or (not CurrentTask.online) then
   begin
     Self.FLog.log('==== ' + CurrentTask.Title + ' ====');
+    progressBefore := ProgressBar.StepIndex;
     CurrentTask.runTask(ProgressBar);
-    Self.ProgressBar.FinishStep;
+    if progressBefore = ProgressBar.StepIndex then
+      Self.ProgressBar.FinishStep;
   end
   else
   begin
