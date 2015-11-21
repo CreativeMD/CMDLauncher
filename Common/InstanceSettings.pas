@@ -41,7 +41,7 @@ function loadInstanceSettings(Instance : TInstance; tempInstance : Boolean = Fal
 
 implementation
 
-uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings;
+uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings, ResourcePackUtils;
 
 procedure TNumberSelect.onKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -282,16 +282,20 @@ begin
   Page.AddSetting(CheckExpand);
   Group.AddPage(Page);
   Groups.Add(Group);
-  Group := TSettingGroup.Create('Other');
-  Page := TSettingPage.Create('Screenshots', 'Screenshot.png');
-  Group.AddPage(Page);
-  Page := TSettingPage.Create('Resourcepacks', 'Resourcepack.png');
-  Group.AddPage(Page);
-  Page := TSettingPage.Create('Crash-Reports', 'Mail.png');
-  Group.AddPage(Page);
-  Page := TSettingPage.Create('Shaderpacks', 'Shader.png');
-  Group.AddPage(Page);
-  Groups.Add(Group);
+  if Instance <> nil then
+  begin
+    Group := TSettingGroup.Create('Other');
+    Page := TSettingPage.Create('Screenshots', 'Screenshot.png');
+    Group.AddPage(Page);
+    Page := TSettingPage.Create('Resourcepacks', 'Resourcepack.png');
+    Page.AddSetting(TResourcepackSelect.Create('resourcepack', 'Resourcepack', Instance.getInstanceFolder));
+    Group.AddPage(Page);
+    Page := TSettingPage.Create('Crash-Reports', 'Mail.png');
+    Group.AddPage(Page);
+    Page := TSettingPage.Create('Shaderpacks', 'Shader.png');
+    Group.AddPage(Page);
+    Groups.Add(Group);
+  end;
 
   Result := TInstanceSetting.Create(Title, LauncherIcons, SaveFile, '', Groups);
   if not tempInstance then
