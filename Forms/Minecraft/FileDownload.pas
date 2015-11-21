@@ -14,7 +14,7 @@ type
     URL, FileName : String;
     constructor Create(URL, FileName : String);
   end;
-  TModDownloaderF = class(TForm)
+  TDownloaderF = class(TForm)
     btnCancel: TButton;
     btnSkip: TButton;
     btnRedo: TButton;
@@ -154,12 +154,12 @@ begin
   Bar.FinishStep;
 end;
 
-function TModDownloaderF.cancelIt : Boolean;
+function TDownloaderF.cancelIt : Boolean;
 begin
   Result := MessageDlg('Do you really want to cancel all mods?',mtConfirmation, mbOKCancel, 0) = mrOK;
 end;
 
-function TModDownloaderF.downloadItem(DownloadItem : TDownloadItem) : TDownloadR;
+function TDownloaderF.downloadItem(DownloadItem : TDownloadItem) : TDownloadR;
 var
 timeToWait : Integer;
 WindowHandle : HWND;
@@ -245,7 +245,7 @@ begin
   //EnumWindows(@EnumerateWindows, 0);
 end;        }
 
-procedure TModDownloaderF.FormCloseQuery(Sender: TObject;
+procedure TDownloaderF.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
   if cancelIt then
@@ -253,7 +253,7 @@ begin
   CanClose := False;
 end;
 
-procedure TModDownloaderF.loadPage;
+procedure TDownloaderF.loadPage;
 begin
   chrmDownloader.Load(Self.Item.URL);
   ForceReload := False;
@@ -282,7 +282,7 @@ end;
 
 procedure TDownloadMods.runTask(Bar : TCMDProgressBar);
 var
-Downloader : TModDownloaderF;
+Downloader : TDownloaderF;
 Item : TPair<TMod, TModVersion>;
 DResult : TDownloadR;
 i : Integer;
@@ -299,7 +299,7 @@ begin
 
   if NeedInstallation then
   begin
-    Downloader := TModDownloaderF.Create(nil);
+    Downloader := TDownloaderF.Create(nil);
     Downloader.Show;
     Downloader.DownloadBar.StartProcess(Mods.Count);
     Bar.StartStep(Mods.Count);
@@ -355,24 +355,24 @@ begin
 
 end;
 
-procedure TModDownloaderF.btnCancelClick(Sender: TObject);
+procedure TDownloaderF.btnCancelClick(Sender: TObject);
 begin
   if cancelIt then
     DownloadResult := drCancel;
 end;
 
-procedure TModDownloaderF.btnRedoClick(Sender: TObject);
+procedure TDownloaderF.btnRedoClick(Sender: TObject);
 begin
   loadPage;
 end;
 
-procedure TModDownloaderF.btnSkipClick(Sender: TObject);
+procedure TDownloaderF.btnSkipClick(Sender: TObject);
 begin
-  if MessageDlg('Do you really want to cancel the download of this mod?' + sLineBreak,mtError, mbOKCancel, 0) = mrOK then
+  if MessageDlg('Do you really want to cancel the download of this file?' + sLineBreak,mtError, mbOKCancel, 0) = mrOK then
     DownloadResult := drFail;
 end;
 
-procedure TModDownloaderF.chrmDownloadBrowserBeforeDownload(Sender: TObject;
+procedure TDownloaderF.chrmDownloadBrowserBeforeDownload(Sender: TObject;
   const browser: ICefBrowser; const downloadItem: ICefDownloadItem;
   const suggestedName: ustring; const callback: ICefBeforeDownloadCallback);
 begin
@@ -385,7 +385,7 @@ begin
   end;
 end;
 
-procedure TModDownloaderF.chrmDownloadBrowserDownloadUpdated(Sender: TObject;
+procedure TDownloaderF.chrmDownloadBrowserDownloadUpdated(Sender: TObject;
   const browser: ICefBrowser; const downloadItem: ICefDownloadItem;
   const callback: ICefDownloadItemCallback);
 begin
@@ -412,7 +412,7 @@ begin
   end;
 end;
 
-procedure TModDownloaderF.chrmDownloaderBeforeBrowse(Sender: TObject;
+procedure TDownloaderF.chrmDownloaderBeforeBrowse(Sender: TObject;
   const browser: ICefBrowser; const frame: ICefFrame;
   const request: ICefRequest; isRedirect: Boolean; out Result: Boolean);
 var
@@ -434,7 +434,7 @@ begin
   end;
 end;
 
-procedure TModDownloaderF.chrmDownloaderBeforeUnloadDialog(Sender: TObject;
+procedure TDownloaderF.chrmDownloaderBeforeUnloadDialog(Sender: TObject;
   const browser: ICefBrowser; const messageText: ustring; isReload: Boolean;
   const callback: ICefJsDialogCallback; out Result: Boolean);
 begin

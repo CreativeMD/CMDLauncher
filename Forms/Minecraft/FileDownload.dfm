@@ -1,4 +1,4 @@
-object ModDownloaderF: TModDownloaderF
+object DownloaderF: TDownloaderF
   Left = 0
   Top = 0
   Caption = 'Downloading Files ...'
