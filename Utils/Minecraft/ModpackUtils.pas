@@ -197,13 +197,21 @@ begin
       if not Added then
         Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
       for Item in Modpack.Value.Mods do
+      begin
+        if TDownloadMods(Result[i]).Mods.ContainsKey(Item.Key) then
+          TDownloadMods(Result[i]).Mods.Remove(Item.Key);
         TDownloadMods(Result[i]).addMod(Item);
+      end;
     end;
     if Result[i] is TModCleaning then
     begin
       Added := True;
       for Item in Modpack.Value.Mods do
+      begin
+        if TModCleaning(Result[i]).Mods.ContainsKey(Item.Key) then
+          TModCleaning(Result[i]).Mods.Remove(Item.Key);
         TModCleaning(Result[i]).addMod(Item);
+      end;
       Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
       i := i + 1;
     end;

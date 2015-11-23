@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>CMDLauncher.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -170,7 +170,7 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Forms\Minecraft\FileDownload.pas">
-            <Form>ModDownloaderF</Form>
+            <Form>DownloaderF</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Common\Minecraft\ModpackSettings.pas"/>

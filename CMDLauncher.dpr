@@ -52,7 +52,7 @@ uses
   ShaderPackUtils in 'Utils\Minecraft\Custom\ShaderPackUtils.pas',
   ModSettings in 'Common\Minecraft\ModSettings.pas',
   ModSelectForm in 'Forms\Minecraft\ModSelectForm.pas' {ModSelectF},
-  FileDownload in 'Forms\Minecraft\FileDownload.pas' {ModDownloaderF},
+  FileDownload in 'Forms\Minecraft\FileDownload.pas' {DownloaderF},
   ModpackSettings in 'Common\Minecraft\ModpackSettings.pas',
   Cauldron in 'Utils\Minecraft\Special\Cauldron.pas',
   SideUtils in 'Utils\Minecraft\SideUtils.pas',
@@ -85,7 +85,6 @@ begin
   Application.Title := 'CMDLauncher';
   Application.CreateForm(TOverviewF, OverviewF);
   Application.CreateForm(TLoadingScreen, LoadingScreen);
-  Application.CreateForm(TResourceSelect, ResourceSelect);
   Application.Run;
 
 end.
