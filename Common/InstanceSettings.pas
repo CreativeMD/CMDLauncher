@@ -3,7 +3,8 @@ unit InstanceSettings;
 interface
 
 uses SettingUtils, System.Generics.Collections, InstanceUtils, IconUtils, SaveFileUtils,
-System.Classes, Vcl.Controls, Vcl.StdCtrls, Task, System.SysUtils, SideUtils;
+System.Classes, Vcl.Controls, Vcl.StdCtrls, Task, System.SysUtils, SideUtils, JvImagesViewer,
+Vcl.Graphics;
 
 type
   TNumberSelect = class(TTextSelectSetting)
@@ -27,6 +28,15 @@ type
       procedure updateSettings;
       procedure setGroupList(GroupList : TSettingGroupList);
   end;
+  TScreenshotView = class(TSetting)
+    Directory : string;
+    constructor Create(Directory : string);
+    procedure createControl(x, y : Integer; Parent : TWinControl); override;
+    procedure destroyControl; override;
+    function getUUID : string; override;
+    procedure SaveToFile(SaveFile : TSaveFile); override;
+    procedure LoadFromFile(SaveFile : TSaveFile); override;
+  end;
   TInstanceSetting = class(TSettingGroupList)
     Instance : TInstance;
     copyOf : String;
@@ -42,6 +52,51 @@ function loadInstanceSettings(Instance : TInstance; tempInstance : Boolean = Fal
 implementation
 
 uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings, ResourcePackUtils;
+
+constructor TScreenshotView.Create(Directory : string);
+begin
+  inherited Create('screenshotview', 'view');
+  Self.Directory := Directory;
+end;
+
+procedure TScreenshotView.createControl(x, y : Integer; Parent : TWinControl);
+var
+JvImagesViewer: TJvImagesViewer;
+begin
+  JvImagesViewer := TJvImagesViewer.Create(Parent);
+  JvImagesViewer.Parent := Parent;
+  JvImagesViewer.Directory := Directory;
+  JvImagesViewer.Align := alClient;
+  JvImagesViewer.Options.FrameColor := clWhite;
+  JvImagesViewer.Options.Height := 180;
+  JvImagesViewer.Options.HorzSpacing := 4;
+  JvImagesViewer.Options.ImagePadding := -2;
+  JvImagesViewer.Options.LazyRead := True;
+  JvImagesViewer.Options.RightClickSelect := True;
+  JvImagesViewer.Options.ShowCaptions := False;
+  JvImagesViewer.Options.Width := 300;
+  Controls.Add(JvImagesViewer);
+end;
+
+procedure TScreenshotView.destroyControl;
+begin
+
+end;
+
+function TScreenshotView.getUUID : string;
+begin
+  Result := 'screen';
+end;
+
+procedure TScreenshotView.SaveToFile(SaveFile : TSaveFile);
+begin
+
+end;
+
+procedure TScreenshotView.LoadFromFile(SaveFile : TSaveFile);
+begin
+
+end;
 
 procedure TNumberSelect.onKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -286,6 +341,7 @@ begin
   begin
     Group := TSettingGroup.Create('Other');
     Page := TSettingPage.Create('Screenshots', 'Screenshot.png');
+    Page.AddSetting(TScreenshotView.Create(Instance.getInstanceFolder + 'screenshots'));
     Group.AddPage(Page);
     Page := TSettingPage.Create('Resourcepacks', 'Resourcepack.png');
     Page.AddSetting(TResourcepackSelect.Create('resourcepack', 'Resourcepack', Instance.getInstanceFolder));
