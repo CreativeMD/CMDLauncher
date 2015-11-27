@@ -158,6 +158,9 @@ var
 before, after, dif : Integer;
 TimeString : String;
 Wait : Boolean;
+
+label
+TerminatManager;
 begin
   if MultiTasks = nil then
     MultiTasks := TList<TClass>.Create;
@@ -173,7 +176,7 @@ begin
     Wait := False;
     if LauncherStartup.CloseLauncher then
     begin
-      Terminate;
+      goto TerminatManager;
     end;
 
     if Tasks.Count > 0 then
@@ -185,7 +188,7 @@ begin
         while (not LauncherStartup.CloseLauncher) and (MultiTasks.Contains(CurrentTask.ClassType)) do
         begin
           if LauncherStartup.CloseLauncher then
-            Terminate;
+            goto TerminatManager;
           if not Wait then
           begin
             Self.FLog.log('Wait for the other task to finish!');
@@ -229,6 +232,7 @@ begin
       begin
         MultiTasks.Remove(CurrentTask.ClassType);
       end;
+      CurrentTask := nil;
       Tasks[0].Destroy;
       Tasks.Delete(0);
     end
@@ -238,6 +242,7 @@ begin
       Sleep(1);
   end;
   FinishedEvent;
+  TerminatManager:
   FActive := False;
 end;
 
