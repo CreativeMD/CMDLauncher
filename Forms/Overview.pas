@@ -13,7 +13,7 @@ uses
   Vcl.Taskbar, Vcl.ToolWin, Vcl.ActnMan, Vcl.ActnCtrls, JvBackgrounds, JvMenus,
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
-  Vcl.Themes, superobject, SideUtils, commctrl, JvCombobox, JvColorCombo;
+  Vcl.Themes, superobject, SideUtils, commctrl;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;
@@ -110,7 +110,8 @@ implementation
 
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
 InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
-  ModSelectForm, ForgeUtils, ModpackUtils, LauncherException, ImportMinecraft, SaveFileUtils, VanillaUtils;
+  ModSelectForm, ForgeUtils, ModpackUtils, LauncherException, ImportMinecraft, SaveFileUtils, VanillaUtils,
+  FileListener;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -522,6 +523,7 @@ procedure TOverviewF.runForegroundTasks(Tasks : TList<TTask>);
 var
 TaskManager : TForegroundTaskManager;
 begin
+  LoadedLauncher := False;
   TaskManager := TForegroundTaskManager.Create(Tasks, LoadingScreen.TaskProgress);
   Self.Enabled := False;
   LoadingScreen.Show;
