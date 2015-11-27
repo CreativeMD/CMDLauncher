@@ -269,7 +269,7 @@ constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFold
 var
 Item : TPair<TMod, TModVersion>;
 begin
-  inherited Create('Downloading Mods', True);
+  inherited Create('Downloading Mods', True, False);
   Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
