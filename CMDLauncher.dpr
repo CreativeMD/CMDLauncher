@@ -46,6 +46,7 @@ uses
   SortingUtils in 'Utils\SortingUtils.pas',
   Vcl.Themes,
   Vcl.Styles,
+  System.Classes,
   FTBUtils in 'Utils\Minecraft\External\FTBUtils.pas',
   TechnicUtils in 'Utils\Minecraft\External\TechnicUtils.pas',
   ResourcePackUtils in 'Utils\Minecraft\Custom\ResourcePackUtils.pas',
@@ -65,26 +66,46 @@ uses
   BuildUtils in 'Utils\Minecraft\BuildUtils.pas',
   ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer},
   CommandUtils in 'Utils\CommandUtils.pas',
-  ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect};
+  ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect},
+  FileListener in 'Common\FileListener.pas',
+  URLProtocolUtils in 'Utils\URLProtocolUtils.pas';
 
 {$R *.res}
-
+var
+i : Integer;
+args : TStringList;
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
 
-  CoreLoader.LoadCore;
-  ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
-  ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
-  ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
-  //ceflib.CefLogFile := LibFolder + 'Chrome\log.txt';
-  ceflib.CefLogSeverity := TCefLogSeverity.LOGSEVERITY_ERROR;
-  ceflib.CefSingleProcess := False;
-  ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
+  args := TStringList.Create;
+  for i := 1 to PARAMCOUNT do
+    args.Add(ParamStr(i));
+  CoreLoader.LoadCore(args);
 
-  Application.Title := 'CMDLauncher';
-  Application.CreateForm(TOverviewF, OverviewF);
-  Application.CreateForm(TLoadingScreen, LoadingScreen);
-  Application.Run;
+  RegisterProtocol('cmdlauncher', 'CMDLauncher', '"' + ProgramFile + '" "%1"');
+  if args.Count > 0 then
+      args.SaveToFile(CommunicationFile);
+  args.Destroy;
+  if processExists(ProgramFile) then
+  begin
+    Application.Terminate;
+  end
+  else
+  begin
+
+    ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
+    ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
+    ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
+    //ceflib.CefLogFile := LibFolder + 'Chrome\log.txt';
+    ceflib.CefLogSeverity := TCefLogSeverity.LOGSEVERITY_ERROR;
+    ceflib.CefSingleProcess := False;
+    ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
+
+    Application.Title := 'CMDLauncher';
+    Application.CreateForm(TOverviewF, OverviewF);
+    Application.CreateForm(TLoadingScreen, LoadingScreen);
+    Application.Run;
+  end;
 
 end.

@@ -2,13 +2,13 @@ unit CoreLoader;
 
 interface
 
-uses System.SysUtils, SaveFileUtils, mysql, JclShell, ShlObj, Vcl.Dialogs;
+uses System.SysUtils, SaveFileUtils, mysql, JclShell, ShlObj, Vcl.Dialogs, System.Classes;
 
-procedure LoadCore;
+procedure LoadCore(args : TStringList);
 
 var
-ProgramFolder, AssetsFolder, TempFolder, InstanceFolder, LibFolder,
-DownloadFolder, MinecraftFolder : String;
+ProgramFolder, ProgramFile, AssetsFolder, TempFolder, InstanceFolder, LibFolder,
+DownloadFolder, MinecraftFolder, CommunicationFile : String;
 ProgramSettings : TSaveFile;
 
 const
@@ -17,17 +17,19 @@ ProgramVersion : String = '2.6.5';
 
 implementation
 
-uses Logger, LauncherStartup;
+uses Logger, LauncherStartup, FileListener, StringUtils;
 
-procedure LoadCore;
+procedure LoadCore(args : TStringList);
 begin
-  ProgramFolder := ExtractFilePath(ParamStr(0));
+  ProgramFile := ParamStr(0);
+  ProgramFolder := ExtractFilePath(ProgramFile);
   AssetsFolder := ProgramFolder + 'Assets\';
   InstanceFolder := ProgramFolder + 'Instances\';
   ForceDirectories(InstanceFolder);
   LibFolder := ProgramFolder + 'Lib\';
   DownloadFolder := ProgramFolder + 'Download\';
   TempFolder := DownloadFolder + 'Temp\';
+  CommunicationFile := TempFolder + 'internal.cfg';
   MinecraftFolder := GetSpecialFolderLocation(CSIDL_APPDATA) + '\.minecraft\';
   MainLog := TLog.Create;
   ProgramSettings := TSaveFile.Create(ProgramFolder + 'CMDLauncher.cfg');
@@ -41,6 +43,18 @@ begin
       CloseLauncher := True;
     end;
   end;
+
+  try
+    FileListener.createListener;
+  except
+    on E: Exception do
+    begin
+      MainLog.log('Failed to create listener!');
+    end;
+  end;
+
+  if args.Count > 0 then
+    MainLog.log('Launching CMDLauncher with following args ' + Implode(args, ' '));
 end;
 
 end.

@@ -82,6 +82,7 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_ExeOutput>.\</DCC_ExeOutput>
@@ -167,37 +168,33 @@
         <DCCReference Include="Common\Minecraft\ModSettings.pas"/>
         <DCCReference Include="Forms\Minecraft\ModSelectForm.pas">
             <Form>ModSelectF</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Forms\Minecraft\FileDownload.pas">
             <Form>DownloaderF</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Common\Minecraft\ModpackSettings.pas"/>
         <DCCReference Include="Utils\Minecraft\Special\Cauldron.pas"/>
         <DCCReference Include="Utils\Minecraft\SideUtils.pas"/>
         <DCCReference Include="Forms\ConsoleServer.pas">
             <Form>ConsoleServerF</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\Settings\CustomSettings.pas"/>
         <DCCReference Include="Utils\Minecraft\SnapshotUtils.pas"/>
         <DCCReference Include="Forms\LauncherException.pas">
             <Form>ErrorDialog</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\Minecraft\Special\Bukkit.pas"/>
         <DCCReference Include="Utils\Minecraft\Special\SpongeForge.pas"/>
         <DCCReference Include="Utils\Minecraft\BuildUtils.pas"/>
         <DCCReference Include="Forms\Minecraft\ImportMinecraft.pas">
             <Form>Importer</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Utils\CommandUtils.pas"/>
         <DCCReference Include="Forms\Minecraft\ResourcePackSelect.pas">
             <Form>ResourceSelect</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Common\FileListener.pas"/>
+        <DCCReference Include="Utils\URLProtocolUtils.pas"/>
         <None Include="ModelSupport_CMDLauncher\default.txaPackage"/>
         <None Include="CMDLauncher.todo"/>
         <BuildConfiguration Include="Release">
