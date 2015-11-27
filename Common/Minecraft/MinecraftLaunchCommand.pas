@@ -43,9 +43,14 @@ begin
   TConsoleF(Console).Instance := Instance;
   TConsoleF(Console).Launching := TLaunching.Create('"' + Java.Path + '"', getLaunchCommand,
   Instance.getInstanceFolder, procedure(const Line: AnsiString)
+  var
+  Lines : TStringList;
+  i : Integer;
       begin
-          if string(Line) <> '' then
-            TConsoleF(Console).mmoLog.Lines.Append(string(Line));
+        Lines := Explode(string(Line), sLineBreak);
+        for i := 0 to Lines.Count-1 do
+          if Lines[i] <> '' then
+            TConsoleF(Console).mmoLog.Lines.Add(Lines[i]);
       end);
   TConsoleF(Console).mmoLog.Lines.Add('"' + Java.Path + '"');
   TConsoleF(Console).mmoLog.Lines.AddStrings(getLaunchCommandList);

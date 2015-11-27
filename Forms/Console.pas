@@ -104,7 +104,10 @@ begin
                 Continue;
               end;
               if Zeichen = #$A then
+              begin
+                CurLine := CurLine + sLineBreak;
                 Continue;
+              end;
               CurLine := CurLine + Zeichen;
             end;
           end;
