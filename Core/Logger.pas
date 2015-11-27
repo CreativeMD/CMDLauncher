@@ -62,6 +62,7 @@ begin
       val := val + ';';
   end;
   val := val + ']';
+  log(val);
 end;
 
 constructor TLog.Create;
