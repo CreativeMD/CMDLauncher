@@ -2,7 +2,7 @@ unit CommandUtils;
 
 interface
 
-uses System.Generics.Collections, StringUtils, System.Classes, Vcl.Forms, System.SysUtils;
+uses System.Generics.Collections, StringUtils, System.Classes, Vcl.Forms, System.SysUtils, Vcl.Dialogs;
 
 type
 TProcessCommand = reference to function(args : TStringList) : String;
@@ -14,7 +14,8 @@ end;
 
 procedure loadLauncherCommands;
 procedure registerCommand(Command : TCommand);
-function processCommand(Command : String) : String;
+function processCommand(Command : String) : String; overload;
+function processCommand(Args : TStringList) : String; overload;
 
 var
 Commands : TList<TCommand>;
@@ -22,12 +23,10 @@ Commands : TList<TCommand>;
 implementation
 uses Overview, Task;
 
-function processCommand(Command : String) : String;
+function processCommand(Args : TStringList) : String;
 var
-Args : TStringList;
-  i: Integer;
+i : Integer;
 begin
-  Args := Explode(Command.ToLower, ' ');
   if Args.Count > 0 then
   begin
     for i := 0 to Commands.Count-1 do
@@ -35,6 +34,11 @@ begin
         Exit(Commands[i].Process(Args));
   end;
   Exit('Could not find command!');
+end;
+
+function processCommand(Command : String) : String;
+begin
+  Result := processCommand(Explode(Command.ToLower, ' '));
 end;
 
 procedure registerCommand(Command : TCommand);
@@ -78,6 +82,11 @@ begin
   begin
     Result := 'Terminating ...';
     Application.Terminate;
+  end));
+  registerCommand(TCommand.Create('test', function(args : TStringList) : String
+  begin
+    ShowMessage('Hello World!');
+    Result := 'Hello World!';
   end));
 end;
 
