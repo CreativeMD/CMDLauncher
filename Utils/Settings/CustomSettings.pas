@@ -2,7 +2,7 @@ unit CustomSettings;
 
 interface
 
-uses SettingUtils, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs;
+uses SettingUtils, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs, System.SysUtils, FileCtrl;
 
 type
 TSelectDirSetting = class(TStringSetting)
@@ -21,18 +21,36 @@ begin
 end;
 
 procedure TSelectDirSetting.onButtonClicked(Sender : TObject);
+var
+failed : Boolean;
+directory : string;
+options : TSelectDirOpts;
 begin
   if (Sender as TButton).Caption = 'Select Dir' then
   begin
-    with TFileOpenDialog.Create(nil) do
-    begin
-      try
-        Options := [fdoPickFolders];
-        if Execute then
-          TEdit(Controls[0]).Text := FileName + '\';
-      finally
-        Free;
+    failed := False;
+    try
+      with TFileOpenDialog.Create(nil) do
+      begin
+        try
+          Options := [fdoPickFolders];
+          if Execute then
+            TEdit(Controls[0]).Text := FileName + '\';
+        finally
+          Free;
+        end;
       end;
+    except
+      on E: Exception do
+      begin
+        failed := True;
+      end;
+    end;
+    if failed then
+    begin
+      directory := '';
+      if SelectDirectory(directory, options, 0) then
+        TEdit(Controls[0]).Text := directory + '\';
     end;
   end
   else
