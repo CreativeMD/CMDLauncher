@@ -32,7 +32,7 @@ DownloadTask : TDownloadTask;
 item: TSuperObjectIter;
 zahlAssets : Integer;
 begin
-  AssetsIndex := Command.MCVersion;
+  AssetsIndex := Command.getMCVersion;
   if CustomJsonPath <> '' then
     VersionFile := CustomJsonPath
   else

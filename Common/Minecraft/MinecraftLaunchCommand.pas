@@ -14,6 +14,7 @@ type
     constructor Create(Java : TJava; mcversion : String);
     function getArch : String;
     function is64Bit : Boolean;
+    function getMCVersion : String; virtual;
     function getLaunchCommand : String; overload;
     function getLaunchCommandList : TStringList; overload;
     procedure buildListener(InstanceObject : TObject); virtual;
@@ -55,6 +56,11 @@ begin
   TConsoleF(Console).mmoLog.Lines.Add('"' + Java.Path + '"');
   TConsoleF(Console).mmoLog.Lines.AddStrings(getLaunchCommandList);
   TConsoleF(Console).Launching.OnClosed := TConsoleF(Console).onClosed;
+end;
+
+function TMinecraftLaunch.getMCVersion : String;
+begin
+  Result := MCVersion;
 end;
 
 function TMinecraftLaunch.getLaunchCommand : String;

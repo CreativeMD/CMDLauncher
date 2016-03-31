@@ -11,6 +11,7 @@ type
     Forge : TForge;
     constructor Create(Java : TJava; Forge : TForge; Instance : TInstance; LoginData : TLoginData); overload;
     constructor Create(Java : TJava; MC : String; Instance : TInstance; LoginData : TLoginData); overload;
+    function getMCVersion : String; override;
   end;
   TInstallServerForge = class(TLaunchTask)
     InstanceFolder : String;
@@ -36,6 +37,14 @@ constructor TForgeLaunch.Create(Java : TJava; MC : String; Instance : TInstance;
 begin
   inherited Create(Java, MC, Instance, LoginData);
   Self.Forge := nil;
+end;
+
+function TForgeLaunch.getMCVersion : String;
+begin
+  if Forge <> nil then
+    Result := Forge.MV
+  else
+    Result := MCVersion;
 end;
 
 procedure TInstallServerForge.runTask(Bar : TCMDProgressBar);
