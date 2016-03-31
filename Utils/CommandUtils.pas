@@ -2,7 +2,8 @@ unit CommandUtils;
 
 interface
 
-uses System.Generics.Collections, StringUtils, System.Classes, Vcl.Forms, System.SysUtils, Vcl.Dialogs;
+uses System.Generics.Collections, StringUtils, System.Classes, Vcl.Forms, System.SysUtils, Vcl.Dialogs, Vcl.FileCtrl,
+JavaUtils;
 
 type
 TProcessCommand = reference to function(args : TStringList) : String;
@@ -87,6 +88,24 @@ begin
   begin
     ShowMessage('Hello World!');
     Result := 'Hello World!';
+  end));
+  registerCommand(TCommand.Create('java-create', function(args : TStringList) : String
+  var
+    directory : string;
+    options : TSelectDirOpts;
+    Java : TJava;
+  begin
+    if (args.Count > 1) and ((args[1] = '64') or (args[1] = '32')) then
+    begin
+      if SelectDirectory(directory, options, 0) then
+      begin
+        Java := TJava.Create(ExtractLastFolder(directory), directory + '\bin\javaw', args[1] = '64');
+        JavaVersions.Add(Java);
+        Result := 'Created Java Version -> ' + Java.Title;
+      end;
+    end
+    else
+      Result := 'java-create <32/64>';
   end));
 end;
 
