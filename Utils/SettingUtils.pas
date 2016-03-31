@@ -402,6 +402,12 @@ begin
       for j := 0 to SubSettings.Count-1 do
         current_heigt := current_heigt + SubSettings[j].getHeight + SpaceY;
       GroupBox.Height := current_heigt - tempheight + SpaceY*2;
+      if GroupBox is TJvGroupBox then
+      begin
+        TJvGroupBox(GroupBox).Checked := not TJvGroupBox(GroupBox).Checked;
+        TJvGroupBox(GroupBox).Checked := not TJvGroupBox(GroupBox).Checked;
+      end;
+
       Groups.Add(GroupBox);
       current_heigt := current_heigt + SpaceY;
     end;
@@ -1162,7 +1168,7 @@ JvGroupBox : TJvGroupBox;
 begin
   JvGroupBox := TJvGroupBox.Create(Parent);
 
-  JVGroupBox.Checkable := True;
+  JvGroupBox.Checkable := True;
   JvGroupBox.Checked := Checked;
   JvGroupBox.OnCheckBoxClick := onChanged;
   Result := JvGroupBox;
