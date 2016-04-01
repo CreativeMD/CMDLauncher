@@ -111,7 +111,7 @@ implementation
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
 InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
   ModSelectForm, ForgeUtils, ModpackUtils, LauncherException, ImportMinecraft, SaveFileUtils, VanillaUtils,
-  FileListener;
+  FileListener, ImportUtils;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -399,14 +399,6 @@ end;
 
 procedure TOverviewF.HeaderControlSectionClick(HeaderControl: THeaderControl;
   Section: THeaderSection);
-var
-Importer : TImporter;
-Modpack : TModpack;
-URL, Name : String;
-data : TStringList;
-SaveFile : TSaveFile;
-TemporaryInstance : TInstance;
-Success : Boolean;
 begin
   case Section.ID of
     0: //create
@@ -439,55 +431,7 @@ begin
     end;
     7: //Import
     begin
-      Importer := TImporter.Create(nil);
-      if Importer.ShowModal = mrOk then
-      begin
-        Name := getNextUnusedInstanceFolder;
-        if Name <> '' then
-        begin
-          Success := False;
-          if Importer.rbURL.Checked then
-          begin
-            SaveFile := TSaveFile.Create(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName);
-            url := Importer.edtURL.Text;
-            Modpack := nil;
-            if string(url).Contains('#add') then
-            begin
-              data := Explode(url, '#add');
-              if (data.Count = 2) and isStringNumber(data[1]) then
-              begin
-                Modpack := ModpackUtils.getModPackByID(StrToInt(data[1]));
-              end;
-            end;
-            if Modpack = nil then
-              ShowMessage('Failed to load modpack!')
-            else
-            begin
-              SaveFile.setString('uuid', 'Modpack');
-              SaveFile.setInteger('modpack', Modpack.ID);
-              SaveFile.setInteger('modpackV', -1);
-              Success := True;
-            end;
-          end
-          else
-          begin
-            if FileExists(Importer.lblFile.Caption) then
-            begin
-              ForceDirectories(InstanceFolder + Name + '\');
-              Success := CopyFile(PWideChar(Importer.lblFile.Caption), PWideChar(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName), False);
-            end;
-          end;
-
-          if Success then
-          begin
-            TemporaryInstance := TVanillaInstance.Create(Name);
-            loadInstanceSettings(TemporaryInstance, true);
-            TemporaryInstance.Destroy;
-          end;
-        end;
-      end;
-
-
+      ImportUtils.import;
     end;
   end;
 end;

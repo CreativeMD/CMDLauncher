@@ -12,7 +12,9 @@ implementation
 function checkIfProtocol(const Name, description, ProgramFile : String) : Boolean;
 var
   reg: TRegistry;
+  Param : String;
 begin
+  Param := '"' + ProgramFile + '" "%1"';
   Result := False;
   reg := TRegistry.Create;
   try
@@ -25,7 +27,7 @@ begin
           and (reg.OpenKeyReadOnly('shell'))
           and (reg.OpenKeyReadOnly('open'))
           and (reg.OpenKeyReadOnly('command'))
-          and (reg.ReadString('') = ProgramFile) then
+          and (reg.ReadString('') = Param) then
         begin
           Result := True;
         end
@@ -43,7 +45,9 @@ end;
 function registerProtocol(const Name, description, ProgramFile: string) : Boolean;
 var
   reg: TRegistry;
+  Param : String;
 begin
+  Param := '"' + ProgramFile + '" "%1"';
   Result := False;
   reg := TRegistry.Create;
   try
@@ -59,7 +63,7 @@ begin
         reg.OpenKey('shell', True);
         reg.OpenKey('open', True);
         reg.OpenKey('command', True);
-        reg.Writestring('', ProgramFile);
+        reg.Writestring('', Param);
         Result := True;
       finally
         reg.CloseKey;

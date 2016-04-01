@@ -69,12 +69,15 @@ uses
   ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect},
   FileListener in 'Common\FileListener.pas',
   URLProtocolUtils in 'Utils\URLProtocolUtils.pas',
-  System.SysUtils;
+  System.SysUtils,
+  Vcl.Dialogs,
+  ImportUtils in 'Utils\ImportUtils.pas';
 
 {$R *.res}
 var
 i : Integer;
 args : TStringList;
+isOpened : Boolean;
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
@@ -83,6 +86,7 @@ begin
   for i := 1 to PARAMCOUNT do
     args.Add(ParamStr(i));
   CoreLoader.LoadCore(args);
+  MainLog.log(args);
 
   if args.Count > 0 then
   begin
@@ -90,13 +94,24 @@ begin
     args.SaveToFile(CommunicationFile);
   end;
   args.Destroy;
-  if processExists(ProgramFile) then
+
+  try
+    isOpened := processExists(ProgramFile);
+  except
+    on E : Exception do
+    begin
+      Logger.MainLog.log(E.Message);
+      Logger.MainLog.log(E.StackTrace);
+      isOpened := False;
+    end;
+  end;
+
+  if isOpened then
   begin
     Application.Terminate;
   end
   else
   begin
-
     ceflib.CefResourcesDirPath := LibFolder + 'Chrome\';
     ceflib.CefLocalesDirPath := LibFolder + 'Chrome\locales\';
     ceflib.CefLibrary := LibFolder + 'Chrome\libcef.dll';
@@ -107,8 +122,8 @@ begin
 
     Application.Title := 'CMDLauncher';
     Application.CreateForm(TOverviewF, OverviewF);
-    Application.CreateForm(TLoadingScreen, LoadingScreen);
-    Application.Run;
+  Application.CreateForm(TLoadingScreen, LoadingScreen);
+  Application.Run;
   end;
 
 end.

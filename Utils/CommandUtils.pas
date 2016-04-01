@@ -22,7 +22,7 @@ var
 Commands : TList<TCommand>;
 
 implementation
-uses Overview, Task;
+uses Overview, Task, ImportUtils;
 
 function processCommand(Args : TStringList) : String;
 var
@@ -106,6 +106,30 @@ begin
     end
     else
       Result := 'java-create <32/64>';
+  end));
+  registerCommand(TCommand.Create('import-modpack', function(args : TStringList) : String
+  begin
+    if (args.Count > 1) then
+    begin
+      if ImportUtils.importModpack(args[1]) then
+        Result := 'Import was successful!'
+      else
+        Result := 'Import failed';
+    end
+    else
+      Result := 'import-modpack <URL>';
+  end));
+  registerCommand(TCommand.Create('import-file', function(args : TStringList) : String
+  begin
+    if (args.Count > 1) then
+    begin
+      if ImportUtils.importFile(args[1]) then
+        Result := 'Import was successful!'
+      else
+        Result := 'Import failed';
+    end
+    else
+      Result := 'import-file <FilePath/URL>';
   end));
 end;
 

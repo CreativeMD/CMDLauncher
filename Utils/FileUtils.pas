@@ -3,7 +3,7 @@ unit FileUtils;
 interface
 
 uses ProgressBar, System.SysUtils, System.IOUtils, System.Types, Winapi.Windows,
-JclFileUtils, Task, TlHelp32, PsAPI;
+JclFileUtils, Task, TlHelp32, PsAPI, Vcl.Dialogs;
 
 type
 TDeleteFolder = class(TTask)
@@ -70,10 +70,15 @@ begin
   while Integer(ContinueLoop) <> 0 do
   begin
    // MainLog.log(GetPathFromPID(FProcessEntry32.th32ProcessID));
-    if (FProcessEntry32.th32ProcessID <> GetCurrentProcessId) and (UpperCase(GetPathFromPID(FProcessEntry32.th32ProcessID)) =
-      UpperCase(ExeFileName)) then
-    begin
-      Result := True;
+    try
+      if (FProcessEntry32.th32ProcessID <> GetCurrentProcessId) and (UpperCase(GetPathFromPID(FProcessEntry32.th32ProcessID)) =
+        UpperCase(ExeFileName)) then
+      begin
+        Result := True;
+        Break;
+      end;
+    except
+
     end;
     ContinueLoop := Process32Next(FSnapshotHandle, FProcessEntry32);
   end;
