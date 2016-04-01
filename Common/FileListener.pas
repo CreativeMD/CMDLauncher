@@ -19,7 +19,7 @@ Communicator : TInteralCommunicator;
 
 implementation
 
-uses CoreLoader, CommandUtils, StringUtils, Overview;
+uses CoreLoader, CommandUtils, StringUtils, Overview, LauncherStartup;
 
 procedure createListener;
 begin
@@ -51,15 +51,20 @@ args : TStringList;
 begin
   while not Application.Terminated do
   begin
-    if LoadedLauncher and (OverviewF <> nil) and (OverviewF.BackgroundTask <> nil) and (not Assigned(OverviewF.BackgroundTask.CurrentTask)) and FileExists(CommunicationFile) then
+    if LoadedLauncher and (OverviewF <> nil) and (OverviewF.BackgroundTask <> nil) and (not Assigned(OverviewF.BackgroundTask.CurrentTask)) then
     begin
-      args := TStringList.Create;
-      args.LoadFromFile(CommunicationFile);
-      DeleteFile(CommunicationFile);
-      Self.args := args;
-      Synchronize(onReceiveMessage);
-      args.Destroy;
+      if not HasFinishedStartup then
+        onPostStartupHasFinished;
+      if FileExists(CommunicationFile) then
+      begin
+        args := TStringList.Create;
+        args.LoadFromFile(CommunicationFile);
+        DeleteFile(CommunicationFile);
+        Self.args := args;
+        Synchronize(onReceiveMessage);
+        args.Destroy;
 
+      end;
     end;
     Sleep(1000);
   end;

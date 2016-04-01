@@ -300,6 +300,7 @@ begin
   if NeedInstallation then
   begin
     Downloader := TDownloaderF.Create(nil);
+    //Downloader.chrmDownloader.
     Downloader.Show;
     Downloader.DownloadBar.StartProcess(Mods.Count);
     Bar.StartStep(Mods.Count);

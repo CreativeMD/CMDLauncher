@@ -4,7 +4,7 @@ interface
 
 uses SettingUtils, System.Generics.Collections, InstanceUtils, IconUtils, SaveFileUtils,
 System.Classes, Vcl.Controls, Vcl.StdCtrls, Task, System.SysUtils, SideUtils, JvImagesViewer,
-Vcl.Graphics;
+Vcl.Graphics, cefvcl, System.IOUtils, System.Types;
 
 type
   TNumberSelect = class(TTextSelectSetting)
@@ -60,22 +60,49 @@ begin
 end;
 
 procedure TScreenshotView.createControl(x, y : Integer; Parent : TWinControl);
-var
+{var
 JvImagesViewer: TJvImagesViewer;
 begin
   JvImagesViewer := TJvImagesViewer.Create(Parent);
   JvImagesViewer.Parent := Parent;
   JvImagesViewer.Directory := Directory;
   JvImagesViewer.Align := alClient;
+  JvImagesViewer.DoubleBuffered := True;
   JvImagesViewer.Options.FrameColor := clWhite;
   JvImagesViewer.Options.Height := 180;
   JvImagesViewer.Options.HorzSpacing := 4;
-  JvImagesViewer.Options.ImagePadding := -2;
+  JvImagesViewer.Options.ImagePadding := 4;
   JvImagesViewer.Options.LazyRead := True;
   JvImagesViewer.Options.RightClickSelect := True;
   JvImagesViewer.Options.ShowCaptions := False;
   JvImagesViewer.Options.Width := 300;
-  Controls.Add(JvImagesViewer);
+  JvImagesViewer.Options.ShowCaptions := True;
+  Controls.Add(JvImagesViewer);      }
+var
+Chromium : TChromium;
+side, Files : TStringList;
+  i: Integer;
+begin
+  side := TStringList.Create;
+  Files := ArrayToList(TDirectory.GetFiles(Directory, '*.png'));
+  side.Add('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>'
+  + '<script type="text/javascript" src="http://creativemd.bplaced.net/jquery.zoomooz.min.js"></script>');
+  for i := 0 to Files.Count-1 do
+    side.Add('<div style="max-width:480px; border-radius: 2px 10px; margin: 4pt; box-shadow: 3px 3px 3px #7C7C7C; float:left;" align="center">'
+    + '<img src="' + Files[i] + '" class="zoomTarget" data-preservescroll="false" data-targetsize="0.7" data-closeclick="true" style="max-width:480px; max-height: 270px; border-radius: 2px 10px;">'
+    + ExtractFileName(Files[i]) + '</div>');
+  //side.Add('test');
+  ForceDirectories(TempFolder);
+  side.SaveToFile(TempFolder + 'screenshotoverview.html');
+  Chromium := TChromium.Create(Parent);
+  Chromium.Parent := Parent;
+  Chromium.Left := SettingUtils.xOffset;
+  Chromium.Top := y;
+  //Chromium.OnAddressChange := chrmModsAddressChange;
+  Chromium.Align := alClient;
+  Chromium.Load('file:///' + TempFolder + 'screenshotoverview.html');
+  //Chromium.Visible := False;
+  Controls.Add(Chromium);
 end;
 
 procedure TScreenshotView.destroyControl;

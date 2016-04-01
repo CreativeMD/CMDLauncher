@@ -68,7 +68,8 @@ uses
   CommandUtils in 'Utils\CommandUtils.pas',
   ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect},
   FileListener in 'Common\FileListener.pas',
-  URLProtocolUtils in 'Utils\URLProtocolUtils.pas';
+  URLProtocolUtils in 'Utils\URLProtocolUtils.pas',
+  System.SysUtils;
 
 {$R *.res}
 var
@@ -83,9 +84,11 @@ begin
     args.Add(ParamStr(i));
   CoreLoader.LoadCore(args);
 
-  RegisterProtocol('cmdlauncher', 'CMDLauncher', '"' + ProgramFile + '" "%1"');
   if args.Count > 0 then
-      args.SaveToFile(CommunicationFile);
+  begin
+    ForceDirectories(ExtractFilePath(CommunicationFile));
+    args.SaveToFile(CommunicationFile);
+  end;
   args.Destroy;
   if processExists(ProgramFile) then
   begin

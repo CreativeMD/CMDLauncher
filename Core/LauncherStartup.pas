@@ -3,7 +3,7 @@ unit LauncherStartup;
 interface
 
 uses Task, ProgressBar, System.Generics.Collections, IdHTTP, System.SysUtils,
-Vcl.Forms, ShellApi, Winapi.Windows;
+Vcl.Forms, ShellApi, Winapi.Windows, Vcl.Dialogs, Vcl.Controls, Vcl.StdCtrls;
 
 type
   TUpdateTask = class(TTask)
@@ -14,16 +14,20 @@ type
   end;
 
 var
-CloseLauncher : Boolean;
+CloseLauncher, HasFinishedStartup : Boolean;
+
 
 function getStartupTasks : TList<TTask>;
 function getStartupPostTasks : TList<TTask>;
+procedure onStartupHasFinished;
+procedure onPostStartupHasFinished;
 
 implementation
 
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
-ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils, CommandUtils;
+ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils, CommandUtils,
+Overview, URLProtocolUtils, Logger;
 
 constructor TUpdateTask.Create;
 begin
@@ -64,6 +68,50 @@ begin
       LauncherSettings.Changelog := Explode(ChangeLog, '<br>');
     end;
   Bar.FinishStep;
+end;
+
+procedure onStartupHasFinished;
+var
+Tasks : TList<TTask>;
+i : Integer;
+begin
+  HasFinishedStartup := False;
+  if not CloseLauncher then
+  begin
+    OverviewF.BackgroundTask := TBackgroundTaskManager.Create(nil, OverviewF.BackgroundBar);
+    Tasks := LauncherStartup.getStartupPostTasks;
+    for i := 0 to Tasks.Count-1 do
+      OverviewF.BackgroundTask.addTask(Tasks[i]);
+  end;
+end;
+
+procedure onPostStartupHasFinished;
+begin
+  HasFinishedStartup := True;
+  //ShowMessage('Test');
+  if not checkIfProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
+    if not registerProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
+    begin
+      //If it's not working!
+      with CreateMessageDialog('Could not install url protocol.' + sLineBreak + 'Please run it as admin to install this feature!', mtInformation, mbOKCancel) do
+        try
+          Width := 310;
+          Height := 140;
+          TButton(FindComponent('Ok')).Caption := 'Run as admin';
+          TButton(FindComponent('Ok')).Width := 100;
+          TButton(FindComponent('Cancel')).Left := TButton(FindComponent('Cancel')).Left + 20;
+          if ShowModal = mrOk then
+          begin
+            ShellExecute(Application.Handle, 'runas', PChar(ProgramFolder + 'URLRegister.exe'), nil, nil, SW_NORMAL);
+          end;
+        finally
+          Free;
+        end;
+    end
+    else
+      Logger.MainLog.log('Sucessfully registed cmdlauncher:// protocol!')
+  else
+    Logger.MainLog.log('cmdlauncher:// protocol is ready to be used!');
 end;
 
 function getStartupPostTasks : TList<TTask>;

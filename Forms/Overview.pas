@@ -510,13 +510,7 @@ Tasks : TList<TTask>;
 i : Integer;
 begin
   runForegroundTasks(LauncherStartup.getStartupTasks);
-  if not CloseLauncher then
-  begin
-    BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
-    Tasks := LauncherStartup.getStartupPostTasks;
-    for i := 0 to Tasks.Count-1 do
-      BackgroundTask.addTask(Tasks[i]);
-  end;
+  LauncherStartup.onStartupHasFinished;
 end;
 
 procedure TOverviewF.runForegroundTasks(Tasks : TList<TTask>);
@@ -617,19 +611,10 @@ begin
 end;
 
 procedure TOverviewF.WmAfterShow(var Msg: TMessage);
-var
-Tasks : TList<TTask>;
-i : Integer;
 begin
   lvInstances.OnClick(lvInstances);
   runForegroundTasks(LauncherStartup.getStartupTasks);
-  if not CloseLauncher then
-  begin
-    BackgroundTask := TBackgroundTaskManager.Create(nil, BackgroundBar);
-    Tasks := LauncherStartup.getStartupPostTasks;
-    for i := 0 to Tasks.Count-1 do
-      BackgroundTask.addTask(Tasks[i]);
-  end;
+  LauncherStartup.onStartupHasFinished;
 end;
 
 end.
