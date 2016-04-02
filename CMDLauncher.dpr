@@ -86,7 +86,6 @@ begin
   for i := 1 to PARAMCOUNT do
     args.Add(ParamStr(i));
   CoreLoader.LoadCore(args);
-  MainLog.log(args);
 
   if args.Count > 0 then
   begin

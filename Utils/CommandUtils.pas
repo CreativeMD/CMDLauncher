@@ -38,8 +38,45 @@ begin
 end;
 
 function processCommand(Command : String) : String;
+var
+Args, NewArgs : TStringList;
+i : Integer;
+isInString : Boolean;
+TempString : string;
 begin
-  Result := processCommand(Explode(Command.ToLower, ' '));
+  Args := Explode(Command, ' ');
+  NewArgs := TStringList.Create;
+  i := 0;
+  for i := 0 to Args.Count-1 do
+  begin
+    if isInString then
+    begin
+      if Args[i].EndsWith('"') then
+      begin
+        TempString := TempString + ' ' + Args[i].Substring(0, Args[i].Length-1);
+        NewArgs.Add(TempString);
+        TempString := '';
+        isInString := False;
+      end
+      else
+        TempString := TempString + ' ' + Args[i];
+    end
+    else
+    begin
+      if Args[i].StartsWith('"') then
+      begin
+        isInString := True;
+        TempString := TempString + Args[i].Substring(1);
+      end
+      else
+        NewArgs.Add(Args[i]);
+    end;
+  end;
+
+  if isInString then
+    Exit('Invalid Command! Unfinished string!');
+
+  Result := processCommand(NewArgs);
 end;
 
 procedure registerCommand(Command : TCommand);
@@ -48,6 +85,8 @@ begin
 end;
 
 procedure loadLauncherCommands;
+var
+Name : String;
 begin
   Commands := TList<TCommand>.Create;
   registerCommand(TCommand.Create('tasks', function(args : TStringList) : String
@@ -111,25 +150,31 @@ begin
   begin
     if (args.Count > 1) then
     begin
-      if ImportUtils.importModpack(args[1]) then
+      Name := '';
+      if args.Count > 2 then
+        Name := args[2];
+      if ImportUtils.importModpack(args[1], Name) then
         Result := 'Import was successful!'
       else
         Result := 'Import failed';
     end
     else
-      Result := 'import-modpack <URL>';
+      Result := 'import-modpack <URL> [Name]';
   end));
   registerCommand(TCommand.Create('import-file', function(args : TStringList) : String
   begin
     if (args.Count > 1) then
     begin
+      Name := '';
+      if args.Count > 2 then
+        Name := args[2];
       if ImportUtils.importFile(args[1]) then
         Result := 'Import was successful!'
       else
         Result := 'Import failed';
     end
     else
-      Result := 'import-file <FilePath/URL>';
+      Result := 'import-file <FilePath/URL> [Name]';
   end));
 end;
 

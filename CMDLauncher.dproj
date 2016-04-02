@@ -219,8 +219,8 @@
                     <Source Name="MainSource">CMDLauncher.dpr</Source>
                 </Source>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k200.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp200.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k200.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp200.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
                 <Language>
                     <Language Name="ProjectLang">$00000407</Language>

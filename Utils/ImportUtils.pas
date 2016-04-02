@@ -6,8 +6,8 @@ uses SaveFileUtils, System.Classes, System.SysUtils, Vcl.Dialogs, Vcl.Forms, Sys
 System.Generics.Collections;
 
 procedure import;
-function importModpack(URL : String) : Boolean;
-function importFile(FileName : String) : Boolean;
+function importModpack(URL : String; Name : String = '') : Boolean;
+function importFile(FileName : String; Name : String = '') : Boolean;
 procedure openTempInstance(Name : String);
 
 implementation
@@ -24,14 +24,14 @@ begin
   TemporaryInstance.Destroy;
 end;
 
-function importModpack(URL : String) : Boolean;
+function importModpack(URL : String; Name : String = '') : Boolean;
 var
-Name : String;
 Modpack : TModpack;
 SaveFile : TSaveFile;
 data : TStringList;
 begin
-  Name := OverviewF.getNextUnusedInstanceFolder;
+  if Name = '' then
+    Name := OverviewF.getNextUnusedInstanceFolder;
   SaveFile := TSaveFile.Create(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName);
   Modpack := nil;
   if string(url).Contains('#add') then
@@ -49,6 +49,7 @@ begin
   end
   else
   begin
+    SaveFile.setString('name', Name);
     SaveFile.setString('uuid', 'Modpack');
     SaveFile.setInteger('modpack', Modpack.ID);
     SaveFile.setInteger('modpackV', -1);
@@ -57,13 +58,14 @@ begin
   end;
 end;
 
-function importFile(FileName : String) : Boolean;
+function importFile(FileName : String; Name : String = '') : Boolean;
 var
-Name : String;
 DownloadTask : TDownloadTask;
 Tasks : TList<TTask>;
+SaveFile : TSaveFile;
 begin
-  Name := OverviewF.getNextUnusedInstanceFolder;
+  if Name = '' then
+    Name := OverviewF.getNextUnusedInstanceFolder;
   if FileName.Contains('http://') or FileName.Contains('https://') then
   begin
     DownloadTask := TDownloadTask.Create(FileName, InstanceFolder + Name + '\' + InstanceUtils.SaveFileName);
@@ -84,6 +86,9 @@ begin
     ForceDirectories(InstanceFolder + Name + '\');
     if CopyFile(PWideChar(FileName), PWideChar(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName), False) then
     begin
+      SaveFile := TSaveFile.Create(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName);
+      SaveFile.setString('name', Name);
+
       openTempInstance(Name);
       Exit(True);
     end;
