@@ -49,7 +49,7 @@ begin
   end
   else
   begin
-    SaveFile.setString('name', Name);
+    SaveFile.setString('title', Name);
     SaveFile.setString('uuid', 'Modpack');
     SaveFile.setInteger('modpack', Modpack.ID);
     SaveFile.setInteger('modpackV', -1);
@@ -87,7 +87,7 @@ begin
     if CopyFile(PWideChar(FileName), PWideChar(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName), False) then
     begin
       SaveFile := TSaveFile.Create(InstanceFolder + Name + '\' + InstanceUtils.SaveFileName);
-      SaveFile.setString('name', Name);
+      SaveFile.setString('title', Name);
 
       openTempInstance(Name);
       Exit(True);

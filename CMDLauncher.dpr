@@ -71,7 +71,8 @@ uses
   URLProtocolUtils in 'Utils\URLProtocolUtils.pas',
   System.SysUtils,
   Vcl.Dialogs,
-  ImportUtils in 'Utils\ImportUtils.pas';
+  ImportUtils in 'Utils\ImportUtils.pas',
+  CreativeMD in 'Forms\CreativeMD.pas' {Credit};
 
 {$R *.res}
 var
@@ -121,8 +122,9 @@ begin
 
     Application.Title := 'CMDLauncher';
     Application.CreateForm(TOverviewF, OverviewF);
-  Application.CreateForm(TLoadingScreen, LoadingScreen);
-  Application.Run;
+    Application.CreateForm(TLoadingScreen, LoadingScreen);
+    Application.CreateForm(TCredit, Credit);
+    Application.Run;
   end;
 
 end.

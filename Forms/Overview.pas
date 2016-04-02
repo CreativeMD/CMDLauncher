@@ -111,7 +111,7 @@ implementation
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
 InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
   ModSelectForm, ForgeUtils, ModpackUtils, LauncherException, ImportMinecraft, SaveFileUtils, VanillaUtils,
-  FileListener, ImportUtils;
+  FileListener, ImportUtils, CreativeMD;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -314,6 +314,9 @@ procedure TOverviewF.FormShow(Sender: TObject);
 begin
   if not LoadedLauncher then
   begin
+    lblVersion.Caption := string(lblVersion.Caption).Replace('${program_version}', ProgramVersion);
+    Credit.lblVersion.Caption := string(Credit.lblVersion.Caption).Replace('${program_version}', ProgramVersion);
+
     LoadedLauncher := True;
     PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
   end;
@@ -433,6 +436,10 @@ begin
     begin
       ImportUtils.import;
     end;
+    8: //CreativeMD
+    begin
+      Credit.Show;
+    end;
   end;
 end;
 
@@ -449,9 +456,6 @@ begin
 end;
 
 procedure TOverviewF.lblRetryClick(Sender: TObject);
-var
-Tasks : TList<TTask>;
-i : Integer;
 begin
   runForegroundTasks(LauncherStartup.getStartupTasks);
   LauncherStartup.onStartupHasFinished;
@@ -536,7 +540,7 @@ begin
   HintWindowClass := TGraphicHintWindow;
   Application.ShowHint := False;
   Application.ShowHint := True;
-  lblVersion.Caption := ProgramVersion;
+  
   LoadedLauncher := False;
   SectionTitles := TStringList.Create;
   for i := 0 to HeaderControl.Sections.Count-1 do

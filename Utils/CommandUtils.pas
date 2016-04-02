@@ -44,9 +44,9 @@ i : Integer;
 isInString : Boolean;
 TempString : string;
 begin
+  isInString := False;
   Args := Explode(Command, ' ');
   NewArgs := TStringList.Create;
-  i := 0;
   for i := 0 to Args.Count-1 do
   begin
     if isInString then

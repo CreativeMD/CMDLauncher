@@ -84,7 +84,10 @@ side, Files : TStringList;
   i: Integer;
 begin
   side := TStringList.Create;
-  Files := ArrayToList(TDirectory.GetFiles(Directory, '*.png'));
+  if DirectoryExists(Directory) then
+    Files := ArrayToList(TDirectory.GetFiles(Directory, '*.png'))
+  else
+    Files := TStringList.Create;
   side.Add('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>'
   + '<script type="text/javascript" src="http://creativemd.bplaced.net/jquery.zoomooz.min.js"></script>');
   for i := 0 to Files.Count-1 do
