@@ -54,7 +54,7 @@ begin
     if LoadedLauncher and (OverviewF <> nil) and (OverviewF.BackgroundTask <> nil) and (not Assigned(OverviewF.BackgroundTask.CurrentTask)) then
     begin
       if not HasFinishedStartup then
-        onPostStartupHasFinished;
+        Synchronize(onPostStartupHasFinished);
       if FileExists(CommunicationFile) then
       begin
         args := TStringList.Create;
