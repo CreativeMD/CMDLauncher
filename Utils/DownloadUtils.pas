@@ -141,7 +141,7 @@ end;
 
 constructor TDownloadTask.Create(DownloadLink, DownloadPath : String; ForceDownload : Boolean = True);
 begin
-  inherited Create(ExtractFilePath(DownloadPath), True);
+  inherited Create(ExtractFileName(DownloadPath), True);
   Self.DownloadLink := DownloadLink;
   Self.DownloadPath := DownloadPath;
   Self.ForceDownload := ForceDownload;
