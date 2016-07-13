@@ -12,6 +12,9 @@
         <Projects Include="URLRegister.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="CMDUpdate.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -47,14 +50,23 @@
     <Target Name="URLRegister:Make">
         <MSBuild Projects="URLRegister.dproj" Targets="Make"/>
     </Target>
+    <Target Name="CMDUpdate">
+        <MSBuild Projects="CMDUpdate.dproj"/>
+    </Target>
+    <Target Name="CMDUpdate:Clean">
+        <MSBuild Projects="CMDUpdate.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CMDUpdate:Make">
+        <MSBuild Projects="CMDUpdate.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="CMDLauncher;CMDChromeBrowser;URLRegister"/>
+        <CallTarget Targets="CMDLauncher;CMDChromeBrowser;URLRegister;CMDUpdate"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="CMDLauncher:Clean;CMDChromeBrowser:Clean;URLRegister:Clean"/>
+        <CallTarget Targets="CMDLauncher:Clean;CMDChromeBrowser:Clean;URLRegister:Clean;CMDUpdate:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="CMDLauncher:Make;CMDChromeBrowser:Make;URLRegister:Make"/>
+        <CallTarget Targets="CMDLauncher:Make;CMDChromeBrowser:Make;URLRegister:Make;CMDUpdate:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
