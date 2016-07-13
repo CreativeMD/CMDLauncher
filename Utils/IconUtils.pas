@@ -122,7 +122,7 @@ procedure TLoadIcon.runTask(Bar : TCMDProgressBar);
 begin
   Bar.StartStep(1);
   Self.Log.log('Starting loading icons ...');
-  LauncherIcons := AssetsFolder + 'LanucherIcons\';
+  LauncherIcons := AssetsFolder + 'LauncherIcons\';
   InstanceIcons := AssetsFolder + 'Icons\';
   OverviewF.Icons := LoadIcons(InstanceIcons, OverviewF.InstanceIcons);
   Bar.FinishStep;

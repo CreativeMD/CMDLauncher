@@ -13,7 +13,7 @@ ProgramSettings : TSaveFile;
 
 const
 ProgramName : String = 'CMDLauncher';
-ProgramVersion : String = '2.6.11';
+ProgramVersion : String = '2.6.12';
 
 implementation
 

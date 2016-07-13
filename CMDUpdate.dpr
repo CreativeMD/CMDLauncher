@@ -11,7 +11,9 @@ uses
   LaunchHandler in 'Core\LaunchHandler.pas',
   Logger in 'Core\Logger.pas',
   DatabaseConnection in 'Core\DatabaseConnection.pas',
-  CoreLoaderUpdate in 'Core\CoreLoaderUpdate.pas';
+  CoreLoaderUpdate in 'Core\CoreLoaderUpdate.pas',
+  DownloadUtils in 'Utils\DownloadUtils.pas',
+  FileUtils in 'Utils\FileUtils.pas';
 
 {$R *.res}
 var
