@@ -535,7 +535,15 @@ begin
       Caption := Self.Title;
       for i := 0 to Groups.Count-1 do
       begin
-        lvSettings.Groups.Add.Header := Groups[i].Title;
+        with lvSettings.Groups.Add do
+        begin
+          Header := Groups[i].Title;
+          GroupID := i;
+        end;
+      end;
+
+      for i := 0 to Groups.Count-1 do
+      begin
         for j := 0 to Groups[i].Pages.Count-1 do
           with lvSettings.Items.Add do
           begin

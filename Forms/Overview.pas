@@ -176,6 +176,9 @@ begin
         Groups.Add(Instances[i].Group);
       end;
     end;
+  end;
+  for i := 0 to Instances.Count-1 do
+  begin
     with lvInstances.Items.Add do
     begin
       Caption := Instances[i].Title;

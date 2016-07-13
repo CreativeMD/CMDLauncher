@@ -27,7 +27,8 @@ type
   protected
     procedure OnAfterCreated(const browser: ICefBrowser); override;
     function OnBeforePopup(const browser: ICefBrowser; const frame: ICefFrame;
-      const targetUrl, targetFrameName: ustring; var popupFeatures: TCefPopupFeatures;
+      const targetUrl, targetFrameName: ustring; targetDisposition: TCefWindowOpenDisposition;
+      userGesture: Boolean; var popupFeatures: TCefPopupFeatures;
       var windowInfo: TCefWindowInfo; var client: ICefClient; var settings: TCefBrowserSettings;
       var noJavascriptAccess: Boolean): Boolean; override;
     procedure OnBeforeClose(const browser: ICefBrowser); override;
@@ -303,11 +304,11 @@ begin
     brows := nil;
 end;
 
-function TCustomLifeSpan.OnBeforePopup(const browser: ICefBrowser;
-  const frame: ICefFrame; const targetUrl, targetFrameName: ustring;
-  var popupFeatures: TCefPopupFeatures; var windowInfo: TCefWindowInfo;
-  var client: ICefClient; var settings: TCefBrowserSettings;
-  var noJavascriptAccess: Boolean): Boolean;
+function TCustomLifeSpan.OnBeforePopup(const browser: ICefBrowser; const frame: ICefFrame;
+      const targetUrl, targetFrameName: ustring; targetDisposition: TCefWindowOpenDisposition;
+      userGesture: Boolean; var popupFeatures: TCefPopupFeatures;
+      var windowInfo: TCefWindowInfo; var client: ICefClient; var settings: TCefBrowserSettings;
+      var noJavascriptAccess: Boolean): Boolean;
 begin
   if targetUrl = 'about:blank' then
     result := False else

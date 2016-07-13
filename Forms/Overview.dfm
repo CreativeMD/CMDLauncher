@@ -3,7 +3,7 @@ object OverviewF: TOverviewF
   Top = 0
   Caption = 'CMDLauncher'
   ClientHeight = 401
-  ClientWidth = 505
+  ClientWidth = 504
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -3738,7 +3738,7 @@ object OverviewF: TOverviewF
   OnCreate = FormCreate
   OnShow = FormShow
   DesignSize = (
-    505
+    504
     401)
   PixelsPerInch = 96
   TextHeight = 13
@@ -3786,7 +3786,7 @@ object OverviewF: TOverviewF
   object HeaderControl: THeaderControl
     Left = 0
     Top = 0
-    Width = 505
+    Width = 504
     Height = 41
     Images = HeaderIcons
     Sections = <
@@ -3857,7 +3857,7 @@ object OverviewF: TOverviewF
     OnMouseMove = HeaderControlMouseMove
   end
   object BackgroundBar: TCMDProgressBar
-    Left = 376
+    Left = 375
     Top = 376
     Width = 121
     Height = 17
@@ -3870,7 +3870,7 @@ object OverviewF: TOverviewF
   end
   object lblBackgroundTask: TLinkLabel
     AlignWithMargins = True
-    Left = 184
+    Left = 183
     Top = 376
     Width = 186
     Height = 17
@@ -3883,7 +3883,7 @@ object OverviewF: TOverviewF
   object lvInstances: TJvListView
     Left = 0
     Top = 66
-    Width = 505
+    Width = 504
     Height = 304
     Anchors = [akLeft, akTop, akRight, akBottom]
     Columns = <>
@@ -3918,7 +3918,7 @@ object OverviewF: TOverviewF
     Left = 64
     Top = 112
     Bitmap = {
-      494C01010D006000880120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01010D006000940120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000008000000001002000000000000000
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -6114,7 +6114,7 @@ object OverviewF: TOverviewF
     Left = 208
     Top = 112
     Bitmap = {
-      494C01010200E800080110001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01010200E800140110001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

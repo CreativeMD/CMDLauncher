@@ -15,7 +15,7 @@ type
 
 implementation
 
-uses DatabaseConnection, CoreLoader;
+uses DatabaseConnection, CoreLoader, MinecraftVersionFileUtils, Task;
 
 constructor TLoadAssets.Create(Command : TMinecraftLaunch; LaunchTyp : TLaunchTyp);
 begin
@@ -27,8 +27,9 @@ end;
 procedure TLoadAssets.runTask(Bar : TCMDProgressBar);
 var
 Assets,AssetsO : ISuperObject;
-AssetsFile, DownloadURL, FileName, AssetsIndex, VersionFile : string;
+AssetsFile, DownloadURL, FileName, AssetsIndex, VersionFile, InheritsFileName : string;
 DownloadTask : TDownloadTask;
+DownloadVanilla : TDownloadVersion;
 item: TSuperObjectIter;
 zahlAssets : Integer;
 begin
@@ -42,7 +43,19 @@ begin
   begin
     Assets := TSuperObject.ParseFile(VersionFile, true);
     if Assets.S['assets'] <> '' then
-      AssetsIndex := Assets.S['assets'];
+      AssetsIndex := Assets.S['assets']
+    else if Assets.S['inheritsFrom'] <> '' then
+    begin
+      DownloadVanilla := TDownloadVersion.Create(Assets.S['inheritsFrom']);
+      Task.runTask(DownloadVanilla, nil);
+      InheritsFileName := DownloadFolder + 'versions\' + Assets.S['inheritsFrom'] + '\' + Assets.S['inheritsFrom'] + '.json';
+      if FileExists(InheritsFileName) then
+      begin
+        AssetsO := TSuperObject.ParseFile(InheritsFileName, true);
+        if AssetsO.S['assets'] <> '' then
+          AssetsIndex := AssetsO.S['assets'];
+      end;
+    end;
   end;
 
   if LaunchTyp = ltOld then

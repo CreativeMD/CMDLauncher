@@ -3,14 +3,16 @@ unit MinecraftVersionFileUtils;
 interface
 
 uses LaunchTaskUtils, ProgressBar, InstanceUtils, DownloadUtils, System.Classes,
-System.SysUtils, MinecraftLaunchCommand;
+System.SysUtils, MinecraftLaunchCommand, Task;
 
 type
-  TDownloadVersion = class(TLaunchTask)
+  TDownloadVersion = class(TTask)
     protected
+      MCVersion : string;
       procedure runTask(Bar : TCMDProgressBar); override;
     public
-      constructor Create(Command : TMinecraftLaunch);
+      constructor Create(Command : TMinecraftLaunch); overload;
+      constructor Create(MCVersion : string); overload;
   end;
   TDownloadServerVersion = class(TLaunchTask)
     protected
@@ -57,9 +59,15 @@ begin
   //Bar.FinishStep;
 end;
 
+constructor TDownloadVersion.Create(MCVersion : String);
+begin
+  inherited Create('Downloading minecraft files', True);
+  Self.MCVersion := MCVersion;
+end;
+
 constructor TDownloadVersion.Create(Command : TMinecraftLaunch);
 begin
-  inherited Create('Downloading minecraft files', Command, True);
+  Self.Create(Command.MCVersion);
 end;
 
 procedure TDownloadVersion.runTask(Bar : TCMDProgressBar);
@@ -70,15 +78,15 @@ FileName : string;
 i: Integer;
 begin
   DownloadFiles := TStringList.Create;
-  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + Command.MCVersion + '/' + Command.MCVersion + '.jar');
-  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + Command.MCVersion + '/' + Command.MCVersion + '.json');
+  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + MCVersion + '/' + MCVersion + '.jar');
+  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + MCVersion + '/' + MCVersion + '.json');
 
   if Bar <> nil then
     Bar.StartStep(DownloadFiles.Count);
 
   for i := 0 to DownloadFiles.Count-1 do
   begin
-    FileName := DownloadFolder + 'versions\' + Command.MCVersion + '\' + ExtractUrlFileName(DownloadFiles[i]);
+    FileName := DownloadFolder + 'versions\' + MCVersion + '\' + ExtractUrlFileName(DownloadFiles[i]);
     DownloadTask := TDownloadTask.Create(DownloadFiles[i], FileName, False);
     DownloadTask.setLog(Self.Log);
     DownloadTask.downloadFile(nil);

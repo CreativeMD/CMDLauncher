@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{B7C163EF-4CA8-4169-B28D-B5A8EA63DC10}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="CMDLauncher.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CMDChromeBrowser.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="URLRegister.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="CMDLauncher">
+        <MSBuild Projects="CMDLauncher.dproj"/>
+    </Target>
+    <Target Name="CMDLauncher:Clean">
+        <MSBuild Projects="CMDLauncher.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CMDLauncher:Make">
+        <MSBuild Projects="CMDLauncher.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CMDChromeBrowser">
+        <MSBuild Projects="CMDChromeBrowser.dproj"/>
+    </Target>
+    <Target Name="CMDChromeBrowser:Clean">
+        <MSBuild Projects="CMDChromeBrowser.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CMDChromeBrowser:Make">
+        <MSBuild Projects="CMDChromeBrowser.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="URLRegister">
+        <MSBuild Projects="URLRegister.dproj"/>
+    </Target>
+    <Target Name="URLRegister:Clean">
+        <MSBuild Projects="URLRegister.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="URLRegister:Make">
+        <MSBuild Projects="URLRegister.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="CMDLauncher;CMDChromeBrowser;URLRegister"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="CMDLauncher:Clean;CMDChromeBrowser:Clean;URLRegister:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="CMDLauncher:Make;CMDChromeBrowser:Make;URLRegister:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
