@@ -50,6 +50,9 @@ begin
   Groups.Add(Group);
 
   Group := TSettingGroup.Create('Launcher');
+  SPage := TSettingPage.Create('Settings', 'Settings.png');
+  SPage.AddSetting(TCheckOption.Create('protocol-enabled', 'Enable Protocol', True));
+  Group.AddPage(SPage);
   SPage := TSettingPage.Create('Console', 'Console.png');
   SPage.AddSetting(TLogger.Create('Log', 'Log'));
   Group.AddPage(SPage);
