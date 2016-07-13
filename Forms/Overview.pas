@@ -13,7 +13,7 @@ uses
   Vcl.Taskbar, Vcl.ToolWin, Vcl.ActnMan, Vcl.ActnCtrls, JvBackgrounds, JvMenus,
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
-  Vcl.Themes, superobject, SideUtils, commctrl;
+  Vcl.Themes, superobject, SideUtils, commctrl, LaunchHandler;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;
@@ -99,6 +99,11 @@ type
   TForegroundTaskManager = class(TTaskManager)
     function isEndless : Boolean; override;
   end;
+  TConnect = class(TTask)
+    constructor Create;
+    protected
+      procedure runTask(Bar : TCMDProgressBar); override;
+  end;
 var
   OverviewF: TOverviewF;
   LoadedLauncher : Boolean;
@@ -111,7 +116,7 @@ implementation
 uses CoreLoader, LoadingForm, Logger, LauncherStartup, LauncherSettings,
 InstanceSettings, FileUtils, MinecraftStartup, JavaUtils, ModUtils,
   ModSelectForm, ForgeUtils, ModpackUtils, LauncherException, ImportMinecraft, SaveFileUtils, VanillaUtils,
-  FileListener, ImportUtils, CreativeMD;
+  FileListener, ImportUtils, CreativeMD, DatabaseConnection;
 
 function TForegroundTaskManager.isEndless : Boolean;
 begin
@@ -136,6 +141,34 @@ end;
 procedure TBackgroundTaskManager.NoTaskFoundEvent;
 begin
   OverviewF.lblBackgroundTask.Caption := 'Nothing to do';
+end;
+
+constructor TConnect.Create;
+begin
+  inherited Create('Connecting to Database', False);
+end;
+
+procedure TConnect.runTask(Bar : TCMDProgressBar);
+begin
+  Bar.StartStep(1);
+  DatabaseConnection.online := DatabaseConnection.IsConnected;
+  if DatabaseConnection.online then
+  begin
+    Logger.MainLog.log('Connected to Database successfully! Launcher is running in online mode!');
+    OverviewF.lblNotify.Caption := 'Launcher is running in online mode.';
+    OverviewF.lblNotify.Hint := 'You have fully access to all elements of this launcher.';
+    OverviewF.lblNotify.Left := OverviewF.lblRetry.Left;
+    OverviewF.lblRetry.Visible := False;
+  end
+  else
+  begin
+    Logger.MainLog.log('Failed to connect to Database! Launcher is running in offline mode!');
+    OverviewF.lblNotify.Caption := 'Launcher is running in offline mode.';
+    OverviewF.lblNotify.Hint := 'Some elements of this launcher are unaccessible.';
+    OverviewF.lblNotify.Left := OverviewF.lblRetry.Left + OverviewF.lblRetry.Width + 5;
+    OverviewF.lblRetry.Visible := True;
+  end;
+  Bar.FinishStep;
 end;
 
 procedure TOverviewF.loadInstances;
@@ -498,7 +531,7 @@ begin
 
   Taskbar.ProgressState := TTaskBarProgressState.None;
 
-  if LauncherStartup.CloseLauncher then
+  if LaunchHandler.CloseLauncher then
     Application.Terminate
 end;
 

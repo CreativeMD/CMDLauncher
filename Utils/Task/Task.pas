@@ -3,7 +3,7 @@ unit Task;
 interface
 
 uses Generics.Collections, ProgressBar, System.Classes, Vcl.Forms, System.SysUtils,
-Logger;
+Logger, LaunchHandler;
 
 type
   TTaskManager = class;
@@ -50,7 +50,7 @@ MultiTasks : TList<TClass>;
 
 implementation
 
-uses DatabaseConnection, LauncherStartup;
+uses DatabaseConnection;
 
 procedure runTask(Task : TTask; Bar : TCMDProgressBar);
 begin
@@ -174,7 +174,7 @@ begin
   begin
 
     Wait := False;
-    if LauncherStartup.CloseLauncher then
+    if LaunchHandler.CloseLauncher then
     begin
       goto TerminatManager;
     end;
@@ -185,9 +185,9 @@ begin
 
       if not CurrentTask.multitasking then
       begin
-        while (not LauncherStartup.CloseLauncher) and (MultiTasks.Contains(CurrentTask.ClassType)) do
+        while (not LaunchHandler.CloseLauncher) and (MultiTasks.Contains(CurrentTask.ClassType)) do
         begin
-          if LauncherStartup.CloseLauncher then
+          if LaunchHandler.CloseLauncher then
             goto TerminatManager;
           if not Wait then
           begin

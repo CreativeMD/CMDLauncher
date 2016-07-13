@@ -72,7 +72,8 @@ uses
   System.SysUtils,
   Vcl.Dialogs,
   ImportUtils in 'Utils\ImportUtils.pas',
-  CreativeMD in 'Forms\CreativeMD.pas' {Credit};
+  CreativeMD in 'Forms\CreativeMD.pas' {Credit},
+  LaunchHandler in 'Core\LaunchHandler.pas';
 
 {$R *.res}
 var
@@ -122,9 +123,9 @@ begin
 
     Application.Title := 'CMDLauncher';
     Application.CreateForm(TOverviewF, OverviewF);
-    Application.CreateForm(TLoadingScreen, LoadingScreen);
-    Application.CreateForm(TCredit, Credit);
-    Application.Run;
+  Application.CreateForm(TLoadingScreen, LoadingScreen);
+  Application.CreateForm(TCredit, Credit);
+  Application.Run;
   end;
 
 end.

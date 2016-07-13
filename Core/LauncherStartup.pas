@@ -3,7 +3,7 @@ unit LauncherStartup;
 interface
 
 uses Task, ProgressBar, System.Generics.Collections, IdHTTP, System.SysUtils,
-Vcl.Forms, ShellApi, Winapi.Windows, Vcl.Dialogs, Vcl.Controls, Vcl.StdCtrls;
+Vcl.Forms, ShellApi, Winapi.Windows, Vcl.Dialogs, Vcl.Controls, Vcl.StdCtrls, LaunchHandler;
 
 type
   TUpdateTask = class(TTask)
@@ -14,7 +14,7 @@ type
   end;
 
 var
-CloseLauncher, HasFinishedStartup : Boolean;
+HasFinishedStartup : Boolean;
 
 
 function getStartupTasks : TList<TTask>;
@@ -58,7 +58,7 @@ begin
       DownloadTask := TDownloadTask.Create('http://creativemd.bplaced.net/downloads/CMDUpdate.exe', ProgramFolder + 'Update.exe');
       DownloadTask.downloadFile(Bar);
       DownloadTask.Destroy;
-      ShellExecute(Application.Handle, 'open', PChar(ProgramFolder + 'Update.exe'), nil, nil, SW_NORMAL);
+      ShellExecute(Application.Handle, 'open', PChar(ProgramFolder + 'CMDUpdate.exe'), nil, nil, SW_NORMAL);
       CloseLauncher := True;
     end
     else
@@ -89,29 +89,34 @@ procedure onPostStartupHasFinished;
 begin
   HasFinishedStartup := True;
   //ShowMessage('Test');
-  if not checkIfProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
-    if not registerProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
-    begin
-      //If it's not working!
-      with CreateMessageDialog('Could not install url protocol.' + sLineBreak + 'Please run it as admin to install this feature!', mtInformation, mbOKCancel) do
-        try
-          Width := 310;
-          Height := 140;
-          TButton(FindComponent('Ok')).Caption := 'Run as admin';
-          TButton(FindComponent('Ok')).Width := 100;
-          TButton(FindComponent('Cancel')).Left := TButton(FindComponent('Cancel')).Left + 20;
-          if ShowModal = mrOk then
-          begin
-            ShellExecute(Application.Handle, 'runas', PChar(ProgramFolder + 'URLRegister.exe'), nil, nil, SW_NORMAL);
+  if ProgramSettings.getBoolean('protocol-enabled') then
+  begin
+    if not checkIfProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
+      if not registerProtocol('cmdlauncher', 'CMDLauncher', ProgramFile) then
+      begin
+        //If it's not working!
+        with CreateMessageDialog('Could not install url protocol.' + sLineBreak + 'Please run it as admin to install this feature!', mtInformation, mbOKCancel) do
+          try
+            Width := 310;
+            Height := 140;
+            TButton(FindComponent('Ok')).Caption := 'Run as admin';
+            TButton(FindComponent('Ok')).Width := 100;
+            TButton(FindComponent('Cancel')).Left := TButton(FindComponent('Cancel')).Left + 20;
+            if ShowModal = mrOk then
+            begin
+              ShellExecute(Application.Handle, 'runas', PChar(ProgramFolder + 'URLRegister.exe'), nil, nil, SW_NORMAL);
+            end;
+          finally
+            Free;
           end;
-        finally
-          Free;
-        end;
-    end
+      end
+      else
+        Logger.MainLog.log('Sucessfully registed cmdlauncher:// protocol!')
     else
-      Logger.MainLog.log('Sucessfully registed cmdlauncher:// protocol!')
+      Logger.MainLog.log('cmdlauncher:// protocol is ready to be used!');
+  end
   else
-    Logger.MainLog.log('cmdlauncher:// protocol is ready to be used!');
+    Logger.MainLog.log('Skipped loading cmdlauncher:// protocol!');
 end;
 
 function getStartupPostTasks : TList<TTask>;

@@ -2,23 +2,18 @@ unit DatabaseConnection;
 
 interface
 
-uses Task, ProgressBar, mysql, Winapi.WinInet, Winapi.Windows, System.SysUtils, Vcl.Forms;
+uses Task, ProgressBar, Winapi.WinInet, Winapi.Windows, System.SysUtils, Vcl.Forms;
 
-type
-  TConnect = class(TTask)
-    constructor Create;
-    protected
-      procedure runTask(Bar : TCMDProgressBar); override;
-  end;
 
 function CheckUrl(url:string):boolean;
+function IsConnected: Boolean;
 
 var
 online : Boolean;
 
 implementation
 
-uses Logger, Overview;
+uses Logger;
 
 function CheckUrl(url:string):boolean;
 var
@@ -49,11 +44,6 @@ begin
     on E: Exception do
       Exit(False);
   end;
-end;
-
-constructor TConnect.Create;
-begin
-  inherited Create('Connecting to Database', False);
 end;
 
 function IsConnected: Boolean;
@@ -116,29 +106,6 @@ begin
       InetState and INTERNET_CONNECTION_OFFLINE = INTERNET_CONNECTION_OFFLINE
     ) then
       Result := False; // we know for sure we are offline.
-end;
-
-procedure TConnect.runTask(Bar : TCMDProgressBar);
-begin
-  Bar.StartStep(1);
-  DatabaseConnection.online := IsConnected;
-  if DatabaseConnection.online then
-  begin
-    Logger.MainLog.log('Connected to Database successfully! Launcher is running in online mode!');
-    OverviewF.lblNotify.Caption := 'Launcher is running in online mode.';
-    OverviewF.lblNotify.Hint := 'You have fully access to all elements of this launcher.';
-    OverviewF.lblNotify.Left := OverviewF.lblRetry.Left;
-    OverviewF.lblRetry.Visible := False;
-  end
-  else
-  begin
-    Logger.MainLog.log('Failed to connect to Database! Launcher is running in offline mode!');
-    OverviewF.lblNotify.Caption := 'Launcher is running in offline mode.';
-    OverviewF.lblNotify.Hint := 'Some elements of this launcher are unaccessible.';
-    OverviewF.lblNotify.Left := OverviewF.lblRetry.Left + OverviewF.lblRetry.Width + 5;
-    OverviewF.lblRetry.Visible := True;
-  end;
-  Bar.FinishStep;
 end;
 
 end.

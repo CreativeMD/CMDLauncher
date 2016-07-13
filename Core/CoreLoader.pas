@@ -2,7 +2,7 @@ unit CoreLoader;
 
 interface
 
-uses System.SysUtils, SaveFileUtils, mysql, JclShell, ShlObj, Vcl.Dialogs, System.Classes;
+uses System.SysUtils, SaveFileUtils, JclShell, ShlObj, Vcl.Dialogs, System.Classes, LaunchHandler;
 
 procedure LoadCore(args : TStringList);
 
@@ -34,7 +34,12 @@ begin
   MainLog := TLog.Create;
   ProgramSettings := TSaveFile.Create(ProgramFolder + 'CMDLauncher.cfg');
   ProgramSettings.setString('version', ProgramVersion);
-  try
+
+  //SETUP DEFAULT SETTINGS!
+  if not ProgramSettings.hasKey('protocol-enabled') then
+    ProgramSettings.setBoolean('protocol-enabled', True);
+
+  {try
     mysql.libmysql_fast_load(PChar(LibFolder + 'libmysql.dll'));
   except
     on E: Exception do
@@ -42,7 +47,7 @@ begin
       ShowMessage('Could not load libmysql.dll! Please extract the whole zip!');
       CloseLauncher := True;
     end;
-  end;
+  end;}
 
   try
     FileListener.createListener;
