@@ -50,7 +50,6 @@ end;
 function CheckInternetConnection : Boolean;
 var
 Http : TIdHTTP;
-Answer : String;
 begin
   Http := TIdHTTP.Create;
   Http.Request.UserAgent := 'Mozilla/5.0';
