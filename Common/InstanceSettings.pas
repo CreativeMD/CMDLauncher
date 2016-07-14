@@ -88,12 +88,21 @@ begin
     Files := ArrayToList(TDirectory.GetFiles(Directory, '*.png'))
   else
     Files := TStringList.Create;
-  side.Add('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>'
+  {side.Add('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>'
   + '<script type="text/javascript" src="http://creativemd.bplaced.net/jquery.zoomooz.min.js"></script>');
   for i := 0 to Files.Count-1 do
     side.Add('<div style="max-width:480px; border-radius: 2px 10px; margin: 4pt; box-shadow: 3px 3px 3px #7C7C7C; float:left;" align="center">'
     + '<img src="' + Files[i] + '" class="zoomTarget" data-preservescroll="false" data-targetsize="0.7" data-closeclick="true" style="max-width:480px; max-height: 270px; border-radius: 2px 10px;">'
-    + ExtractFileName(Files[i]) + '</div>');
+    + ExtractFileName(Files[i]) + '</div>');     }
+  side.Add('<html><body style="background-color: #1C211C;"><script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>');
+  side.Add('<link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet"> <!-- 3 KB -->');
+  side.Add('<script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script> <!-- 16 KB -->');
+
+  side.Add('<div class="fotorama" data-nav="thumbs" data-width="100%" data-height="98%" data-fit="cover" data-keyboard="true">');
+  for i := 0 to Files.Count-1 do
+    side.Add('<img src="' + Files[i] + '">');
+  side.Add('</div>');
+  side.Add('<script>$(".fotorama").on("fotorama:ready", function (e, fotorama) {fotorama.requestFullScreen();});</script></body></html>');
   //side.Add('test');
   ForceDirectories(TempFolder);
   side.SaveToFile(TempFolder + 'screenshotoverview.html');

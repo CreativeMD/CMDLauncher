@@ -151,7 +151,7 @@ end;
 procedure TConnect.runTask(Bar : TCMDProgressBar);
 begin
   Bar.StartStep(1);
-  DatabaseConnection.online := DatabaseConnection.IsConnected;
+  DatabaseConnection.online := DatabaseConnection.CheckInternetConnection;
   if DatabaseConnection.online then
   begin
     Logger.MainLog.log('Connected to Database successfully! Launcher is running in online mode!');
