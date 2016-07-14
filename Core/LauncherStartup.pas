@@ -55,7 +55,7 @@ begin
   if ServerVersion <> '' then
     if StringUtils.isHigher(ProgramVersion, ServerVersion) then
     begin
-      DownloadTask := TDownloadTask.Create('http://creativemd.bplaced.net/downloads/CMDUpdate.exe', ProgramFolder + 'Update.exe');
+      DownloadTask := TDownloadTask.Create('http://creativemd.bplaced.net/downloads/CMDUpdate.exe', ProgramFolder + 'CMDUpdate.exe');
       DownloadTask.downloadFile(Bar);
       DownloadTask.Destroy;
       ShellExecute(Application.Handle, 'open', PChar(ProgramFolder + 'CMDUpdate.exe'), nil, nil, SW_NORMAL);
