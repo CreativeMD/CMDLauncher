@@ -2,11 +2,12 @@ unit DatabaseConnection;
 
 interface
 
-uses Task, ProgressBar, Winapi.WinInet, Winapi.Windows, System.SysUtils, Vcl.Forms;
+uses Task, ProgressBar, Winapi.WinInet, Winapi.Windows, System.SysUtils, Vcl.Forms, idHttp, IdSSLOpenSSL;
 
 
 function CheckUrl(url:string):boolean;
 function IsConnected: Boolean;
+function CheckInternetConnection : Boolean;
 
 var
 online : Boolean;
@@ -44,6 +45,24 @@ begin
     on E: Exception do
       Exit(False);
   end;
+end;
+
+function CheckInternetConnection : Boolean;
+var
+Http : TIdHTTP;
+Answer : String;
+begin
+  Http := TIdHTTP.Create;
+  Http.Request.UserAgent := 'Mozilla/5.0';
+
+  Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+  try
+    Result := Http.Get('http://launcher.creativemd.de/service/connectLauncher.php') = 'true';
+  except
+    on E: Exception do
+      Result := False;
+  end;
+
 end;
 
 function IsConnected: Boolean;
