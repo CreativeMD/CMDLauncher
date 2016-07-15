@@ -16,7 +16,6 @@ type
 var
 HasFinishedStartup : Boolean;
 
-
 function getStartupTasks : TList<TTask>;
 function getStartupPostTasks : TList<TTask>;
 procedure onStartupHasFinished;

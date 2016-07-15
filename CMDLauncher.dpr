@@ -73,7 +73,8 @@ uses
   Vcl.Dialogs,
   ImportUtils in 'Utils\ImportUtils.pas',
   CreativeMD in 'Forms\CreativeMD.pas' {Credit},
-  LaunchHandler in 'Core\LaunchHandler.pas';
+  LaunchHandler in 'Core\LaunchHandler.pas',
+  FontUtils in 'Utils\FontUtils.pas';
 
 {$R *.res}
 var

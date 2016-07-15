@@ -13,11 +13,11 @@ ProgramSettings : TSaveFile;
 
 const
 ProgramName : String = 'CMDLauncher';
-ProgramVersion : String = '2.6.13';
+ProgramVersion : String = '2.6.14';
 
 implementation
 
-uses Logger, LauncherStartup, FileListener, StringUtils;
+uses Logger, LauncherStartup, FileListener, StringUtils, FontUtils;
 
 procedure LoadCore(args : TStringList);
 begin
@@ -48,6 +48,9 @@ begin
       CloseLauncher := True;
     end;
   end;}
+
+  if FileExists(AssetsFolder + 'Fonts\csi-cream-source-inside.ttf') then
+    LoadResourceFont(AssetsFolder + 'Fonts\csi-cream-source-inside.ttf', 'CSI Cream Source Inside');
 
   try
     FileListener.createListener;
