@@ -404,6 +404,8 @@ begin
       GroupBox.Height := current_heigt - tempheight + SpaceY*2;
       if GroupBox is TJvGroupBox then
       begin
+        GroupBox.Caption := '';
+        TJvGroupBox(GroupBox).Caption := ExSetting.getGroupTitle;
         TJvGroupBox(GroupBox).Checked := not TJvGroupBox(GroupBox).Checked;
         TJvGroupBox(GroupBox).Checked := not TJvGroupBox(GroupBox).Checked;
       end;
@@ -1175,7 +1177,7 @@ var
 JvGroupBox : TJvGroupBox;
 begin
   JvGroupBox := TJvGroupBox.Create(Parent);
-
+  JvGroupBox.Parent := Parent;
   JvGroupBox.Checkable := True;
   JvGroupBox.Checked := Checked;
   JvGroupBox.OnCheckBoxClick := onChanged;
