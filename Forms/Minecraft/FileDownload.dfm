@@ -3744,10 +3744,10 @@ object DownloaderF: TDownloaderF
   object lblProgress: TLabel
     Left = 255
     Top = 622
-    Width = 87
+    Width = 18
     Height = 23
     Anchors = [akLeft, akBottom]
-    Caption = '1/10 Mods'
+    Caption = '...'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -19

@@ -12,7 +12,9 @@ type
   TDownloadR = (drSuccess, drFail, drCancel, drNotFinished);
   TDownloadItem = class
     URL, FileName : String;
-    constructor Create(URL, FileName : String);
+    IgnoreFileName : Boolean;
+    constructor Create(URL, FileName : String; IgnoreFileName : Boolean = False);
+    function isFileName(SuggestedFileName : string): Boolean;
   end;
   TDownloaderF = class(TForm)
     btnCancel: TButton;
@@ -82,10 +84,16 @@ implementation
 
 uses CoreLoader;
 
-constructor TDownloadItem.Create(URL, FileName : String);
+constructor TDownloadItem.Create(URL, FileName : String; IgnoreFileName : Boolean = False);
 begin
   Self.URL := URL;
   Self.FileName := FileName;
+  Self.IgnoreFileName := IgnoreFileName;
+end;
+
+function TDownloadItem.isFileName(SuggestedFileName : string): Boolean;
+begin
+  Result := IgnoreFileName or (SuggestedFileName.Replace(' ', '').Replace('''', '') = FileName.Replace(' ', ''));
 end;
 
 constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList;  Side : TSide);
@@ -316,7 +324,7 @@ begin
           begin
             Self.Log.log('Downloading ' + Item.Key.Title);
             Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
-            DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/moddownloadservice.php?modid=' + IntToStr(Item.Key.ID) + '&versionID=' + Item.Value.Name + '&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
+            DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(Item.Key.ID) + '&versionID=' + IntToStr(Item.Value.ID) + '&cat=mod&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
             if DResult = drCancel then
             begin
               if Downloader.Progress <> nil then
@@ -377,7 +385,7 @@ procedure TDownloaderF.chrmDownloadBrowserBeforeDownload(Sender: TObject;
   const browser: ICefBrowser; const downloadItem: ICefDownloadItem;
   const suggestedName: ustring; const callback: ICefBeforeDownloadCallback);
 begin
-  if string(suggestedName).Replace(' ', '').Replace('''', '') <> Item.FileName.Replace(' ', '') then
+  if not Item.isFileName(suggestedName) then
     ShowMessage('Invalid file! ' + suggestedName + ' does not match to ' + Item.FileName + '.' + sLineBreak
     + 'You do have the option to skip this mod or cancel all mods.')
   else
