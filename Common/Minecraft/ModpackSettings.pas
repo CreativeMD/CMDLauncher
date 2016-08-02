@@ -165,12 +165,11 @@ begin
   Modpack := ModpackUtils.getModPackByID(Value);
   if Modpack <> nil then
   begin
-    ModpackV := Modpack.getVersionByName(TComboBox(Controls[1]).Text);
+    ModpackV := Modpack.getVersionByName(TComboBox(Controls[0]).Text);
     if ModpackV <> nil then
       ModpackVersion := ModpackV.ID;
   end;
   TChromium(Controls[1]).Destroying;
-  Controls[1] := nil;
 end;
 
 function TModpackSelect.getUUID : string;
