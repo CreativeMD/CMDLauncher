@@ -5990,8 +5990,8 @@ object Credit: TCredit
   object lblTitle: TLabel
     Left = 120
     Top = 8
-    Width = 239
-    Height = 53
+    Width = 311
+    Height = 55
     Caption = 'CMDLauncher'
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -6024,10 +6024,10 @@ object Credit: TCredit
   object lblWebsiteLink: TLabel
     Left = 57
     Top = 103
-    Width = 105
+    Width = 150
     Height = 13
     Cursor = crHandPoint
-    Caption = 'http://creativemd.de/'
+    Caption = 'http://launcher.creativemd.de/'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlue
     Font.Height = -11
