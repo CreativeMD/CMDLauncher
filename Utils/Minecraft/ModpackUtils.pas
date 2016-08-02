@@ -108,8 +108,8 @@ Item : TPair<TMod, TModVersion>;
 Value : TStringList;
 begin
   SaveFile.setInteger('modpack', Modpack.Key.ID);
-  if not SaveFile.hasKey('modpackV') or (SaveFile.getInteger('modpackV') <> -1) then
-    SaveFile.setInteger('modpackV', Modpack.Value.ID);
+  if not SaveFile.hasKey('modpackv') or (SaveFile.getInteger('modpackv') <> -1) then
+    SaveFile.setInteger('modpackv', Modpack.Value.ID);
   Value := TStringList.Create;
   for Item in Mods do
     Value.Add(InttoStr(Item.Key.ID) + ':' + InttoStr(Item.Value.ID));
@@ -124,8 +124,8 @@ Splits, Value : TStringList;
 begin
   Modpack.Key := getModPackByID(SaveFile.getInteger('modpack'));
   if Modpack.Key <> nil then
-    if SaveFile.hasKey('modpackV') then
-      Modpack.Value := Modpack.Key.getVersionByID(SaveFile.getInteger('modpackV'));
+    if SaveFile.hasKey('modpackv') then
+      Modpack.Value := Modpack.Key.getVersionByID(SaveFile.getInteger('modpackv'));
   if Modpack.Value = nil then
     Modpack.Value := Modpack.Key.getNewestVersion;
 
@@ -356,11 +356,13 @@ end;
 
 procedure TDownloadModpackArchive.runTask(Bar : TCMDProgressBar);
 var
-DownloadTask : TDownloadTask;
+//DownloadTask : TDownloadTask;
 Extractor : TExtractZip;
 FileName, SaveFileName : String;
 InstalledArchive : TSaveFile;
 ShouldInstall : Boolean;
+Downloader : TDownloaderF;
+downloadItem : TDownloadItem;
 begin
   if Instance.Modpack.Value.hasArchive then
   begin
@@ -375,7 +377,7 @@ begin
     if ShouldInstall then
     begin
       FileName := TempFolder + 'modpack-archive.zip';
-      DownloadTask := TDownloadTask.Create(Instance.Modpack.Value.ArchiveURL, FileName);
+      {DownloadTask := TDownloadTask.Create(Instance.Modpack.Value.ArchiveURL, FileName);
       DownloadTask.setLog(Self.Log);
       if DownloadTask.downloadFile(bar) then
       begin
@@ -383,8 +385,30 @@ begin
         Extractor.setLog(log);
         Extractor.runTask(nil);
         InstalledArchive.setInteger('last-installed', Instance.Modpack.Value.ID);
+      end;}
+      Downloader := TDownloaderF.Create(nil);
+      Downloader.Show;
+      downloadItem := TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(Instance.Modpack.Key.ID) + '&versionID=' + IntToStr(Instance.Modpack.Value.ID) + '&cat=modpack&url=' + Instance.Modpack.Value.ArchiveURL, 'modpack-archive.zip', True);
+
+      //downloadItem := TDownloadItem.Create(ResourcePackVersion.URL, ResourcePackVersion.FileName);
+      if Downloader.downloadItem(downloadItem) = drSuccess then
+      begin
+        Extractor := TExtractZip.Create(FileName, Instance.getInstanceFolder);
+        Extractor.setLog(log);
+        Extractor.runTask(nil);
+        InstalledArchive.setInteger('last-installed', Instance.Modpack.Value.ID);
+
+      end;
+      try
+        Downloader.Progress.Destroy;
+      except
+        on E : Exception do
       end;
       DeleteFile(FileName);
+      //Downloader.DestroyComponents;
+      //Downloader.Close;
+      Downloader.Destroy;
+
     end;
   end;
   Bar.FinishStep;
