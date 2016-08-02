@@ -42,6 +42,7 @@ type
   end;
   TResourcepackSelect = class(TSetting)
     Folder : String;
+    ResourcePack : TResourcePack;
     constructor Create(Name, Title, Folder : String);
     procedure createControl(x, y : Integer; Parent : TWinControl); override;
     procedure destroyControl; override;
@@ -193,7 +194,6 @@ procedure TResourcepackSelect.chrmModsAddressChange(Sender: TObject; const brows
 var
 data : TStringList;
 ResourcePackSelect : TResourceSelect;
-ResourcePack : TResourcePack;
   I: Integer;
 begin
   if string(url).Contains('#add') then
@@ -231,7 +231,9 @@ begin
       begin
         Downloader := TDownloaderF.Create(nil);
         Downloader.Show;
-        downloadItem := TDownloadItem.Create(ResourcePackVersion.URL, ResourcePackVersion.FileName);
+        downloadItem := TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(ResourcePack.ID) + '&versionID=' + IntToStr(ResourcePackVersion.ID) + '&cat=resourcepack&url=' + ResourcePackVersion.URL, ResourcePackVersion.FileName);
+
+        //downloadItem := TDownloadItem.Create(ResourcePackVersion.URL, ResourcePackVersion.FileName);
         TThread.CreateAnonymousThread(procedure
         begin
           if Downloader.downloadItem(downloadItem) = drSuccess then
