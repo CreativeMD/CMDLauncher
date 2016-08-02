@@ -351,6 +351,7 @@ end;
 constructor TDownloadModpackArchive.Create(Instance : TModpackInstance; Command : TMinecraftLaunch);
 begin
   inherited Create('Download Modpack Archive', Command, True);
+  Self.sync := True;
   Self.Instance := Instance;
 end;
 
