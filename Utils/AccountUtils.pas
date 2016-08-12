@@ -227,7 +227,7 @@ begin
       Account.FLoginName := LoginForm.edtName.Text;
       Account.FPassword := LoginForm.edtPassword.Text;
       Account.SavePassword := LoginForm.chkPassword.Checked;
-      Result := login(Account, LoginForm);
+      Result := login(Account, LoginForm, True);
       //if Assigned(LoginForm) then
         //FreeAndNil(LoginForm);
       Result.Offline := False;
