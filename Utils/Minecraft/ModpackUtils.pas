@@ -395,7 +395,7 @@ begin
       if Downloader.downloadItem(downloadItem) = drSuccess then
       begin
         Extractor := TExtractZip.Create(FileName, Instance.getInstanceFolder);
-        Extractor.setLog(log);
+        Extractor.setLog(Self.log);
         Extractor.runTask(nil);
         InstalledArchive.setInteger('last-installed', Instance.Modpack.Value.ID);
 
