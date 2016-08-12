@@ -145,46 +145,39 @@ function TAccount.refreshToken : TLoginData;
 var
 HTTP : TIdHTTP;
 Parameters : TStringList;
-LoginFile, ParameterFile : TFileStream;
+RefreshFile, ParameterFile : TFileStream;
 LoginS : ISuperObject;
 begin
   Result := TLoginData.Create;
   HTTP := TIdHTTP.Create;
-  LoginFile := nil;
+  RefreshFile := nil;
   ParameterFile := nil;
   try
     HTTP.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
-    Parameters := TStringList.Create;
-    Parameters.Add('{');
-    //Parameters.Add('{');
-    Parameters.Add('    "accessToken": "' + LastLogin.Session + '",');
-    Parameters.Add('    "clientToken": "' + LastLogin.clientToken + '",');
-    //Parameters.Add('},');
-    //Parameters.Add('    "username": "' + FLoginName + '",');
-    //Parameters.Add('    "password": "' + FPassword + '"');
-    Parameters.Add('"selectedProfile": {');
-    Parameters.Add('  "id": "' + UUID + '",');
-    Parameters.Add('  "name": "' + MinecraftName + '"');
-    Parameters.Add('}');
-    Parameters.Add('}');
-    Parameters.SaveToFile(DownloadFolder + 'request.json');
-    LoginFile := TFileStream.Create(DownloadFolder + 'login.json', fmCreate);
-    ParameterFile := TFileStream.Create(DownloadFolder + 'request.json', fmOpenRead);
-    HTTP.Post('https://authserver.mojang.com/refresh', ParameterFile, LoginFile);
     ParameterFile.Free;
-    LoginFile.Free;
+    RefreshFile.Free;
+
+    Parameters := TStringList.Create;
+    Parameters.Add('{"accessToken":"' + LastLogin.Session + '","clientToken":"' + LastLogin.clientToken + '"}');
+    Parameters.SaveToFile(DownloadFolder + 'requestRefresh.json');
+    RefreshFile := TFileStream.Create(DownloadFolder + 'refresh.json', fmCreate);
+    ParameterFile := TFileStream.Create(DownloadFolder + 'requestRefresh.json', fmOpenRead);
+
+    HTTP.Post('https://authserver.mojang.com/refresh', ParameterFile, RefreshFile);
+    ParameterFile.Free;
+    RefreshFile.Free;
   except
     on E: Exception do
     begin
       ParameterFile.Free;
-      LoginFile.Free;
+      RefreshFile.Free;
       Result.Error := 'Bad Login';
       Result.Failed := True;
       Logger.MainLog.log('Failed to refresh token!!!');
     end;
   end;
 
-  LoginS := TSuperObject.ParseFile(DownloadFolder + 'login.json', true);
+  LoginS := TSuperObject.ParseFile(DownloadFolder + 'refresh.json', true);
   if (LoginS <> nil) and (LoginS.S['errorMessage'] <> '') then
   begin
     Result.Error := LoginS.S['errorMessage'];
@@ -192,11 +185,11 @@ begin
   end
   else if not Result.Failed then
   begin
-    Result.Session := LoginS.S['accessToken'];
-    Exit(Result);
+    LastLogin.Session := LoginS.S['accessToken'];
+    Result := LastLogin;
   end;
-  DeleteFile(DownloadFolder + 'login.json');
-  DeleteFile(DownloadFolder + 'request.json');
+  DeleteFile(DownloadFolder + 'refresh.json');
+  DeleteFile(DownloadFolder + 'requestRefresh.json');
 end;
 
 function login(Account : TAccount; LoginForm : TLoginF = nil; Online : Boolean = True) : TLoginData;
@@ -225,6 +218,8 @@ begin
     if LoginForm = nil then
       LoginForm := TLoginF.Create(nil);
     LoginForm.lblError.Caption := Result.Error;
+    LoginForm.edtName.Text := Account.FLoginName;
+    LoginForm.edtPassword.Text := Account.FPassword;
     ModalResult := LoginForm.ShowModal;
 
     if ModalResult = mrOk then
