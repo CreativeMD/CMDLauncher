@@ -84,7 +84,7 @@ begin
   begin
     Java := nil;
 
-    if Instance.CustomJava <> '' then
+    if Instance.getSaveFile.getBoolean('cjava') and (Instance.CustomJava <> '') then
       Java := JavaUtils.getJavaByTitle(Instance.CustomJava);
 
     if Java = nil then
