@@ -26,15 +26,23 @@ type
     public
      constructor Create;
   end;
+
   TForgeSelect = class(TSelectSetting)
     protected
+      NotifySettings : TList;
       procedure onChanged(Sender: TObject); override;
       procedure onChangedVersion(Sender: TObject);
+      procedure update;
     public
       constructor Create(Name, Title : String);
+      procedure addNotifySetting(Setting : TObject);
       procedure createControl(x, y : Integer; Parent : TWinControl); override;
       procedure destroyControl; override;
       function getMCVersion : String; virtual;
+  end;
+  IForgeUpdateSetting = interface
+  ['{A1F42682-5ED0-4B17-BE93-C3604473A9C3}']
+    procedure onForgeChanges(ForgeSelect : TForgeSelect);
   end;
   TForgeInstance = class(TInstance)
     protected
@@ -101,6 +109,12 @@ end;
 constructor TForgeSelect.Create(Name, Title : String);
 begin
   inherited Create(Name, Title, SupportedMV, '', SupportedMV.Count = 0);
+  NotifySettings := TList.Create;
+end;
+
+procedure TForgeSelect.addNotifySetting(Setting : TObject);
+begin
+  NotifySettings.Add(Setting);
 end;
 
 procedure TForgeSelect.createControl(x, y : Integer; Parent : TWinControl);
@@ -149,6 +163,7 @@ var
 mcversion : string;
 i : Integer;
 Strings : TStringList;
+
 begin
   inherited onChanged(Sender);
   if Controls.Count = 2 then
@@ -163,12 +178,25 @@ begin
     Strings.Sort;
     for i := 0 to Strings.Count-1 do
       TComboBox(Controls[1]).Items.Add(Strings[Strings.Count-1-i]);
+
+    update;
   end;
+end;
+
+procedure TForgeSelect.update;
+var
+i : Integer;
+ForgeUpdate : IForgeUpdateSetting;
+begin
+  for i := 0 to NotifySettings.Count-1 do
+      if System.SysUtils.Supports(NotifySettings[i],IForgeUpdateSetting,ForgeUpdate) then
+        ForgeUpdate.onForgeChanges(Self);
 end;
 
 procedure TForgeSelect.onChangedVersion(Sender: TObject);
 begin
   Value := TComboBox(Sender).Text;
+  update;
 end;
 
 constructor TForge.Create(UUID, MV : String; Branch : String = '');
@@ -315,12 +343,15 @@ end;
 function TForgeInstance.getSettings : TList<TSetting>;
 var
 ForgeSelect : TForgeSelect;
+EnhancedModSelect : TEnhancedModSelect;
 begin
   Result := TList<TSetting>.Create;
   ForgeSelect := TForgeSelect.Create('forge', 'Forge');
   Result.Add(ForgeSelect);
   Result.Add(TCheckOption.Create('custom', 'Allow Custom Mods', False));
-  Result.Add(TModSelect.Create('mods', 'Mods', false, Side = TServer, ForgeSelect));
+  EnhancedModSelect := TEnhancedModSelect.Create('mods', 'Mods', false, Side = TServer, ForgeSelect);
+  Result.Add(EnhancedModSelect);
+  ForgeSelect.addNotifySetting(EnhancedModSelect);
 end;
 
 function TForgeInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;

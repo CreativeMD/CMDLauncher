@@ -28,6 +28,7 @@ constructor TModpackSelect.Create(Name, Title : String);
 begin
   inherited Create(Name, Title, -1, True);
   //HasTitle := False;
+  setHideTitle;
 end;
 
 function TModpackSelect.isFilled : Boolean;
@@ -116,21 +117,20 @@ begin
   ComboBox := TComboBox.Create(Parent);
   ComboBox.Parent := Parent;
   ComboBox.Left := x;
-  ComboBox.Top := y;
+
   ComboBox.Items := getItems;
   ComboBox.Style := csOwnerDrawFixed;
 
   Controls.Add(ComboBox);
 
-
-
   Chromium := TChromium.Create(Parent);
   Chromium.Parent := Parent;
   Chromium.Left := SettingUtils.xOffset;
-  Chromium.Top := y+ComboBox.Height+SettingUtils.SpaceY;
+
   Chromium.OnAddressChange := chrmModsAddressChange;
-  Chromium.Height := 400;
-  Chromium.Width := 750;
+  Chromium.Anchors := [akLeft,akRight,akTop];
+  Chromium.Height := 600;
+  Chromium.Width := Parent.Width-4-Chromium.Left;
   Chromium.Load('http://launcher.creativemd.de/index.php?cat=modpack&launcher=yes');
   //Chromium.Visible := False;
   Controls.Add(Chromium);
@@ -138,8 +138,14 @@ begin
   TitleLabel := TLabel.Create(Parent);
   TitleLabel.Parent := Parent;
   TitleLabel.Caption := 'Nothing selected';
-  TitleLabel.Left := ComboBox.Left + ComboBox.Width + SettingUtils.xLabelSpace;
+  TitleLabel.Left := x;
   TitleLabel.Top := y;
+  TitleLabel.Font.Size := 20;
+
+
+  ComboBox.Top := TitleLabel.Top+TitleLabel.Height+4;
+  Chromium.Top := ComboBox.Top+ComboBox.Height+SettingUtils.SpaceY;
+
   Controls.Add(TitleLabel);
 
   Modpack := ModpackUtils.getModPackByID(Value);
