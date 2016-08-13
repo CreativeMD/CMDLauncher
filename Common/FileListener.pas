@@ -53,6 +53,7 @@ begin
   begin
     if LoadedLauncher and (OverviewF <> nil) and (OverviewF.BackgroundTask <> nil) and (not Assigned(OverviewF.BackgroundTask.CurrentTask)) then
     begin
+      try
       if not HasFinishedStartup then
         Synchronize(onPostStartupHasFinished);
       if FileExists(CommunicationFile) then
@@ -63,6 +64,14 @@ begin
         Self.args := args;
         Synchronize(onReceiveMessage);
         args.Destroy;
+
+      end;
+      except
+        on E: Exception do
+        begin
+          Logger.MainLog.log('Error during listening to messages!');
+          Logger.MainLog.log(e.Message);
+        end;
 
       end;
     end;
