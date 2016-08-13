@@ -3764,10 +3764,15 @@ object ModSelectF: TModSelectF
         Caption = 'Version'
       end>
     DoubleBuffered = True
+    IconOptions.Arrangement = iaLeft
+    IconOptions.AutoArrange = True
+    IconOptions.WrapText = False
     MultiSelect = True
     ReadOnly = True
     RowSelect = True
     ParentDoubleBuffered = False
+    ParentShowHint = False
+    ShowHint = False
     SmallImages = TempList
     TabOrder = 0
     ViewStyle = vsReport
@@ -3814,8 +3819,8 @@ object ModSelectF: TModSelectF
   end
   object TempList: TImageList
     Height = 24
-    Width = 24
-    Left = 248
+    Width = 1
+    Left = 256
     Top = 32
   end
 end

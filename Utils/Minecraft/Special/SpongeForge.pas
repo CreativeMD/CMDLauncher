@@ -211,8 +211,8 @@ begin
       Result[i].Destroy;
       Result[i] := SpongeForgeSelect;
     end
-    else if Result[i] is TModSelect then
-      TModSelect(Result[i]).ForgeSelect := SpongeForgeSelect;
+    else if Result[i] is TEnhancedModSelect then
+      TEnhancedModSelect(Result[i]).ForgeSelect := SpongeForgeSelect;
 end;
 
 function TSpongeForgeInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;

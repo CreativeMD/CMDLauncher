@@ -215,8 +215,8 @@ begin
       Result[i].Destroy;
       Result[i] := CauldronSelect;
     end
-    else if Result[i] is TModSelect then
-      TModSelect(Result[i]).ForgeSelect := CauldronSelect;
+    else if Result[i] is TEnhancedModSelect then
+      TEnhancedModSelect(Result[i]).ForgeSelect := CauldronSelect;
 end;
 
 function TCauldronInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;

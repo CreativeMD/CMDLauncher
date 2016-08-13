@@ -149,7 +149,7 @@ type
     procedure onBeforeSaving(GroupList : TSettingGroupList); virtual;
     procedure onSaved(GroupList : TSettingGroupList); virtual;
   end;
-  IExpandableSetting = interface  ['{82F1F81A-A408-448B-A194-DCED9A7E4FF7}']
+  IExpandableSetting = interface  ['{2358D379-2ADF-4EEA-B58A-8D4E3F53C8F0}']
     function getExpandedSettings : TList<TSetting>;
     function getGroupTitle : string;
     procedure setGroupList(GroupList : TSettingGroupList);
@@ -390,7 +390,6 @@ begin
       GroupBox.Top := current_heigt;
       GroupBox.Width := Parent.Width-xOffset*2-2;
       GroupBox.Anchors := [akLeft, akRight, akTop];
-
 
       GroupBox.Caption := ExSetting.getGroupTitle;
 
