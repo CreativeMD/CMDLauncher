@@ -26,7 +26,7 @@ implementation
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
 ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils, CommandUtils,
-Overview, URLProtocolUtils, Logger;
+Overview, URLProtocolUtils, Logger, Setup;
 
 constructor TUpdateTask.Create;
 begin
@@ -116,6 +116,9 @@ begin
   end
   else
     Logger.MainLog.log('Skipped loading cmdlauncher:// protocol!');
+
+  if (AccountUtils.MinecraftAccounts.Count = 0) then
+    SetupAssistant.Show;
 end;
 
 function getStartupPostTasks : TList<TTask>;
