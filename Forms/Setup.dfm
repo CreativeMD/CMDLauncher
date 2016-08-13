@@ -2,9 +2,10 @@ object SetupAssistant: TSetupAssistant
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = 'Setup Assistant'
-  ClientHeight = 321
-  ClientWidth = 475
+  ClientHeight = 331
+  ClientWidth = 472
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -3738,8 +3739,8 @@ object SetupAssistant: TSetupAssistant
   OldCreateOrder = False
   OnShow = FormShow
   DesignSize = (
-    475
-    321)
+    472
+    331)
   PixelsPerInch = 96
   TextHeight = 13
   object imgAvatar: TImage
@@ -6046,8 +6047,8 @@ object SetupAssistant: TSetupAssistant
   object pgcPages: TPageControl
     Left = 8
     Top = 113
-    Width = 457
-    Height = 229
+    Width = 459
+    Height = 239
     ActivePage = tsIntroduction
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -6057,7 +6058,8 @@ object SetupAssistant: TSetupAssistant
       Caption = 'tsIntroduction'
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitHeight = 159
+      ExplicitWidth = 452
+      ExplicitHeight = 0
       object lblText: TLabel
         Left = 3
         Top = 3
@@ -6080,7 +6082,10 @@ object SetupAssistant: TSetupAssistant
     object tsMinecraftAccount: TTabSheet
       Caption = 'tsMinecraftAccount'
       ImageIndex = 1
-      ExplicitHeight = 240
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 446
+      ExplicitHeight = 0
       object lblName: TLabel
         Left = 3
         Top = 8
@@ -6165,6 +6170,10 @@ object SetupAssistant: TSetupAssistant
     object tsJava: TTabSheet
       Caption = 'tsJava'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 446
+      ExplicitHeight = 0
       object lblWarning64Bit: TJvLabel
         Left = 3
         Top = 31

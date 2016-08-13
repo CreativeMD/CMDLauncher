@@ -63,31 +63,13 @@ uses JavaUtils, CoreLoader, Overview;
 
 {$R *.dfm}
 
-function IsWOW64: Boolean;
-type
-  TIsWow64Process = function( // Type of IsWow64Process API fn
-    Handle: THandle;
-    var Res: BOOL
-  ): BOOL; stdcall;
-var
-  IsWow64Result: BOOL;              // result from IsWow64Process
-  IsWow64Process: TIsWow64Process;  // IsWow64Process fn reference
+function IsWow64: Boolean;
+const
+  PROCESSOR_ARCHITECTURE_AMD64 = 9;
+var SystemInfo : TSystemInfo;
 begin
-  // Try to load required function from kernel32
-  IsWow64Process := GetProcAddress(
-    GetModuleHandle('kernel32'), 'IsWow64Process'
-  );
-  if Assigned(IsWow64Process) then
-  begin
-    // Function is implemented: call it
-    if not IsWow64Process(GetCurrentProcess, IsWow64Result) then
-      raise Exception.Create('Bad process handle');
-    // Return result of function
-    Result := IsWow64Result;
-  end
-  else
-    // Function not implemented: can't be running on Wow64
-    Result := False;
+  GetNativeSystemInfo(SystemInfo);
+  Result := SystemInfo.wProcessorArchitecture = PROCESSOR_ARCHITECTURE_AMD64;
 end;
 
 procedure TSetupAssistant.changeTab(Index : Integer);
@@ -218,9 +200,17 @@ begin
   end
   else if not SelectedJava.is64 and IsWOW64 then
   begin
+    lblWarning64BitText.Caption := 'Could not find a 64-Bit Java version.' + sLineBreak
+    + 'It''s highly recommended to download a 64 bit version first:';
     lblWebsiteLink.Visible := True;
     lblWarning64Bit.Visible := True;
     lblWarning64BitText.Visible := True;
+  end
+  else
+  begin
+    lblWebsiteLink.Visible := False;
+    lblWarning64Bit.Visible := False;
+    lblWarning64BitText.Visible := False;
   end;
 end;
 
