@@ -203,6 +203,7 @@ begin
     Instance := InstanceUtils.getInstanceByUUIDIgnoreSide(Value);
     if Instance <> nil then
     begin
+      Instance.Side := getSide;
       SubSettings.Add(Value, Instance.getSettings);
       if GroupList.SaveFile <> nil then
       begin
