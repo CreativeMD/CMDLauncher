@@ -51,7 +51,7 @@ function loadInstanceSettings(Instance : TInstance; tempInstance : Boolean = Fal
 
 implementation
 
-uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings, ResourcePackUtils;
+uses Overview, CoreLoader, StringUtils, FileUtils, JavaUtils, CustomSettings, ResourcePackUtils, ShaderPackUtils;
 
 constructor TScreenshotView.Create(Directory : string);
 begin
@@ -385,9 +385,10 @@ begin
     Page := TSettingPage.Create('Resourcepacks', 'Resourcepack.png');
     Page.AddSetting(TResourcepackSelect.Create('resourcepack', 'Resourcepack', Instance.getInstanceFolder));
     Group.AddPage(Page);
-    Page := TSettingPage.Create('Crash-Reports', 'Mail.png');
-    Group.AddPage(Page);
     Page := TSettingPage.Create('Shaderpacks', 'Shader.png');
+    Page.AddSetting(TShaderpackSelect.Create('shaderpack', 'Shaderpack', Instance.getInstanceFolder));
+    Group.AddPage(Page);
+    Page := TSettingPage.Create('Crash-Reports', 'Mail.png');
     Group.AddPage(Page);
     Groups.Add(Group);
   end;

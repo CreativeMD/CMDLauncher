@@ -26,7 +26,7 @@ implementation
 uses DatabaseConnection, VanillaUtils, IconUtils, InstanceUtils, JavaUtils,
 AccountUtils, CoreLoader, StringUtils, DownloadUtils, LauncherSettings,
 ZipUtils, ForgeUtils, ModUtils, ModpackUtils, Cauldron, SpongeForge, ResourcePackUtils, CommandUtils,
-Overview, URLProtocolUtils, Logger, Setup;
+Overview, URLProtocolUtils, Logger, Setup, ShaderPackUtils;
 
 constructor TUpdateTask.Create;
 begin
@@ -143,6 +143,7 @@ begin
   Result.Add(TLoadIcon.Create);
   Result.Add(TLoadJava.Create);
   Result.Add(TLoadResourcePacks.Create);
+  Result.Add(TLoadShaderpacks.Create);
   Result.Add(TLoadInstance.Create);
   Result.Add(TLoadAccount.Create);
 end;
