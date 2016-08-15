@@ -66,7 +66,7 @@ uses
   BuildUtils in 'Utils\Minecraft\BuildUtils.pas',
   ImportMinecraft in 'Forms\Minecraft\ImportMinecraft.pas' {Importer},
   CommandUtils in 'Utils\CommandUtils.pas',
-  ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect},
+  ShaderPackSelect in 'Forms\Minecraft\ShaderPackSelect.pas' {frmShaderPackSelect},
   FileListener in 'Common\FileListener.pas',
   URLProtocolUtils in 'Utils\URLProtocolUtils.pas',
   System.SysUtils,
@@ -74,7 +74,9 @@ uses
   ImportUtils in 'Utils\ImportUtils.pas',
   CreativeMD in 'Forms\CreativeMD.pas' {Credit},
   LaunchHandler in 'Core\LaunchHandler.pas',
-  FontUtils in 'Utils\FontUtils.pas';
+  FontUtils in 'Utils\FontUtils.pas',
+  Setup in 'Forms\Setup.pas' {SetupAssistant},
+  ResourcePackSelect in 'Forms\Minecraft\ResourcePackSelect.pas' {ResourceSelect};
 
 {$R *.res}
 var
@@ -122,10 +124,12 @@ begin
     ceflib.CefSingleProcess := False;
     ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
 
-    Application.Title := 'CMDLauncher';
+    TStyleManager.TrySetStyle('Windows10');
+  Application.Title := 'CMDLauncher';
     Application.CreateForm(TOverviewF, OverviewF);
   Application.CreateForm(TLoadingScreen, LoadingScreen);
   Application.CreateForm(TCredit, Credit);
+  Application.CreateForm(TSetupAssistant, SetupAssistant);
   Application.Run;
   end;
 

@@ -21,8 +21,7 @@ type
     protected
       FLoginName, FPassword, FMinecraftName, UUID : String;
       LastLogin : TLoginData;
-      function createToken : TLoginData;
-      function refreshToken : TLoginData;
+
     public
       SavePassword : Boolean;
       constructor Create(LoginName, Password, MinecraftName : String); overload;
@@ -31,6 +30,8 @@ type
       function Equals(O : TObject) : Boolean; override;
       property LoginName : string read FLoginName;
       property MinecraftName : string read FMinecraftName;
+      function createToken : TLoginData;
+      function refreshToken : TLoginData;
   end;
   TAccountSetting = class(TSetting<string>)
     constructor Create(Name, Title : String);

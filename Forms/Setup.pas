@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, JvgTab, Vcl.ComCtrls, JvExComCtrls,
-  JvComCtrls, Vcl.Tabs, JvComponentBase, JvTabBar, MetropolisUI.Tile,
+  JvComCtrls, Vcl.Tabs, JvComponentBase, JvTabBar,
   JvExControls, JvgButton, Vcl.StdCtrls, JvButton, JvTransparentButton,
   Vcl.Imaging.pngimage, Vcl.ExtCtrls, Vcl.ToolWin, ProgressBar, JvLabel, Winapi.ShellAPI,
   Task, System.Generics.Collections, AccountUtils;
