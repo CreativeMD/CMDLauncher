@@ -4,8 +4,8 @@ object ResourceSelect: TResourceSelect
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'Resourcepack Version Select'
-  ClientHeight = 199
-  ClientWidth = 193
+  ClientHeight = 246
+  ClientWidth = 483
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -3737,38 +3737,75 @@ object ResourceSelect: TResourceSelect
     0000000000000000000000000000000000000000000000000000000000000000
     000080010000E0070000F81F0000}
   OldCreateOrder = False
+  OnShow = FormShow
   DesignSize = (
-    193
-    199)
+    483
+    246)
   PixelsPerInch = 96
   TextHeight = 13
+  object lblMinecraft: TLabel
+    Left = 8
+    Top = 11
+    Width = 49
+    Height = 13
+    Caption = 'Minecraft:'
+  end
+  object lblResolution: TLabel
+    Left = 8
+    Top = 40
+    Width = 54
+    Height = 13
+    Caption = 'Resolution:'
+  end
   object btnSave: TButton
-    Left = 110
-    Top = 167
+    Left = 400
+    Top = 214
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
-    Caption = 'Save'
+    Caption = 'Download'
     TabOrder = 0
     OnClick = btnSaveClick
+    ExplicitLeft = 110
+    ExplicitTop = 167
   end
   object lstVersions: TListBox
-    Left = 8
+    Left = 232
     Top = 8
-    Width = 177
-    Height = 153
+    Width = 243
+    Height = 200
     Anchors = [akLeft, akTop, akRight, akBottom]
     ItemHeight = 13
     TabOrder = 1
+    ExplicitWidth = 166
   end
   object btnCancel: TButton
     Left = 8
-    Top = 167
+    Top = 214
     Width = 75
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = 'Cancel'
     ModalResult = 2
     TabOrder = 2
+    ExplicitTop = 167
+  end
+  object cbbMinecraft: TComboBox
+    Left = 81
+    Top = 8
+    Width = 145
+    Height = 22
+    Style = csOwnerDrawFixed
+    TabOrder = 3
+    OnChange = cbbMinecraftChange
+  end
+  object cbbResolution: TComboBox
+    Left = 81
+    Top = 37
+    Width = 145
+    Height = 22
+    Style = csOwnerDrawFixed
+    TabOrder = 4
+    OnChange = cbbMinecraftChange
   end
 end

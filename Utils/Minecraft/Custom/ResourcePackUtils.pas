@@ -27,12 +27,13 @@ type
   end;
   TResourcePackVersion = class
     private
-      FID : Integer;
+      FID, FResolution : Integer;
       FName, FFileName, FIFileName, FURL : String;
       FMC : TStringList;
     public
       constructor Create(Json : ISuperObject);
       function getMinecraftVersion : TList<TMinecraftVersion>;
+      function getResolution : string;
       property MC : TStringList read FMC;
       property FileName : String read FFileName;
       property IFileName : String read FIFileName;
@@ -56,6 +57,10 @@ type
 
 
 function getResourcePackByID(ID : Integer) : TResourcePack;
+
+const
+resourcepack_resolutions : array[0..8] of string =
+  ('', '8x8','16x16','32x32','64x64','128x128','256x256','512x512','1024x1024');
 
 var
 ResourcePacks : TList<TResourcePack>;
@@ -161,6 +166,7 @@ begin
   FURL := Json.S['url'];
   FID := Json.I['id'];
   FName := Json.S['name'];
+  FResolution := Json.I['resolution'];
 end;
 
 function TResourcePackVersion.getMinecraftVersion : TList<TMinecraftVersion>;
@@ -176,6 +182,11 @@ begin
       Result.Add(MCVersion);
   end;
 
+end;
+
+function TResourcePackVersion.getResolution : string;
+begin
+  Result := resourcepack_resolutions[FResolution];
 end;
 
 constructor TResourcepackSelect.Create(Name, Title, Folder : String);
@@ -194,7 +205,6 @@ procedure TResourcepackSelect.chrmModsAddressChange(Sender: TObject; const brows
 var
 data : TStringList;
 ResourcePackSelect : TResourceSelect;
-  I: Integer;
 begin
   if string(url).Contains('#add') then
   begin
@@ -205,8 +215,6 @@ begin
       if ResourcePack <> nil then
       begin
         ResourcePackSelect := TResourceSelect.Create(nil);
-        for I := 0 to ResourcePack.Versions.Count-1 do
-          ResourcePackSelect.lstVersions.Items.AddObject('(' + Implode(ResourcePack.Versions[i].MC, '-', False) + ')-' + ResourcePack.Versions[i].Name, ResourcePack.Versions[i]);
         ResourcePackSelect.ResourceSelect := Self;
         ResourcePackSelect.ShowModal;
       end;
