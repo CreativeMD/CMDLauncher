@@ -13,7 +13,7 @@ ProgramSettings : TSaveFile;
 
 const
 ProgramName : String = 'CMDLauncher';
-ProgramVersion : String = '2.6.16';
+ProgramVersion : String = '2.7.0';
 
 implementation
 
@@ -38,6 +38,9 @@ begin
   //SETUP DEFAULT SETTINGS!
   if not ProgramSettings.hasKey('protocol-enabled') then
     ProgramSettings.setBoolean('protocol-enabled', True);
+
+  if not ProgramSettings.hasKey('style') then
+    ProgramSettings.setString('style', 'Windows');
 
   {try
     mysql.libmysql_fast_load(PChar(LibFolder + 'libmysql.dll'));
