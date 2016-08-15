@@ -173,7 +173,9 @@ begin
   begin
     ModpackV := Modpack.getVersionByName(TComboBox(Controls[0]).Text);
     if ModpackV <> nil then
-      ModpackVersion := ModpackV.ID;
+      ModpackVersion := ModpackV.ID
+    else
+      ModpackVersion := -1;
   end;
   TChromium(Controls[1]).Destroying;
 end;
