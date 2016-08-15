@@ -31,6 +31,7 @@ end;
 
 constructor TWhiteBlackList.Create(ListType : TWhiteBlackTyp = ltBlack);
 begin
+  inherited Create;
   Self.ListType := ListType;
 end;
 
