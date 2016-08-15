@@ -4,7 +4,7 @@ interface
 
 uses ForgeUtils, Task, ProgressBar, System.Generics.Collections, superobject, superxmlparser, VanillaUtils, System.Classes, DownloadUtils,
 System.SysUtils, StringUtils, SettingUtils, MinecraftLaunchCommand, ForgeInstallation, LaunchTaskUtils, ZipUtils, SaveFileUtils,
-Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils, BuildUtils;
+Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils, BuildUtils, ModpackUtils;
 
 type
 TSpongeForge = class
@@ -32,6 +32,16 @@ TSpongeForgeInstance = class(TForgeInstance)
     function getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>; override;
     function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
 end;
+TSpongeModpackInstance = class(TModPackInstance)
+  protected
+
+  public
+    SpongeForge : TSpongeForge;
+    function getUUID : String; override;
+    function getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>; override;
+    function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
+    procedure LoadPost(SaveFile : TSaveFile); override;
+end;
 TLoadSpongeForge = class(TTask)
     protected
       procedure runTask(Bar : TCMDProgressBar); override;
@@ -47,9 +57,10 @@ TSpongeForgeSelect = class(TForgeSelect)
     function getMCVersion : String; override;
 end;
 TInstallServerSpongeForge = class(TLaunchTask)
-  Instance : TSpongeForgeInstance;
+  SpongeForge : TSpongeForge;
+  Instance : TInstance;
   procedure runTask(Bar : TCMDProgressBar); override;
-  constructor Create(Command : TMinecraftLaunch; Instance : TSpongeForgeInstance);
+  constructor Create(Command : TMinecraftLaunch; SpongeForge : TSpongeForge; Instance : TInstance);
 end;
 
 function getSpongeForgeByVersion(Version : string) : TSpongeForge;
@@ -137,10 +148,8 @@ end;
 
 procedure TInstallServerSpongeForge.runTask(Bar : TCMDProgressBar);
 var
-SpongeForge : TSpongeForge;
 DownloadTask : TDownloadTask;
 begin
-  SpongeForge := Instance.SpongeForge;
   if not FileExists(Instance.getInstanceFolder + 'mods\' + SpongeForge.ServerFile) then
   begin
     DownloadTask := TDownloadTask.Create(SpongeForge.URL, Instance.getInstanceFolder + 'mods\' + SpongeForge.ServerFile, False);
@@ -150,9 +159,10 @@ begin
   Bar.FinishStep;
 end;
 
-constructor TInstallServerSpongeForge.Create(Command : TMinecraftLaunch; Instance : TSpongeForgeInstance);
+constructor TInstallServerSpongeForge.Create(Command : TMinecraftLaunch; SpongeForge : TSpongeForge; Instance : TInstance);
 begin
   inherited Create('Installing SpongeForge Server', Command, True);
+  Self.SpongeForge := SpongeForge;
   Self.Instance := Instance;
 end;
 
@@ -228,8 +238,8 @@ begin
   DownloadLibary.CustomLibaryFolder := getInstanceFolder + 'libraries\';
   DownloadLibary.IsServer := True;
   Result.Add(DownloadLibary);
-  Result.Add(TInstallServerForge.Create(getInstanceFolder, TForgeLaunch(MinecraftComand)));
-  Result.Add(TInstallServerSpongeForge.Create(MinecraftComand, Self));
+  //Result.Add(TInstallServerForge.Create(getInstanceFolder, TForgeLaunch(MinecraftComand)));
+  Result.Add(TInstallServerSpongeForge.Create(MinecraftComand, SpongeForge,Self));
   if not Custom then
   begin
     ModCleaning := TModCleaning.Create(Mods, getInstanceFolder + 'mods\', Side);
@@ -241,6 +251,88 @@ begin
 end;
 
 function TSpongeForgeInstance.getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch;
+begin
+  Result := nil;
+  if SpongeForge <> nil then
+    Result := TCauldronLaunch.Create(Java, SpongeForge.Forge, Self, LoginData);
+end;
+
+procedure TSpongeModpackInstance.LoadPost(SaveFile : TSaveFile);
+var
+ClosestBelow : TSpongeForge;
+i, ForgeVersion, SpongeForgeVersion, lastBelow, lastAbove : Integer;
+begin
+  inherited LoadPost(SaveFile);
+  if Modpack.Key <> nil then
+  begin
+    ForgeVersion := StrToInt(getLastPiece(Modpack.Value.Forge, '.'));
+    lastBelow := -1;
+    lastAbove := -1;
+    ClosestBelow := nil;
+    for i := 0 to SpongeForgeList.Count-1 do
+    begin
+      if SpongeForgeList[i].Forge.MV <> Forge.MV then
+        continue;
+      SpongeForgeVersion := SpongeForgeList[i].Forge.getVersionID;
+      {if SpongeForgeVersion = ForgeVersion then
+      begin
+        SpongeForge := SpongeForgeList[i];
+        break;
+      end;}
+
+      if SpongeForgeVersion < ForgeVersion then
+      begin
+        if (lastBelow = -1) or (lastBelow <= SpongeForgeVersion) then
+        begin
+          lastBelow := SpongeForgeVersion;
+          ClosestBelow := SpongeForgeList[i];
+        end;
+      end
+      else if SpongeForgeVersion >= ForgeVersion then
+      begin
+        if (lastAbove = -1) or (lastAbove >= SpongeForgeVersion) then
+        begin
+          SpongeForge := SpongeForgeList[i];
+          lastAbove := SpongeForgeVersion;
+        end;
+      end;
+    end;
+
+    if SpongeForge = nil then
+      SpongeForge := ClosestBelow;
+
+    Forge := SpongeForge.Forge;
+  end;
+
+  Side := TServer;
+end;
+
+function TSpongeModpackInstance.getUUID : String;
+begin
+  Result := 'SpongeForgeModpack';
+end;
+
+function TSpongeModpackInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;
+var
+  i: Integer;
+begin
+  Result := inherited getStartupTasks(MinecraftComand);
+  i := 0;
+  while i < Result.Count do
+  begin
+    if Result[i] is TDownloadFLibary then
+    begin
+      Result.Insert(i+1, TInstallServerSpongeForge.Create(MinecraftComand, SpongeForge, Self));
+    end;
+    if Result[i] is TModCleaning then
+    begin
+      TModCleaning(Result[i]).Exclude.Add(SpongeForge.ServerFile);
+    end;
+    i := i + 1;
+  end;
+end;
+
+function TSpongeModpackInstance.getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch;
 begin
   Result := nil;
   if SpongeForge <> nil then

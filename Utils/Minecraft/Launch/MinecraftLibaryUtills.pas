@@ -178,7 +178,7 @@ begin
             Extractor := TExtractZip.Create(LibFileName, NativeFolder);
             Extractor.setLog(Self.Log);
             for j := 0 to ExcludeArray.Length-1 do
-              Extractor.Exclude.Add(ExcludeArray[j].AsString);
+              Extractor.Exclude.Add(string(ExcludeArray.S[j]));
             Extractor.runTask(nil);
             Extractor.Destroy;
           end

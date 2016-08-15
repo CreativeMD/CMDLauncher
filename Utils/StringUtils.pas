@@ -19,6 +19,7 @@ function onlyContains(Input, Chars : String) : Boolean;
 function isHigher(Lower, Higher : string) : Boolean;
 function ExtractUrlFileName(Url : string) : string;
 function ExtractLastFolder(Path : String) : string;
+function getLastPiece(Input, Splitter : String) : String;
 function RemoveLastFolderSpliter(Input : String) : string;
 function isStringNumber(Input : String) : Boolean;
 
@@ -103,6 +104,16 @@ begin
     i := i + 1;
   end;
 
+end;
+
+function getLastPiece(Input, Splitter : String) : String;
+var
+Folders : TStringList;
+begin
+  Folders := Explode(Input, Splitter);
+  Result := '';
+  if Folders.Count > 0 then
+    Result := Folders[Folders.Count-1];
 end;
 
 function ExtractLastFolder(Path : String) : string;

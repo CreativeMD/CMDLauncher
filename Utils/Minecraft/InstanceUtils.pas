@@ -170,6 +170,7 @@ begin
   registerInstanceTyp(TModpackInstance.Create('ModpackTyp', False), Universal);
   registerInstanceTyp(TCauldronInstance.Create('CauldronTyp', False), OnlyServer);
   registerInstanceTyp(TSpongeForgeInstance.Create('SpongeTyp', False), OnlyServer);
+  registerInstanceTyp(TSpongeModpackInstance.Create('SpongeModpackTyp', False), OnlyServer);
   registerInstanceTyp(TSnapshotInstance.Create('SnapshotTyp', False), Universal);
 
   if Assigned(Instances) then

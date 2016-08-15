@@ -17,6 +17,7 @@ type
       property UUID : string read FUUID;
       property MV : string read FMV;
       property Branch : string read FBranch;
+      function getVersionID : Integer;
       function getJarFileName : String;
       function getJsonFileName : String;
   end;
@@ -204,6 +205,11 @@ begin
   Self.FUUID := UUID;
   Self.FMV := MV;
   Self.FBranch := Branch;
+end;
+
+function TForge.getVersionID : Integer;
+begin
+  Result := StrToInt(getLastPiece(UUID, '.'));
 end;
 
 function TForge.getMinecraftVersion : TMinecraftVersion;

@@ -55,7 +55,7 @@ type
       procedure LoadPost(SaveFile : TSaveFile); override;
       function getUUID : String; override;
       function getSettings : TList<TSetting>; override;
-      function getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>; override;
+      function getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>; override;
       //function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
   end;
    TDownloadModpackArchive = class(TLaunchTask)
@@ -181,21 +181,21 @@ begin
   Result.Add(ModSelect);
 end;
 
-function TModPackInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>;
+function TModPackInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;
 var
   i: Integer;
   Item : TPair<TMod, TModVersion>;
   Added : Boolean;
 begin
   Added := False;
-  Result := inherited getStartupTasks(MinecrafComand);
+  Result := inherited getStartupTasks(MinecraftComand);
   i := 0;
   while i < Result.Count do
   begin
     if Result[i] is TDownloadMods then
     begin
       if not Added then
-        Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
+        Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecraftComand));
       for Item in Modpack.Value.Mods do
       begin
         if TDownloadMods(Result[i]).Mods.ContainsKey(Item.Key) then
@@ -212,7 +212,7 @@ begin
           TModCleaning(Result[i]).Mods.Remove(Item.Key);
         TModCleaning(Result[i]).addMod(Item);
       end;
-      Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecrafComand));
+      Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecraftComand));
       i := i + 1;
     end;
     i := i + 1;
