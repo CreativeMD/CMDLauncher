@@ -267,7 +267,9 @@ begin
   if isOptional then
     url := url + '&optional=yes';
   if isServer then
-    url := url + '&type=server';
+    url := url + '&type=server'
+  else
+    url := url + '&type=client';
 
   modpack := -1;
   if updateForge and ModUtils.ModsLoaded and (ModpackVersion <> nil) then

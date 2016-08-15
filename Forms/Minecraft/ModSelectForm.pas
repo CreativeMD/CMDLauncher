@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cefvcl, Vcl.ComCtrls,
   ceflib, StringUtils, ModUtils, Generics.Collections, InstanceUtils,
-  Vcl.ImgList;
+  Vcl.ImgList, System.ImageList;
 
 type
   TModSelectF = class(TForm)
@@ -175,7 +175,10 @@ begin
   if onlyOptional then
     url := url + '&optional=yes';
   if isServer then
-    url := url + '&type=server';
+    url := url + '&type=server'
+  else
+    url := url + '&type=client';
+
   if modpack <> -1 then
     url := url + '&modpack=' + IntToStr(modpack);
   chrmMods.Load(url);

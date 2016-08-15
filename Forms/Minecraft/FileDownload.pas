@@ -278,14 +278,15 @@ var
 Item : TPair<TMod, TModVersion>;
 begin
   inherited Create('Downloading Mods', True, False);
+  Self.ModsFolder := ModsFolder;
+  Self.sync := True;
+  Self.Side := Side;
   Self.Mods := TDictionary<TMod, TModVersion>.Create;
   for Item in Mods do
   begin
     addMod(Item);
   end;
-  Self.ModsFolder := ModsFolder;
-  Self.sync := True;
-  Self.Side := Side;
+
 end;
 
 procedure TDownloadMods.runTask(Bar : TCMDProgressBar);
