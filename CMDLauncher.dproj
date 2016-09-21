@@ -101,11 +101,11 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <VerInfo_Release>16</VerInfo_Release>
-        <VerInfo_MinorVer>6</VerInfo_MinorVer>
+        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Keys>CompanyName=TeamCreative;FileDescription=CMDLauncher (Mods, Modpacks etc.);FileVersion=2.6.16.0;InternalName=;LegalCopyright=https://raw.githubusercontent.com/CreativeMD/CMDLauncher/master/LICENSE;LegalTrademarks=;OriginalFilename=;ProductName=CMDlauncher;ProductVersion=2.6;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=TeamCreative;FileDescription=CMDLauncher (Mods, Modpacks etc.);FileVersion=2.7.1.0;InternalName=;LegalCopyright=https://raw.githubusercontent.com/CreativeMD/CMDLauncher/master/LICENSE;LegalTrademarks=;OriginalFilename=;ProductName=CMDlauncher;ProductVersion=2.6;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
     </PropertyGroup>

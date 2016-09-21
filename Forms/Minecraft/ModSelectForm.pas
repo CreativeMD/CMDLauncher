@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, cefvcl, Vcl.ComCtrls,
   ceflib, StringUtils, ModUtils, Generics.Collections, InstanceUtils,
-  Vcl.ImgList, System.ImageList;
+  Vcl.ImgList;
 
 type
   TModSelectF = class(TForm)

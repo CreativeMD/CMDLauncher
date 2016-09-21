@@ -233,8 +233,8 @@ begin
     if lvMods.Items.Item[i].Data <> nil then
     begin
       ComboBox := TComboBox(lvMods.Items.Item[i].Data);
-      ComboBox.Clear;
       Item := getMod(i);
+      ComboBox.Clear;
       Versions := Item.Key.getValidVersionsMC(SelectedMC);
       for j := 0 to Versions.Count-1 do
         ComboBox.Items.Add(Versions[j].Name);

@@ -14,7 +14,7 @@ uses
   JvExComCtrls, JvHeaderControl, JvStatusBar, JvSpeedbar, Vcl.ExtCtrls,
   JvExExtCtrls, JvExtComponent, JvToolBar, JvListView, ShellApi,
   Vcl.Themes, superobject, SideUtils, commctrl, LaunchHandler, System.Actions,
-  Vcl.ActnList, System.ImageList, Vcl.JumpList, Vcl.OleCtrls, SHDocVw;
+  Vcl.ActnList, Vcl.OleCtrls, SHDocVw;
 
 const
   WM_AFTER_SHOW = WM_USER + 300;
