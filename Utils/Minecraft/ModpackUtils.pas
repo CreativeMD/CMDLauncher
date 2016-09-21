@@ -29,6 +29,7 @@ type
       FID : Integer;
       FName, FForge : String;
       FMods : TDictionary<TMod, TModVersion>;
+      FCustomFiles : TStringList;
       FArchiveURL : String;
     public
       constructor Create(Json : ISuperObject);
@@ -38,6 +39,7 @@ type
       property Name : String read FName;
       property Mods : TDictionary<TMod, TModVersion> read FMods;
       property ArchiveURL : String read FArchiveURL;
+      property CustomFiles : TStringList read FCustomFiles;
   end;
   TLoadModpack = class(TTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -212,6 +214,8 @@ begin
           TModCleaning(Result[i]).Mods.Remove(Item.Key);
         TModCleaning(Result[i]).addMod(Item);
       end;
+      TModCleaning(Result[i]).Exclude.AddStrings(Modpack.Value.CustomFiles);
+
       Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecraftComand));
       i := i + 1;
     end;
@@ -234,6 +238,20 @@ begin
   FArchiveURL := Json.S['archive'];
   FName := Json.S['name'];
   FForge := Json.S['forge'];
+
+  FCustomFiles := nil;
+
+  try
+    FCustomFiles := Explode(Json.S['custom_files'], ';');
+    for i := 0 to FCustomFiles.Count-1 do
+      FCustomFiles[i] := FCustomFiles[i].Replace('/', '\');
+  except
+    on E: Exception do
+    begin
+      FCustomFiles := TStringList.Create;
+    end;
+  end;
+
   InstallArray := Json.A['mods'];
   FMods := TDictionary<TMod, TModVersion>.Create;
   if InstallArray <> nil then
