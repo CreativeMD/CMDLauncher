@@ -59,6 +59,7 @@ type
       FTitle : String;
       Required : TList<Integer>;
       FModType : TSideType;
+      FOptional: Boolean;
       constructor Create(Json : ISuperObject);
     public
       function getVersionByID(ID : Integer) : TModVersion;
@@ -74,6 +75,7 @@ type
       property ModType : TSideType read FModType;
       property Title : String read FTitle;
       property ID : Integer read FID;
+      property Optional : Boolean read FOptional;
   end;
   TLoadMod = class(TTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -254,6 +256,7 @@ RequiredArray : TSuperArray;
 begin
   FTitle := Json.S['title'];
   FID := Json.I['id'];
+  FOptional := Json.B['optional'];
   Required := TList<Integer>.Create;
   RequiredArray := Json.A['require'];
   if RequiredArray <> nil then

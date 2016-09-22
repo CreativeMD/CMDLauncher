@@ -4,7 +4,8 @@ interface
 
 uses ForgeUtils, System.Generics.Collections, Task, ModUtils, ProgressBar, DownloadUtils,
 superobject, System.SysUtils, System.Classes, SaveFileUtils, SettingUtils,
-AccountUtils, MinecraftLaunchCommand, JavaUtils, StringUtils, SideUtils, LaunchTaskUtils;
+AccountUtils, MinecraftLaunchCommand, JavaUtils, StringUtils, SideUtils, LaunchTaskUtils,
+Vcl.Dialogs, System.UITypes;
 
 type
   TModpackVersion = class;
@@ -59,6 +60,8 @@ type
       function getSettings : TList<TSetting>; override;
       function getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>; override;
       //function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
+      function getCustomPopUpMenu : TDictionary<string, String>; override;
+      procedure onCustomMenuClicked(Item : string); override;
   end;
    TDownloadModpackArchive = class(TLaunchTask)
     Instance : TModpackInstance;
@@ -76,7 +79,7 @@ ModPacksLoaded : Boolean;
 implementation
 
 uses CoreLoader, DatabaseConnection, Logger, InstanceUtils, FileDownload,
-ModSettings, ModpackSettings, ZipUtils;
+ModSettings, ModpackSettings, ZipUtils, Overview;
 
 function getModPackByID(ID : Integer) : TModpack;
 var
@@ -157,7 +160,7 @@ begin
           on E: Exception do
             Logger.MainLog.log('Failed to load mod version: ' + Splits[1]);
         end;
-        if Item.Value <> nil then
+        if (Item.Value <> nil) and (Item.Key.Optional) and (not Modpack.Value.Mods.ContainsKey(Item.Key)) then
           Mods.Add(Item.Key, Item.Value);
       end;
     end;
@@ -220,6 +223,40 @@ begin
       i := i + 1;
     end;
     i := i + 1;
+  end;
+end;
+
+function TModPackInstance.getCustomPopUpMenu : TDictionary<string, String>;
+begin
+  Result := TDictionary<string, String>.Create;
+  Result.Add('convert', 'Convert to Mod Instance');
+end;
+
+procedure TModPackInstance.onCustomMenuClicked(Item : string);
+var
+ModInstance : TForgeInstance;
+Key : TMod;
+Tasks : TList<TTask>;
+begin
+  if Item = 'convert' then
+  begin
+    if MessageDlg('Do you really want to convert this instance? ' + Self.Title,mtCustom, [mbYes,mbNo], 0) = mrYes then
+    begin
+      getSaveFile.setString('forge', Modpack.Value.Forge);
+      ModInstance := TForgeInstance.Create(Self.Title, True);
+      ModInstance.LoadPost(ModInstance.getSaveFile);
+      for Key in Modpack.Value.Mods.Keys do
+        if not ModInstance.getMods.ContainsKey(Key) then
+          ModInstance.getMods.Add(Key, Modpack.Value.Mods.Items[Key]);
+      if Modpack.Value.CustomFiles.Count > 0 then
+        ModInstance.Custom := True;
+      ModInstance.SaveInstance;
+      //Self.Destroy;
+      Tasks := TList<TTask>.Create;
+      Tasks.Add(TLoadInstance.Create);
+      Tasks.Add(TFinishLoadInstance.Create);
+      OverviewF.runForegroundTasks(Tasks);
+    end;
   end;
 end;
 

@@ -32,6 +32,10 @@ type
       function canInstanceLaunch : Boolean; virtual;
       procedure LoadPost(SaveFile : TSaveFile); virtual;
       procedure SaveInstance;
+
+      function getCustomPopUpMenu : TDictionary<string, String>; virtual;
+      procedure onCustomMenuClicked(Item : string); virtual;
+
       property Title : string read FTitle;
       property getSaveFile : TSaveFile read SaveFile;
   end;
@@ -63,10 +67,16 @@ function getInstanceByUUID(UUID : String; Side : TSide) : TInstance;
 function getInstanceByUUIDIgnoreSide(UUID : String) : TInstance;
 function getTypes(Side : TSide) : TStringList;
 procedure registerInstanceTyp(Instance : TInstance; SideType : TSideType);
+procedure reloadInstances;
 
 implementation
 
 uses CoreLoader, FileUtils, Overview, Logger, VanillaUtils, ForgeUtils, ModpackUtils, Cauldron, SnapshotUtils, SpongeForge;
+
+procedure reloadInstances;
+begin
+  OverviewF.loadInstances;
+end;
 
 function getTypes(Side : TSide) : TStringList;
 var
@@ -319,6 +329,16 @@ end;
 function TInstance.canInstanceLaunch : Boolean;
 begin
   Result := True;
+end;
+
+function TInstance.getCustomPopUpMenu : TDictionary<string,string>;
+begin
+  Result := nil;
+end;
+
+procedure TInstance.onCustomMenuClicked(Item : string);
+begin
+
 end;
 
 procedure TInstance.LoadPost(SaveFile : TSaveFile);

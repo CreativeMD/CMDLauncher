@@ -82,12 +82,14 @@ type
     procedure lvInstancesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Export1Click(Sender: TObject);
+    procedure onCustomMenuClicked(Sender: TObject);
   private
     { Private-Deklarationen }
   public
     Groups : TStringList;
     Icons : TStringList;
     BackgroundTask : TBackgroundTaskManager;
+    PopUpInstance : TInstance;
     procedure loadInstances;
     procedure runForegroundTasks(Tasks : TList<TTask>);
     procedure showHint;
@@ -254,10 +256,49 @@ procedure TOverviewF.lvInstancesContextPopup(Sender: TObject; MousePos: TPoint;
   var Handled: Boolean);
 var
 PopPoint : TPoint;
+NewItems : TDictionary<string,string>;
+i: Integer;
+Item : TMenuItem;
+KeyAndValue : TPair<string, string>;
 begin
   PopPoint := ClientToScreen(lvInstances.ClientToParent(MousePos, OverviewF));
   if lvInstances.Selected <> nil then
-    pmInstance.Popup(PopPoint.X, PopPoint.Y)
+  begin
+    i := 0;
+    while i < pmInstance.Items.Count do
+    begin
+      if pmInstance.Items.Items[i].Tag = 1 then
+      begin
+        pmInstance.Items.Items[i].DestroyComponents;
+        //pmInstance.Items.
+        pmInstance.Items.Delete(i)
+      end
+      else
+        i := i + 1;
+    end;
+
+    PopUpInstance := getSelectedInstance;
+    NewItems := PopUpInstance.getCustomPopUpMenu;
+    if NewItems <> nil then
+    begin
+      Item := TMenuItem.Create(nil);
+      Item.Caption := '-';
+      Item.Tag := 1;
+      pmInstance.Items.Add(Item);
+      for KeyAndValue in NewItems do
+      begin
+        Item := TMenuItem.Create(nil);
+        Item.Name := KeyAndValue.Key;
+        Item.Caption := KeyAndValue.Value;
+        Item.OnClick := Self.onCustomMenuClicked;
+        Item.Tag := 1;
+        pmInstance.Items.Add(Item);
+      end;
+      NewItems.Destroy;
+    end;
+
+    pmInstance.Popup(PopPoint.X, PopPoint.Y);
+  end
   else
     pmGenerell.Popup(PopPoint.X, PopPoint.Y);
 end;
@@ -568,6 +609,11 @@ begin
       FileName := FileName + '.cfg';
     CopyFile(PWideChar(getSelectedInstance.getSaveFile.getFileName), PWideChar(FileName), False);
   end;
+end;
+
+procedure TOverviewF.onCustomMenuClicked(Sender: TObject);
+begin
+  PopUpInstance.onCustomMenuClicked((Sender as TMenuItem).Name);
 end;
 
 procedure TOverviewF.FormCreate(Sender: TObject);

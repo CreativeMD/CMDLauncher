@@ -47,12 +47,13 @@ type
   end;
   TForgeInstance = class(TInstance)
     protected
-      Custom : Boolean;
+      FCustom : Boolean;
       Mods : TDictionary<TMod, TModVersion>;
       procedure Load(SaveFile : TSaveFile); override;
       procedure Save(SaveFile : TSaveFile); override;
     public
       Forge : TForge;
+      function getMods : TDictionary<TMod, TModVersion>;
       procedure LoadPost(SaveFile : TSaveFile); override;
       function getUUID : String; override;
       function getSettings : TList<TSetting>; override;
@@ -61,6 +62,7 @@ type
       function getLaunchSettings : TList<TSetting>; override;
       function getLaunchSaveFile : TSaveFile; override;
       function canInstanceLaunch : Boolean; override;
+      property Custom : Boolean read FCustom write FCustom;
   end;
 
 function getForgeByUUID(UUID : string) : TForge;
@@ -320,12 +322,17 @@ begin
   end;
 end;
 
+function TForgeInstance.getMods : TDictionary<TMod, TModVersion>;
+begin
+  Result := Mods;
+end;
+
 procedure TForgeInstance.Load(SaveFile : TSaveFile);
 begin
   Forge := nil;
   if ForgeList <> nil then
     Forge := getForgeByUUID(SaveFile.getString('forge'));
-  Custom := SaveFile.getBoolean('custom');
+  FCustom := SaveFile.getBoolean('custom');
 end;
 
 procedure TForgeInstance.Save(SaveFile : TSaveFile);
@@ -334,7 +341,7 @@ Item : TPair<TMod, TModVersion>;
 Value : TStringList;
 begin
   SaveFile.setString('forge', Forge.UUID);
-  SaveFile.setBoolean('custom', Custom);
+  SaveFile.setBoolean('custom', FCustom);
   Value := TStringList.Create;
   for Item in Mods do
     Value.Add(InttoStr(Item.Key.ID) + ':' + InttoStr(Item.Value.ID));
@@ -391,7 +398,7 @@ begin
     DownloadLibary.IsServer := True;
     Result.Add(DownloadLibary);
   end;
-  if not Custom then
+  if not FCustom then
     Result.Add(TModCleaning.Create(Mods, getInstanceFolder + 'mods\', Side));
 
   Result.Add(TDownloadMods.Create(Mods, getInstanceFolder + 'mods\', Side));
