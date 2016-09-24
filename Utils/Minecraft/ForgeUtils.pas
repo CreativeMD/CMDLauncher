@@ -5,7 +5,7 @@ interface
 uses VanillaUtils, Task, ProgressBar, InstanceUtils, SaveFileUtils, System.Generics.Collections,
 MinecraftLaunchCommand, SettingUtils, JavaUtils, System.Classes, AccountUtils,
 System.SysUtils, superobject, Vcl.Controls, Vcl.StdCtrls, AssetUtils,
-MinecraftLibaryUtills, ModUtils, System.UITypes, SideUtils;
+MinecraftLibaryUtills, ModUtils, System.UITypes, SideUtils, System.IOUtils, Vcl.Forms, System.Types;
 
 type
   TForge = class
@@ -63,6 +63,28 @@ type
       function getLaunchSaveFile : TSaveFile; override;
       function canInstanceLaunch : Boolean; override;
       property Custom : Boolean read FCustom write FCustom;
+  end;
+  TDownloadMods = class(TTask)
+    protected
+      ModsFolder : String;
+      Side : TSide;
+      procedure runTask(Bar : TCMDProgressBar); override;
+    public
+      Mods : TDictionary<TMod, TModVersion>;
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
+      procedure addMod(PMod : TPair<TMod, TModVersion>);
+  end;
+  TModCleaning = class(TTask)
+    protected
+      ModsFolders : TStringList;
+      Side : TSide;
+      procedure runTask(Bar : TCMDProgressBar); override;
+    public
+      Mods : TDictionary<TMod, TModVersion>;
+      Exclude : TStringList;
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList; Side : TSide); overload;
+      constructor Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide); overload;
+      procedure addMod(PMod : TPair<TMod, TModVersion>);
   end;
 
 function getForgeByUUID(UUID : string) : TForge;
@@ -428,6 +450,170 @@ end;
 function TForgeInstance.getLaunchSaveFile : TSaveFile;
 begin
   Result := TSaveFile.Create(getInstanceFolder + 'server.properties');
+end;
+
+constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolders : TStringList;  Side : TSide);
+var
+Item : TPair<TMod, TModVersion>;
+begin
+  inherited Create('Clean Mods', True);
+  Self.Exclude := TStringList.Create;
+  Self.ModsFolders := ModsFolders;
+  Self.Side := Side;
+  Self.Mods := TDictionary<TMod, TModVersion>.Create;
+  for Item in Mods do
+  begin
+    addMod(Item);
+  end;
+end;
+
+procedure TModCleaning.addMod(PMod : TPair<TMod, TModVersion>);
+begin
+  if PMod.Key.ModType.isCompatible(Side) and not Self.Mods.ContainsKey(PMod.Key) then
+      Self.Mods.Add(PMod.Key, PMod.Value);
+end;
+
+constructor TModCleaning.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String;  Side : TSide);
+begin
+  Self.ModsFolders := TStringList.Create;
+  Self.ModsFolders.Add(ModsFolder);
+  Create(Mods, Self.ModsFolders, Side);
+end;
+
+procedure TModCleaning.runTask(Bar : TCMDProgressBar);
+var
+Files : TStringList;
+i, j: Integer;
+Item : TPair<TMod, TModVersion>;
+isFileOfMod : Boolean;
+begin
+  for i := 0 to ModsFolders.Count-1 do
+  begin
+    if DirectoryExists(ModsFolders[i]) then
+    begin
+      Files := ArrayToList(TDirectory.GetFiles(ModsFolders[i]));
+
+      Bar.StartStep(Files.Count);
+      for j := 0 to Files.Count-1 do
+      begin
+        isFileOfMod := False;
+
+        for Item in Mods do
+          if Item.Value.isModFile(Files[j].Replace(ModsFolders[i], '').Replace('\', '/'), Side) then
+          begin
+            isFileOfMod := True;
+            Break;
+          end;
+
+        if not isFileOfMod and not Exclude.Contains(Files[j].Replace(ModsFolders[i], '').Replace('\', '/')) then
+        begin
+          DeleteFile(Files[j]);
+          Self.Log.log('Deleted ' + Files[j].Replace(ModsFolders[i], '').Replace('\', '/'));
+        end;
+
+        Bar.StepPos := j;
+      end;
+    end;
+  end;
+  Bar.FinishStep;
+end;
+
+procedure TDownloadMods.addMod(PMod : TPair<TMod, TModVersion>);
+begin
+  if PMod.Key.ModType.isCompatible(Side) and not Self.Mods.ContainsKey(PMod.Key) then
+      Self.Mods.Add(PMod.Key, PMod.Value);
+end;
+
+constructor TDownloadMods.Create(Mods : TDictionary<TMod, TModVersion>; ModsFolder : String; Side : TSide);
+var
+Item : TPair<TMod, TModVersion>;
+begin
+  inherited Create('Downloading Mods', True, False);
+  Self.ModsFolder := ModsFolder;
+  Self.sync := True;
+  Self.Side := Side;
+  Self.Mods := TDictionary<TMod, TModVersion>.Create;
+  for Item in Mods do
+  begin
+    addMod(Item);
+  end;
+
+end;
+
+procedure TDownloadMods.runTask(Bar : TCMDProgressBar);
+var
+Downloader : TDownloaderF;
+Item : TPair<TMod, TModVersion>;
+DResult : TDownloadR;
+i : Integer;
+NeedInstallation, IsModValid : Boolean;
+begin
+  NeedInstallation := False;
+  for Item in Mods do
+  begin
+    if not Item.Value.isInstalled(ModsFolder, Side) then
+    begin
+      NeedInstallation := True;
+    end;
+  end;
+
+  if NeedInstallation then
+  begin
+    Downloader := TDownloaderF.Create(nil);
+    //Downloader.chrmDownloader.
+    Downloader.Show;
+    Downloader.DownloadBar.StartProcess(Mods.Count);
+    Bar.StartStep(Mods.Count);
+    for Item in Mods do
+    begin
+      IsModValid := True;
+
+      if IsModValid and not Item.Value.isInstalled(ModsFolder, Side) then
+      begin
+        for i := 0 to Item.Value.Files.Count-1 do
+        begin
+          if not Item.Value.Files[i].isInstalled(ModsFolder, Side) and Item.Value.Files[i].SideType.isCompatible(Side) then
+          begin
+            Self.Log.log('Downloading ' + Item.Key.Title);
+            Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
+            DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(Item.Key.ID) + '&versionID=' + IntToStr(Item.Value.ID) + '&cat=mod&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
+            if DResult = drCancel then
+            begin
+              if Downloader.Progress <> nil then
+                Downloader.Progress.Destroy;
+              Downloader.Destroy;
+              Self.Log.log('Canceled mod download ');
+              Exit;
+            end;
+            if DResult = drFail then
+            begin
+              if Downloader.Progress <> nil then
+                Downloader.Progress.Destroy;
+              Self.Log.logLastLine('Failed to download mod! ' + Item.Key.Title);
+            end;
+
+            if DResult = drSuccess then
+            begin
+              Downloader.Progress.lblTask.Caption := 'Installing Mod';
+              Application.ProcessMessages;
+              Item.Value.Files[i].installObj(TempFolder, ModsFolder, Side);
+              Downloader.Progress.Destroy;
+              Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
+            end;
+            //Downloader.chrmDownloader.ReCreateBrowser('');
+            //Downloader.chrmDownloader := TChromium.Create(Downloader);
+            //Downloader.chrmDownloader.Parent := Downloader;
+          end;
+        end;
+
+      end;
+      Downloader.DownloadBar.FinishStep;
+      Bar.StepPos := Bar.StepPos + 1;
+    end;
+    Downloader.Destroy;
+  end;
+  Bar.FinishStep;
+
 end;
 
 end.
