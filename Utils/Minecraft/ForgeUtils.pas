@@ -546,7 +546,8 @@ Downloader : TDownloaderF;
 Item : TPair<TMod, TModVersion>;
 DResult : TDownloadR;
 i : Integer;
-NeedInstallation, IsModValid : Boolean;
+NeedInstallation, IsModValid, IsModInstalled : Boolean;
+  j: Integer;
 begin
   NeedInstallation := False;
   for Item in Mods do
@@ -574,35 +575,48 @@ begin
         begin
           if not Item.Value.Files[i].isInstalled(ModsFolder, Side) and Item.Value.Files[i].SideType.isCompatible(Side) then
           begin
-            Self.Log.log('Downloading ' + Item.Key.Title);
-            Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
-            DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(Item.Key.ID) + '&versionID=' + IntToStr(Item.Value.ID) + '&cat=mod&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
-            if DResult = drCancel then
-            begin
-              if Downloader.Progress <> nil then
-                Downloader.Progress.Destroy;
-              Downloader.Destroy;
-              Self.Log.log('Canceled mod download ');
-              Exit;
-            end;
-            if DResult = drFail then
-            begin
-              if Downloader.Progress <> nil then
-                Downloader.Progress.Destroy;
-              Self.Log.logLastLine('Failed to download mod! ' + Item.Key.Title);
-            end;
+            IsModInstalled := False;
 
-            if DResult = drSuccess then
+            //SEARCH FOR ALREADY DOWNLOADED MODS
+            Self.Log.log('Searching ' + Item.Key.Title);
+            for j := 0 to Instances.Count-1 do
+              if (Instances[j].getInstanceModsFolder <> Self.ModsFolder) and Item.Value.Files[i].isInstalled(Instances[j].getInstanceModsFolder, Side) then
+              begin
+                Item.Value.Files[i].copyObj(Instances[j].getInstanceModsFolder, ModsFolder, Side);
+                Self.Log.logLastLine('Found ' + Item.Key.Title);
+                IsModInstalled := True;
+                break;
+              end;
+
+            if not IsModInstalled then
             begin
-              Downloader.Progress.lblTask.Caption := 'Installing Mod';
-              Application.ProcessMessages;
-              Item.Value.Files[i].installObj(TempFolder, ModsFolder, Side);
-              Downloader.Progress.Destroy;
-              Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
+              Self.Log.logLastLine('Downloading ' + Item.Key.Title);
+              Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(Mods.Count) + ' Mods';
+              DResult := Downloader.downloadItem(TDownloadItem.Create('http://launcher.creativemd.de/service/downloadservice.php?id=' + IntToStr(Item.Key.ID) + '&versionID=' + IntToStr(Item.Value.ID) + '&cat=mod&url=' + Item.Value.Files[i].DownloadLink, Item.Value.Files[i].DFileName));
+              if DResult = drCancel then
+              begin
+                if Downloader.Progress <> nil then
+                  Downloader.Progress.Destroy;
+                Downloader.Destroy;
+                Self.Log.log('Canceled mod download ');
+                Exit;
+              end;
+              if DResult = drFail then
+              begin
+                if Downloader.Progress <> nil then
+                  Downloader.Progress.Destroy;
+                Self.Log.logLastLine('Failed to download mod! ' + Item.Key.Title);
+              end;
+
+              if DResult = drSuccess then
+              begin
+                Downloader.Progress.lblTask.Caption := 'Installing Mod';
+                Application.ProcessMessages;
+                Item.Value.Files[i].installObj(TempFolder, ModsFolder, Side);
+                Downloader.Progress.Destroy;
+                Self.Log.logLastLine('Downloaded ' + Item.Key.Title);
+              end;
             end;
-            //Downloader.chrmDownloader.ReCreateBrowser('');
-            //Downloader.chrmDownloader := TChromium.Create(Downloader);
-            //Downloader.chrmDownloader.Parent := Downloader;
           end;
         end;
 

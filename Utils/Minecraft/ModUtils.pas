@@ -15,6 +15,7 @@ type
       function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; virtual; abstract;
       function isInstalled(Folder : String; Side : TSide) : Boolean; virtual; abstract;
       function isFile(FileName : String; Side : TSide) : Boolean; virtual; abstract;
+      function copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean; virtual; abstract;
   end;
   TModFile = class(TModInstallObj)
     private
@@ -25,6 +26,7 @@ type
       function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; override;
       function isInstalled(Folder : String; Side : TSide) : Boolean; override;
       function isFile(FileName : String; Side : TSide) : Boolean; override;
+      function copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean; override;
   end;
   TModArchive = class(TModInstallObj)
     private
@@ -34,6 +36,7 @@ type
       function installObj(TempFolder : String; Folder : String; Side : TSide) : Boolean; override;
       function isInstalled(Folder : String; Side : TSide) : Boolean; override;
       function isFile(FileName : String; Side : TSide) : Boolean; override;
+      function copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean; override;
   end;
   TModVersion = class
     private
@@ -459,6 +462,11 @@ begin
   end;
 end;
 
+function TModFile.copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean;
+begin
+  Result := installObj(FromFolder, ToFolder, Side);
+end;
+
 function TModFile.isInstalled(Folder : String; Side : TSide) : Boolean;
 var
 FilePath  : String;
@@ -520,6 +528,17 @@ begin
     DeleteFolder(NewTempFolder, nil);
     DeleteFile(PWideChar(TempFolder + DFileName));
   end;
+end;
+
+function TModArchive.copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean;
+var
+i : Integer;
+begin
+  Result := True;
+  for i := 0 to InstallObjs.Count-1 do
+    if InstallObjs[i].SideType.isCompatible(Side) then
+      if not InstallObjs[i].installObj(FromFolder, ToFolder, Side) then
+        Result := False;
 end;
 
 function TModArchive.isFile(FileName : String; Side : TSide) : Boolean;
