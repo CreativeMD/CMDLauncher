@@ -5,9 +5,20 @@ interface
 uses ForgeUtils, System.Generics.Collections, Task, ModUtils, ProgressBar, DownloadUtils,
 superobject, System.SysUtils, System.Classes, SaveFileUtils, SettingUtils,
 AccountUtils, MinecraftLaunchCommand, JavaUtils, StringUtils, SideUtils, LaunchTaskUtils,
-Vcl.Dialogs, System.UITypes;
+Vcl.Dialogs, System.UITypes, Vcl.Forms, Winapi.Windows;
 
 type
+  TCustomFile = class
+    private
+      FFileName, FURL, FIFileName : String;
+      FSideType : TSideType;
+    public
+      constructor Create(Json : ISuperObject);
+      property FileName : String read FFileName;
+      property IFileName : String read FIFileName;
+      property URL : String read FFileName;
+      property SideType : TSideType read FSideType;
+  end;
   TModpackVersion = class;
   TModpack = class
     private
@@ -30,7 +41,7 @@ type
       FID : Integer;
       FName, FForge : String;
       FMods : TDictionary<TMod, TModVersion>;
-      FCustomFiles : TStringList;
+      FCustomFiles : TList<TCustomFile>;
       FArchiveURL : String;
     public
       constructor Create(Json : ISuperObject);
@@ -40,7 +51,7 @@ type
       property Name : String read FName;
       property Mods : TDictionary<TMod, TModVersion> read FMods;
       property ArchiveURL : String read FArchiveURL;
-      property CustomFiles : TStringList read FCustomFiles;
+      property CustomFiles : TList<TCustomFile> read FCustomFiles;
   end;
   TLoadModpack = class(TTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -66,6 +77,12 @@ type
    TDownloadModpackArchive = class(TLaunchTask)
     Instance : TModpackInstance;
     constructor Create(Instance : TModpackInstance; Command : TMinecraftLaunch);
+    procedure runTask(Bar : TCMDProgressBar); override;
+  end;
+  TCustomFileDownload = class(TLaunchTask)
+    Instance : TModpackInstance;
+    CustomFiles : TList<TCustomFile>;
+    constructor Create(Instance : TModpackInstance; CustomFiles : TList<TCustomFile>; Command : TMinecraftLaunch);
     procedure runTask(Bar : TCMDProgressBar); override;
   end;
 
@@ -101,10 +118,71 @@ begin
   end;
 end;
 
+constructor TCustomFileDownload.Create(Instance : TModpackInstance; CustomFiles : TList<TCustomFile>; Command : TMinecraftLaunch);
+var
+i : Integer;
+begin
+  inherited Create('Download Custom Files', Command, True);
+  Self.Instance := Instance;
+  Self.CustomFiles := TList<TCustomFile>.Create;
+  for i := 0 to CustomFiles.Count-1 do
+    if CustomFiles[i].SideType.isCompatible(Instance.Side) then
+      Self.CustomFiles.Add(CustomFiles[i]);
+end;
+
+procedure TCustomFileDownload.runTask(Bar : TCMDProgressBar);
+var
+Downloader : TDownloaderF;
+i: Integer;
+ModsFolder : String;
+DResult : TDownloadR;
+begin
+  ModsFolder := Instance.getInstanceModsFolder;
+  Downloader := TDownloaderF.Create(nil);
+  Downloader.Show;
+  Downloader.DownloadBar.StartProcess(CustomFiles.Count);
+  Bar.StartStep(CustomFiles.Count);
+
+  for i := 0 to CustomFiles.Count-1 do
+  begin
+    Self.Log.log('Searching ' + CustomFiles[i].IFileName);
+    if FileExists(ModsFolder + CustomFiles[i].IFileName) then
+    begin
+      Self.Log.logLastLine('Downloading ' + CustomFiles[i].IFileName);
+      Downloader.lblProgress.Caption := IntToStr(Bar.StepPos+1) + '/' + IntToStr(CustomFiles.Count) + ' Files';
+      DResult := Downloader.downloadItem(TDownloadItem.Create(CustomFiles[i].URL, CustomFiles[i].FileName));
+      if DResult = drCancel then
+      begin
+        if Downloader.Progress <> nil then
+          Downloader.Progress.Destroy;
+        Downloader.Destroy;
+        Self.Log.log('Canceled custom files download ');
+        Exit;
+      end;
+      if DResult = drFail then
+      begin
+        if Downloader.Progress <> nil then
+          Downloader.Progress.Destroy;
+        Self.Log.logLastLine('Failed to download custom file! ' + CustomFiles[i].IFileName);
+      end;
+
+      if DResult = drSuccess then
+      begin
+        Downloader.Progress.lblTask.Caption := 'Installing Custom File';
+        Application.ProcessMessages;
+        RenameFile(TempFolder + CustomFiles[i].FileName, ModsFolder + CustomFiles[i].IFileName);
+        Downloader.Progress.Destroy;
+        Self.Log.logLastLine('Downloaded ' + CustomFiles[i].IFileName);
+      end;
+    end;
+    Downloader.DownloadBar.FinishStep;
+    Bar.StepPos := Bar.StepPos + 1;
+  end;
+end;
 
 procedure TModPackInstance.Load(SaveFile : TSaveFile);
 begin
-
+  inherited Load(SaveFile);
 end;
 
 procedure TModPackInstance.Save(SaveFile : TSaveFile);
@@ -188,7 +266,7 @@ end;
 
 function TModPackInstance.getStartupTasks(MinecraftComand : TMinecraftLaunch) : TList<TTask>;
 var
-  i: Integer;
+  i,j: Integer;
   Item : TPair<TMod, TModVersion>;
   Added : Boolean;
 begin
@@ -200,7 +278,11 @@ begin
     if Result[i] is TDownloadMods then
     begin
       if not Added then
+      begin
         Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecraftComand));
+        Result.Insert(i, TCustomFileDownload.Create(Self, Modpack.Value.CustomFiles, MinecraftComand));
+      end;
+
       for Item in Modpack.Value.Mods do
       begin
         if TDownloadMods(Result[i]).Mods.ContainsKey(Item.Key) then
@@ -217,7 +299,9 @@ begin
           TModCleaning(Result[i]).Mods.Remove(Item.Key);
         TModCleaning(Result[i]).addMod(Item);
       end;
-      TModCleaning(Result[i]).Exclude.AddStrings(Modpack.Value.CustomFiles);
+
+      for j := 0 to Modpack.Value.CustomFiles.Count-1 do
+        TModCleaning(Result[i]).Exclude.Add(Modpack.Value.CustomFiles[j].IFileName);
 
       Result.Insert(i, TDownloadModpackArchive.Create(Self, MinecraftComand));
       i := i + 1;
@@ -276,16 +360,13 @@ begin
   FName := Json.S['name'];
   FForge := Json.S['forge'];
 
-  FCustomFiles := nil;
-
-  try
-    FCustomFiles := Explode(Json.S['custom_files'], ';');
-    for i := 0 to FCustomFiles.Count-1 do
-      FCustomFiles[i] := FCustomFiles[i].Replace('/', '\');
-  except
-    on E: Exception do
+  FCustomFiles := TList<TCustomFile>.Create;
+  InstallArray := Json.A['custom_files'];
+  if InstallArray <> nil then
+  begin
+    for i := 0 to InstallArray.Length-1 do
     begin
-      FCustomFiles := TStringList.Create;
+      CustomFiles.Add(TCustomFile.Create(InstallArray.O[i]));
     end;
   end;
 
@@ -312,6 +393,16 @@ end;
 function TModpackVersion.hasArchive : Boolean;
 begin
   Result := ArchiveURL <> '';
+end;
+
+constructor TCustomFile.Create(Json : ISuperObject);
+begin
+  Self.FURL := Json.S['url'].Replace(quoteString, '''');
+  Self.FFileName := Json.S['filename'].Replace(quoteString, '''');
+  Self.FSideType := parseSideType(Json.S['type']);
+  Self.FIFileName := Json.S['ifilename'].Replace(quoteString, '''');
+  if Self.IFileName = '' then
+    Self.FIFileName := Self.FFileName;
 end;
 
 constructor TModpack.Create(Json : ISuperObject);
@@ -460,7 +551,7 @@ begin
       except
         on E : Exception do
       end;
-      DeleteFile(FileName);
+      DeleteFile(PWideChar(FileName));
       //Downloader.DestroyComponents;
       //Downloader.Close;
       Downloader.Destroy;
