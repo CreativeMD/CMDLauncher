@@ -3892,7 +3892,7 @@ object OverviewF: TOverviewF
       item
         Header = 'Ungrouped'
         GroupID = 0
-        State = [lgsNormal, lgsNoHeader]
+        State = [lgsNormal, lgsNoHeader, lgsSelected]
         HeaderAlign = taLeftJustify
         FooterAlign = taLeftJustify
         TitleImage = -1
@@ -3901,8 +3901,10 @@ object OverviewF: TOverviewF
     LargeImages = InstanceIcons
     GroupView = True
     ReadOnly = True
+    RowSelect = True
     ParentDoubleBuffered = False
     TabOrder = 3
+    ViewStyle = vsTile
     OnAdvancedCustomDrawItem = lvInstancesAdvancedCustomDrawItem
     OnChange = lvInstancesChange
     OnClick = lvInstancesClick
@@ -3918,7 +3920,7 @@ object OverviewF: TOverviewF
     Left = 64
     Top = 112
     Bitmap = {
-      494C010110006000DC0120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010110006000E40120002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000080000000A000000001002000000000000040
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -6642,7 +6644,7 @@ object OverviewF: TOverviewF
     Left = 208
     Top = 112
     Bitmap = {
-      494C01010200E800440110001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01010200E8004C0110001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
