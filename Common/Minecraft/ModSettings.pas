@@ -3,7 +3,8 @@ unit ModSettings;
 interface
 
 uses SettingUtils, ModUtils, System.SysUtils, System.Classes, Vcl.Controls, SaveFileUtils,
-Generics.Collections, Vcl.StdCtrls, ForgeUtils, ModpackUtils, Vcl.ComCtrls, cefvcl, ceflib, System.Types;
+Generics.Collections, Vcl.StdCtrls, ForgeUtils, ModpackUtils, Vcl.ComCtrls, cefvcl, ceflib, System.Types,
+Vcl.Graphics;
 
 type
   TCustomNotify = function() : String of object;
@@ -38,6 +39,7 @@ type
       constructor Create(Name, Title : String; isOptional, isServer : Boolean; ForgeSelect : TForgeSelect);
       procedure refreshList;
       procedure reloadURL;
+      procedure updateErrorLabel;
       procedure createControl(x, y : Integer; Parent : TWinControl); override;
       procedure destroyControl; override;
       function getUUID : string; override;
@@ -48,6 +50,7 @@ type
       function AddMod(PMod : TMod; PVersion : TModVersion = nil) : Boolean;
       function ContainsMod(PMod : TMod) : Boolean;
       function getMod(ID : Integer) : TPair<TMod, TModVersion>;
+      function getMods : TList<TMod>;
       procedure onButtonClicked(Sender : TObject);
       procedure OnAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
       procedure onForgeChanges(ForgeSelect : TForgeSelect);
@@ -116,6 +119,35 @@ begin
   Exit(False);
 end;
 
+procedure TEnhancedModSelect.updateErrorLabel;
+var
+  i, j: Integer;
+  Mods : TList<TMod>;
+  PMod, RequiredMod : TMod;
+  Required : String;
+begin
+  Required := '';
+  Mods := getMods;
+  for i := 0 to Mods.Count-1 do
+  begin
+    PMod := Mods[i];
+    if PMod <> nil then
+    begin
+      for j := 0 to PMod.Required.Count-1 do
+      begin
+        RequiredMod := getModByID(PMod.Required[j]);
+        if not Mods.Contains(RequiredMod) then
+        begin
+          Required := Required + 'Missing "' + RequiredMod.Title + '" required by "' + PMod.Title + '". ';
+        end;
+      end;
+    end;
+  end;
+
+
+  TLabel(Controls[3]).Caption := Required;
+end;
+
 function TEnhancedModSelect.AddMod(PMod : TMod; PVersion : TModVersion = nil) : Boolean;
 var
 ComboBox : TComboBox;
@@ -157,6 +189,7 @@ begin
       end;
       Data := ComboBox;
     end;
+    updateErrorLabel;
     Result := True;
   end;
 end;
@@ -175,6 +208,22 @@ begin
     Exit(TPair<TMod, TModVersion>.Create(Key, Value));
   end;
   Exit(TPair<TMod, TModVersion>.Create(nil, nil));
+end;
+
+function TEnhancedModSelect.getMods : TList<TMod>;
+var
+lvMods : TListView;
+PMod : TMod;
+  i: Integer;
+begin
+  Result := TList<TMod>.Create;
+  lvMods := TListView(Controls[0]);
+  for i := 0 to lvMods.Items.Count-1 do
+  begin
+    PMod := ModUtils.getModByName(lvMods.Items.Item[i].Caption);
+    if PMod <> nil then
+      Result.Add(PMod);
+  end;
 end;
 
 procedure TEnhancedModSelect.OnAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
@@ -212,6 +261,7 @@ begin
     else
       i := i + 1;
   end;
+  updateErrorLabel;
   refreshList;
 end;
 
@@ -289,7 +339,17 @@ ModsListView : TListView;
 chrmMods : TChromium;
 DeleteButton : TButton;
 TempList : TImageList;
+ErrorLabel : TLabel;
 begin
+  ErrorLabel := TLabel.Create(Parent);
+  ErrorLabel.Parent := Parent;
+  ErrorLabel.Font.Color := clRed;
+  ErrorLabel.Caption := '';
+  ErrorLabel.Left := x;
+  ErrorLabel.Top := y;
+
+  y := y + ErrorLabel.Height + SpaceY;
+
   ModsListView := TListView.Create(Parent);
   ModsListView.Parent := Parent;
   ModsListView.Left := x;
@@ -343,6 +403,8 @@ begin
   chrmMods.OnAddressChange := OnAddressChange;
 
   Controls.Add(chrmMods);
+
+  Controls.Add(ErrorLabel);
 
   updateForge;
   reloadURL;

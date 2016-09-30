@@ -60,7 +60,7 @@ type
       FID : Integer;
       Versions : TList<TModVersion>;
       FTitle : String;
-      Required : TList<Integer>;
+      FRequired : TList<Integer>;
       FModType : TSideType;
       FOptional: Boolean;
       constructor Create(Json : ISuperObject);
@@ -79,6 +79,7 @@ type
       property Title : String read FTitle;
       property ID : Integer read FID;
       property Optional : Boolean read FOptional;
+      property Required : TList<Integer> read FRequired;
   end;
   TLoadMod = class(TTask)
     procedure runTask(Bar : TCMDProgressBar); override;
@@ -260,14 +261,14 @@ begin
   FTitle := Json.S['title'];
   FID := Json.I['id'];
   FOptional := Json.B['optional'];
-  Required := TList<Integer>.Create;
+  FRequired := TList<Integer>.Create;
   RequiredArray := Json.A['require'];
   if RequiredArray <> nil then
   begin
     for i := 0 to RequiredArray.Length-1 do
     begin
       try
-        Required.Add(RequiredArray.I[i]);
+        FRequired.Add(RequiredArray.I[i]);
       except
         on E : Exception do
           Logger.MainLog.log('Failed to add required mod!');

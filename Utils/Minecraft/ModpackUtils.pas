@@ -125,8 +125,8 @@ begin
   inherited Create('Download Custom Files', Command, True);
   Self.Instance := Instance;
   Self.CustomFiles := TList<TCustomFile>.Create;
-  for i := 0 to CustomFiles.Count-1 do
-    if CustomFiles[i].SideType.isCompatible(Instance.Side) then
+  for i := 0 to Self.CustomFiles.Count-1 do
+    if Self.CustomFiles[i].SideType.isCompatible(Instance.Side) then
       Self.CustomFiles.Add(CustomFiles[i]);
 end;
 
