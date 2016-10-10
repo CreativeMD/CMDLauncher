@@ -124,8 +124,7 @@ begin
     ceflib.CefSingleProcess := False;
     ceflib.CefBrowserSubprocessPath := ProgramFolder + 'CMDChromeBrowser.exe';
 
-    TStyleManager.TrySetStyle('Windows10');
-  Application.Title := 'CMDLauncher';
+    Application.Title := 'CMDLauncher';
     Application.CreateForm(TOverviewF, OverviewF);
   Application.CreateForm(TLoadingScreen, LoadingScreen);
   Application.CreateForm(TCredit, Credit);

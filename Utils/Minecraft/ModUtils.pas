@@ -465,7 +465,14 @@ end;
 
 function TModFile.copyObj(FromFolder, ToFolder : string; Side : TSide) : Boolean;
 begin
-  Result := installObj(FromFolder, ToFolder, Side);
+  if not SideType.isCompatible(Side) then
+    Exit(True);
+  Result := False;
+  if FileExists(FromFolder + DFileName) then
+  begin
+    ForceDirectories(ExtractFilePath(ToFolder + FileName.Replace('/', '\')));
+    Result := CopyFile(PWideChar(FromFolder + DFileName), PWideChar(ToFolder + FileName.Replace('/', '\')), False);
+  end;
 end;
 
 function TModFile.isInstalled(Folder : String; Side : TSide) : Boolean;
@@ -538,7 +545,7 @@ begin
   Result := True;
   for i := 0 to InstallObjs.Count-1 do
     if InstallObjs[i].SideType.isCompatible(Side) then
-      if not InstallObjs[i].installObj(FromFolder, ToFolder, Side) then
+      if not InstallObjs[i].copyObj(FromFolder, ToFolder, Side) then
         Result := False;
 end;
 
