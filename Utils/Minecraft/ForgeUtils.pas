@@ -5,7 +5,7 @@ interface
 uses VanillaUtils, Task, ProgressBar, InstanceUtils, SaveFileUtils, System.Generics.Collections,
 MinecraftLaunchCommand, SettingUtils, JavaUtils, System.Classes, AccountUtils,
 System.SysUtils, superobject, Vcl.Controls, Vcl.StdCtrls, AssetUtils,
-MinecraftLibaryUtills, ModUtils, System.UITypes, SideUtils, System.IOUtils, Vcl.Forms, System.Types;
+MinecraftLibaryUtills, ModUtils, System.UITypes, SideUtils, System.IOUtils, Vcl.Forms, System.Types, Winapi.Windows;
 
 type
   TForge = class
@@ -259,21 +259,28 @@ end;
 procedure TLoadForge.runTask(Bar : TCMDProgressBar);
 var
 DownloadTask : TDownloadTask;
-FileName, UUID , Branch: string;
+FileName, TempFileName, UUID , Branch: string;
 JsonFile, Numbers : ISuperObject;
 BranchTable : TSuperTableString;
 BranchArray, VersionArray, ValueArray : TSuperArray;
   i, j: Integer;
 begin
   FileName := DownloadFolder + 'forgeversions.json';
+  TempFileName := DownloadFolder + 'forgeversionsTemp.json';
   ForgeList := TList<TForge>.Create;
   DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/json',
-  FileName, True);
+  TempFileName, True);
   SupportedMV := TStringList.Create;
 
   if DatabaseConnection.online then
   begin
     DownloadTask.downloadFile(nil);
+    if FileExists(TempFileName) then
+    begin
+      if FileExists(FileName) then
+        System.SysUtils.DeleteFile(FileName);
+      RenameFile(TempFileName, FileName);
+    end;
   end;
 
   if FileExists(FileName) and (VanillaUtils.MinecraftVersions <> nil) then
@@ -303,7 +310,9 @@ begin
       Bar.StepPos := i;
     end;
 
-  end;
+  end
+  else
+    ForgeList := nil;
   SupportedMV.CustomSort(SortVersions);
   Bar.FinishStep;
 end;
@@ -507,7 +516,7 @@ begin
 
         if not isFileOfMod and not Exclude.Contains(Files[j].Replace(ModsFolders[i], '').Replace('\', '/')) then
         begin
-          DeleteFile(Files[j]);
+          System.SysUtils.DeleteFile(Files[j]);
           Self.Log.log('Deleted ' + Files[j].Replace(ModsFolders[i], '').Replace('\', '/'));
         end;
 

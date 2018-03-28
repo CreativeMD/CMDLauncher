@@ -53,7 +53,7 @@ Http : TIdHTTP;
 begin
   Http := TIdHTTP.Create;
   Http.Request.UserAgent := 'Mozilla/5.0';
-
+  Http.HandleRedirects := True;
   Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
   try
     Result := Http.Get('http://launcher.creativemd.de/service/connectLauncher.php') = 'true';

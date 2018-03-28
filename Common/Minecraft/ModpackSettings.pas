@@ -18,6 +18,8 @@ TModpackSelect = class(TSetting<Integer>)
   procedure chrmModsAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
   function getItems : TStringList;
   function getMCVersion : String;
+  procedure onClicked(Sender : TObject);
+  procedure selectModpack(URL : String);
 end;
 
 implementation
@@ -62,7 +64,7 @@ begin
   Exit('');
 end;
 
-procedure TModpackSelect.chrmModsAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
+procedure TModpackSelect.selectModpack(URL : String);
 var
 data : TStringList;
 Modpack : TModpack;
@@ -90,6 +92,11 @@ begin
   end;
 end;
 
+procedure TModpackSelect.chrmModsAddressChange(Sender: TObject; const browser: ICefBrowser; const frame: ICefFrame; const url: ustring);
+begin
+  selectModpack(url);
+end;
+
 function TModpackSelect.getItems : TStringList;
 var
 Modpack : TModpack;
@@ -113,6 +120,8 @@ ComboBox : TComboBox;
 Modpack : TModpack;
 ModpackV : TModpackVersion;
 TitleLabel : TLabel;
+Edit : TEdit;
+ImportButton : TButton;
 begin
   ComboBox := TComboBox.Create(Parent);
   ComboBox.Parent := Parent;
@@ -148,6 +157,24 @@ begin
 
   Controls.Add(TitleLabel);
 
+  ImportButton := TButton.Create(Parent);
+  ImportButton.Parent := Parent;
+  ImportButton.Caption := 'Import';
+  ImportButton.Left := Parent.Width-4-ImportButton.Width;
+  ImportButton.Top := ComboBox.Top;
+  ImportButton.Anchors := [akRight, akTop];
+  ImportButton.OnClick := onClicked;
+  Controls.Add(ImportButton);
+
+  Edit := TEdit.Create(Parent);
+  Edit.Parent := Parent;
+  Edit.Text := '';
+  Edit.Width := 200;
+  Edit.Left := ImportButton.Left - 4 - Edit.Width;
+  Edit.Top := ComboBox.Top;
+  Edit.Anchors := [akRight, akTop];
+  Controls.Add(Edit);
+
   Modpack := ModpackUtils.getModPackByID(Value);
   if Modpack <> nil then
   begin
@@ -178,6 +205,17 @@ begin
       ModpackVersion := -1;
   end;
   TChromium(Controls[1]).Destroying;
+end;
+
+procedure TModpackSelect.onClicked(Sender : TObject);
+var
+Edit : TEdit;
+begin
+  Edit := TEdit(Controls[4]);
+  if Edit.Text <> '' then
+  begin
+    selectModpack(Edit.Text);
+  end;
 end;
 
 function TModpackSelect.getUUID : string;

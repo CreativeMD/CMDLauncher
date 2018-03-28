@@ -3,7 +3,7 @@ unit LauncherStartup;
 interface
 
 uses Task, ProgressBar, System.Generics.Collections, IdHTTP, System.SysUtils,
-Vcl.Forms, ShellApi, Winapi.Windows, Vcl.Dialogs, Vcl.Controls, Vcl.StdCtrls, LaunchHandler;
+Vcl.Forms, ShellApi, Winapi.Windows, Vcl.Dialogs, Vcl.Controls, Vcl.StdCtrls, LaunchHandler, IdSSLOpenSSL;
 
 type
   TUpdateTask = class(TTask)
@@ -43,6 +43,9 @@ begin
   CommandUtils.loadLauncherCommands;
 
   HTTP := TIdHTTP.Create;
+  HTTP.HandleRedirects := True;
+  Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+  Http.Request.UserAgent := 'Mozilla/5.0';
   CloseLauncher := False;
   try
     ServerVersion := HTTP.Get('http://creativemd.de/service/version_new.php?name=' + ProgramName);

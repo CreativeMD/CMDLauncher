@@ -15,6 +15,9 @@
         <Projects Include="CMDUpdate.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="..\CMDProgressBar\CMDProgressBar.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
     <Target Name="CMDUpdate:Make">
         <MSBuild Projects="CMDUpdate.dproj" Targets="Make"/>
     </Target>
+    <Target Name="CMDProgressBar">
+        <MSBuild Projects="..\CMDProgressBar\CMDProgressBar.dproj"/>
+    </Target>
+    <Target Name="CMDProgressBar:Clean">
+        <MSBuild Projects="..\CMDProgressBar\CMDProgressBar.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CMDProgressBar:Make">
+        <MSBuild Projects="..\CMDProgressBar\CMDProgressBar.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="CMDLauncher;CMDChromeBrowser;URLRegister;CMDUpdate"/>
+        <CallTarget Targets="CMDLauncher;CMDChromeBrowser;URLRegister;CMDUpdate;CMDProgressBar"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="CMDLauncher:Clean;CMDChromeBrowser:Clean;URLRegister:Clean;CMDUpdate:Clean"/>
+        <CallTarget Targets="CMDLauncher:Clean;CMDChromeBrowser:Clean;URLRegister:Clean;CMDUpdate:Clean;CMDProgressBar:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="CMDLauncher:Make;CMDChromeBrowser:Make;URLRegister:Make;CMDUpdate:Make"/>
+        <CallTarget Targets="CMDLauncher:Make;CMDChromeBrowser:Make;URLRegister:Make;CMDUpdate:Make;CMDProgressBar:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

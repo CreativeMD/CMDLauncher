@@ -379,7 +379,9 @@ begin
         SpongeForgeList.Add(SpongeForge);
       end;
     end;
-  end;
+  end
+  else
+    SpongeForgeList := nil;
 end;
 
 end.

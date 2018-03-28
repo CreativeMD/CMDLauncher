@@ -27,15 +27,20 @@ type
       function isFilledValid : Boolean; override;
     public
       Text : String;
-      constructor Create(Name, Title : String; Status : TStatus; TextWorking : String);
+      constructor Create(Name, Title : String; Status : TStatus; TextWorking : String); overload;
       procedure createControl(x, y : Integer; Parent : TWinControl); override;
       procedure destroyControl; override;
       function getUUID : string; override;
       procedure SaveToFile(SaveFile : TSaveFile); override;
       procedure LoadFromFile(SaveFile : TSaveFile); override;
   end;
+  TStatusSetting<T> = class(TStatusSetting)
+    constructor Create(Name, Title : String; Status : TStatus; List : TList<T>; TypeName : String); overload;
+    constructor Create(Name, Title : String; List : TList<T>; TypeName : String); overload;
+  end;
 
 procedure openSettings(Page : String);
+
 function BoolToState(Value : Boolean) : TStatus; overload;
 function BoolToState(Value, Value2 : Boolean) : TStatus; overload;
 
@@ -96,14 +101,14 @@ begin
   Group.AddPage(SPage);
   SPage := TSettingPage.Create('Status', 'Diagram.png');
   SPage.AddSetting(TStatusSetting.Create('database', 'Database', BoolToState(DatabaseConnection.online), 'Database connection established'));
-  SPage.AddSetting(TStatusSetting.Create('minecraft', 'Minecraft', BoolToState(VanillaUtils.MinecraftVersions <> nil), 'Loaded ' + InttoStr(VanillaUtils.MinecraftVersions.Count-1) + ' Minecraft-Versions'));
-  SPage.AddSetting(TStatusSetting.Create('forge', 'Forge', BoolToState(ForgeUtils.ForgeList <> nil), 'Loaded ' + InttoStr(ForgeUtils.ForgeList.Count-1) + ' Forge-Versions'));
-  SPage.AddSetting(TStatusSetting.Create('cauldron', 'Cauldron', BoolToState(Cauldron.CauldronList <> nil), 'Loaded ' + InttoStr(Cauldron.CauldronList.Count-1) + ' Cauldron-Versions'));
-  SPage.AddSetting(TStatusSetting.Create('spongeforge', 'SpongeForge', BoolToState(SpongeForge.SpongeForgeList <> nil), 'Loaded ' + InttoStr(SpongeForge.SpongeForgeList.Count-1) + ' SpongeForge-Versions'));
-  SPage.AddSetting(TStatusSetting.Create('mods', 'Mods', BoolToState(ModUtils.ModList <> nil, ModUtils.ModsLoaded), 'Loaded ' + InttoStr(ModUtils.ModList.Count-1) + ' Mods'));
-  SPage.AddSetting(TStatusSetting.Create('modpacks', 'Modpacks', BoolToState(ModpackUtils.ModPacks <> nil, ModpackUtils.ModPacksLoaded), 'Loaded ' + InttoStr(ModpackUtils.ModPacks.Count-1) + ' Modpacks'));
-  SPage.AddSetting(TStatusSetting.Create('resourcepacks', 'Resourcepacks', BoolToState(ResourcePackUtils.ResourcePacks <> nil), 'Loaded ' + InttoStr(ResourcePackUtils.ResourcePacks.Count-1) + ' Resourcepacks'));
-  SPage.AddSetting(TStatusSetting.Create('shaderpacks', 'Shaderpacks', BoolToState(ShaderPackUtils.Shaderpacks <> nil), 'Loaded ' + InttoStr(ShaderPackUtils.Shaderpacks.Count-1) + ' Shaderpacks'));
+  SPage.AddSetting(TStatusSetting<TMinecraftVersion>.Create('minecraft', 'Minecraft', VanillaUtils.MinecraftVersions, 'Minecraft-Versions'));
+  SPage.AddSetting(TStatusSetting<TForge>.Create('forge', 'Forge', ForgeUtils.ForgeList, 'Forge-Versions'));
+  SPage.AddSetting(TStatusSetting<TCauldron>.Create('cauldron', 'Cauldron', Cauldron.CauldronList, 'Cauldron-Versions'));
+  SPage.AddSetting(TStatusSetting<TSpongeForge>.Create('spongeforge', 'SpongeForge', SpongeForge.SpongeForgeList, 'SpongeForge-Versions'));
+  SPage.AddSetting(TStatusSetting<TMod>.Create('mods', 'Mods', BoolToState(ModUtils.ModList <> nil, ModUtils.ModsLoaded), ModUtils.ModList, 'Mods'));
+  SPage.AddSetting(TStatusSetting<TModpack>.Create('modpacks', 'Modpacks', BoolToState(ModpackUtils.ModPacks <> nil, ModpackUtils.ModPacksLoaded), ModpackUtils.ModPacks, 'Modpacks'));
+  SPage.AddSetting(TStatusSetting<TResourcePack>.Create('resourcepacks', 'Resourcepacks', ResourcePackUtils.ResourcePacks, 'Resourcepacks'));
+  SPage.AddSetting(TStatusSetting<TShaderpack>.Create('shaderpacks', 'Shaderpacks', ShaderPackUtils.Shaderpacks, 'Shaderpacks'));
   Group.AddPage(SPage);
   SPage := TSettingPage.Create('Changelog', 'Changelog.png');
   Setting := TLogger.Create('Changelog', 'Changelog', True);
@@ -222,6 +227,19 @@ begin
     sLoading: Self.Text := 'Feature is still loading!';
     sErrored: Self.Text := 'Failed to load feature!';
   end;
+end;
+
+constructor TStatusSetting<T>.Create(Name, Title : String; Status : TStatus; List : TList<T>; TypeName : String);
+begin
+  if List = nil then
+    inherited Create(Name, Title, Status, 'No ' + TypeName + ' could be loaded')
+  else
+    inherited Create(Name, Title, Status, 'Loaded ' + InttoStr(List.Count-1) + ' ' + TypeName);
+end;
+
+constructor TStatusSetting<T>.Create(Name, Title : String; List : TList<T>; TypeName : String);
+begin
+  Create(Name, Title, BoolToState(List <> nil), List, TypeName);
 end;
 
 procedure TStatusSetting.createControl(x, y : Integer; Parent : TWinControl);
