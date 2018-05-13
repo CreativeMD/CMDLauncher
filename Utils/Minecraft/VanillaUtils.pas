@@ -12,8 +12,8 @@ type
   TMinecraftVersion = class
     ReleaseTyp : TMinecraftTyp;
     LaunchTyp : TLaunchTyp;
-    UUID : string;
-    constructor Create(UUID : String; ReleaseTyp : TMinecraftTyp; LaunchTyp : TLaunchTyp);
+    UUID, URL : string;
+    constructor Create(UUID, URL : String; ReleaseTyp : TMinecraftTyp; LaunchTyp : TLaunchTyp);
   end;
   TLoadMV = class(TTask)
     protected
@@ -99,9 +99,10 @@ begin
   SpecialArguments.Add(Instance.CustomCommand);
 end;
 
-constructor TMinecraftVersion.Create(UUID : String; ReleaseTyp : TMinecraftTyp; LaunchTyp : TLaunchTyp);
+constructor TMinecraftVersion.Create(UUID, URL : String; ReleaseTyp : TMinecraftTyp; LaunchTyp : TLaunchTyp);
 begin
   Self.UUID := UUID;
+  Self.URL := URL;
   Self.ReleaseTyp := ReleaseTyp;
   Self.LaunchTyp := LaunchTyp;
 end;
@@ -121,7 +122,7 @@ LaunchTyp : TLaunchTyp;
 MinecraftTyp : TMinecraftTyp;
 begin
   MinecraftVersions := TList<TMinecraftVersion>.Create;
-  DownloadTask := TDownloadTask.Create('http://s3.amazonaws.com/Minecraft.Download/versions/versions.json', DownloadFolder + 'versions.json');
+  DownloadTask := TDownloadTask.Create('https://launchermeta.mojang.com/mc/game/version_manifest.json', DownloadFolder + 'versions.json');
 
   if DatabaseConnection.online then
     DownloadTask.downloadFile(nil);
@@ -147,7 +148,7 @@ begin
       else
         MinecraftTyp := mvOld;
 
-      MinecraftVersions.Add(TMinecraftVersion.Create(MCVA[i].S['id'], MinecraftTyp, LaunchTyp));
+      MinecraftVersions.Add(TMinecraftVersion.Create(MCVA[i].S['id'], MCVA[i].S['url'], MinecraftTyp, LaunchTyp));
       Bar.StepPos := i;
     end;
     Self.Log.log('Loaded ' + InttoStr(MinecraftVersions.Count) + ' Minecraftversions');
@@ -197,12 +198,9 @@ end;
 function TVanillaInstance.getStartupTasks(MinecrafComand : TMinecraftLaunch) : TList<TTask>;
 begin
   Result := TList<TTask>.Create;
+  Result.Add(TDownloadVersion.Create(MinecrafComand));
   if Side = TClient then
   begin
-    if DatabaseConnection.online then
-    begin
-      Result.Add(TDownloadVersion.Create(MinecrafComand));
-    end;
     Result.Add(TLoadAssets.Create(MinecrafComand, MinecraftVersion.LaunchTyp));
     Result.Add(TDownLoadLibary.Create(MinecrafComand));
   end

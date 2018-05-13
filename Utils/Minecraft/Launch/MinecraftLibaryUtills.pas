@@ -82,10 +82,10 @@ begin
   if CustomJsonPath <> '' then
     JsonFileName := CustomJsonPath
   else
-    JsonFileName := DownloadFolder + 'versions\' + Command.MCVersion + '\' + Command.MCVersion + '.json';
+    JsonFileName := DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.json';
   if FileExists(JsonFileName) then
   begin
-    NativeFolder := DownloadFolder + 'versions\' + Command.MCVersion + '\natives';
+    NativeFolder := DownloadFolder + 'versions\' + Command.getMCVersion + '\natives';
     if DirectoryExists(NativeFolder) and DataBaseConnection.online then
       DeleteFolder(NativeFolder);
 
@@ -198,7 +198,7 @@ begin
     end;
     if not IsServer then
     begin
-      Command.SpecialArguments.Add(Libs + '"' + DownloadFolder + 'versions\' + Command.MCVersion + '\' + Command.MCVersion + '.jar";');
+      Command.SpecialArguments.Add(Libs + '"' + DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.jar";');
       Command.SpecialArguments.Add(JsonFile.S['mainClass']);
       Command.SpecialArguments.Add(JsonFile.S['minecraftArguments']);
     end;

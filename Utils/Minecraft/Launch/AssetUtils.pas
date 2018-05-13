@@ -27,17 +27,18 @@ end;
 procedure TLoadAssets.runTask(Bar : TCMDProgressBar);
 var
 Assets,AssetsO : ISuperObject;
-AssetsFile, DownloadURL, FileName, AssetsIndex, VersionFile, InheritsFileName : string;
+AssetsFile, FileName, AssetsIndex, VersionFile, InheritsFileName : string;
 DownloadTask : TDownloadTask;
 DownloadVanilla : TDownloadVersion;
 item: TSuperObjectIter;
 zahlAssets : Integer;
+json : ISuperObject;
 begin
   AssetsIndex := Command.getMCVersion;
   if CustomJsonPath <> '' then
     VersionFile := CustomJsonPath
   else
-    VersionFile := DownloadFolder + 'versions\' + Command.MCVersion + '\' + Command.MCVersion + '.json';
+    VersionFile := DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.json';
 
   if FileExists(VersionFile) then
   begin
@@ -61,17 +62,24 @@ begin
   if LaunchTyp = ltOld then
     AssetsIndex := 'legacy';
 
-  DownloadURL := 'https://s3.amazonaws.com/Minecraft.Download/indexes/' + AssetsIndex + '.json';
   AssetsFile := DownloadFolder + 'assets\indexes\' + AssetsIndex + '.json';
-
   Command.Replacements.Add('${assets_index_name}', AssetsIndex);
 
   if DatabaseConnection.online then
   begin
-    DownloadTask := TDownloadTask.Create(DownloadURL, AssetsFile, False);
-    DownloadTask.setLog(Self.Log);
-    DownloadTask.downloadFile(nil);
-    DownloadTask.Destroy;
+    FileName := DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.json';
+    if FileExists(FileName) then
+    begin
+      json := TSuperObject.ParseFile(FileName, true);
+      json := json.O['assetIndex'];
+      DownloadTask := TDownloadTask.Create(json.S['url'], AssetsFile, False);
+      DownloadTask.setLog(Self.Log);
+      DownloadTask.downloadFile(nil);
+      DownloadTask.Destroy;
+    end
+    else
+      Self.Log.log('Could not find "' + Command.getMCVersion + '.json"!');
+
   end;
 
   if FileExists(AssetsFile) then

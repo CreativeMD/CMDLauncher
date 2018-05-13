@@ -44,7 +44,7 @@ begin
   if Forge <> nil then
     Result := Forge.MV
   else
-    Result := MCVersion;
+    Result := inherited getMCVersion;
 end;
 
 procedure TInstallServerForge.runTask(Bar : TCMDProgressBar);

@@ -3,7 +3,7 @@ unit MinecraftVersionFileUtils;
 interface
 
 uses LaunchTaskUtils, ProgressBar, InstanceUtils, DownloadUtils, System.Classes,
-System.SysUtils, MinecraftLaunchCommand, Task;
+System.SysUtils, MinecraftLaunchCommand, Task, superobject;
 
 type
   TDownloadVersion = class(TTask)
@@ -25,7 +25,7 @@ type
 implementation
 
 uses
-StringUtils, CoreLoader, DatabaseConnection;
+StringUtils, CoreLoader, DatabaseConnection, VanillaUtils;
 
 constructor TDownloadServerVersion.Create(InstanceFolder : string; Command : TMinecraftLaunch);
 begin
@@ -36,26 +36,22 @@ end;
 procedure TDownloadServerVersion.runTask(Bar : TCMDProgressBar);
 var
 DownloadTask : TDownloadTask;
-DownloadFiles : TStringList;
 FileName : string;
-i: Integer;
+json : ISuperObject;
 begin
-  DownloadFiles := TStringList.Create;
-  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + Command.MCVersion + '/minecraft_server.' + Command.MCVersion + '.jar');
-  //DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + Command.MCVersion + '/' + Command.MCVersion + '.json');
-
-  if DataBaseConnection.online then
+  FileName := DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.json';
+  if FileExists(FileName) then
   begin
-    for i := 0 to DownloadFiles.Count-1 do
-    begin
-      FileName := InstanceFolder + ExtractUrlFileName(DownloadFiles[i]);
-      DownloadTask := TDownloadTask.Create(DownloadFiles[i], FileName, False);
-      DownloadTask.setLog(Self.Log);
-      DownloadTask.downloadFile(Bar);
-    end;
-  end;
+    json := TSuperObject.ParseFile(FileName, true);
+    json := json.O['downloads'].O['server'];
+    DownloadTask := TDownloadTask.Create(json.S['url'], InstanceFolder + '\minecraft_server.' + Command.getMCVersion + '.jar', False);
+    DownloadTask.setLog(Self.Log);
+    DownloadTask.downloadFile(Bar);
+  end
+  else
+    Self.Log.log('Could not find "' + Command.getMCVersion + '.json"!');
   Command.SpecialArguments.Add('-jar');
-  Command.SpecialArguments.Add('minecraft_server.' + Command.MCVersion + '.jar');
+  Command.SpecialArguments.Add('minecraft_server.' + Command.getMCVersion + '.jar');
   //Bar.FinishStep;
 end;
 
@@ -67,35 +63,37 @@ end;
 
 constructor TDownloadVersion.Create(Command : TMinecraftLaunch);
 begin
-  Self.Create(Command.MCVersion);
+  Self.Create(Command.getMCVersion);
 end;
 
 procedure TDownloadVersion.runTask(Bar : TCMDProgressBar);
 var
 DownloadTask : TDownloadTask;
-DownloadFiles : TStringList;
 FileName : string;
-i: Integer;
+MinecraftVersion : TMinecraftVersion;
+json : ISuperObject;
 begin
-  DownloadFiles := TStringList.Create;
-  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + MCVersion + '/' + MCVersion + '.jar');
-  DownloadFiles.Add('http://s3.amazonaws.com/Minecraft.Download/versions/' + MCVersion + '/' + MCVersion + '.json');
+  MinecraftVersion := VanillaUtils.getMinecraftVersion(MCVersion);
 
-  if Bar <> nil then
-    Bar.StartStep(DownloadFiles.Count);
-
-  for i := 0 to DownloadFiles.Count-1 do
+  if MinecraftVersion <> nil then
   begin
-    FileName := DownloadFolder + 'versions\' + MCVersion + '\' + ExtractUrlFileName(DownloadFiles[i]);
-    DownloadTask := TDownloadTask.Create(DownloadFiles[i], FileName, False);
+    FileName := DownloadFolder + 'versions\' + MCVersion + '\' + MCVersion + '.json';
+    DownloadTask := TDownloadTask.Create(MinecraftVersion.URL, FileName, False);
     DownloadTask.setLog(Self.Log);
-    DownloadTask.downloadFile(nil);
-    if Bar <> nil then
-      Bar.StepPos := i+1;
-  end;
+    if DownloadTask.downloadFile(nil) then
+    begin
+      json := TSuperObject.ParseFile(FileName, true);
+      json := json.O['downloads'].O['client'];
+      DownloadTask := TDownloadTask.Create(json.S['url'], DownloadFolder + 'versions\' + MCVersion + '\' + MCVersion + '.jar', False);
+      DownloadTask.setLog(Self.Log);
+      DownloadTask.downloadFile(Bar);
+    end
+    else
+      Self.Log.log('Could not download version info file of "' + MCVersion + '"!');
 
-  if Bar <> nil then
-    Bar.FinishStep;
+  end
+  else
+    Self.Log.log('Could not download version "' + MCVersion + '"!');
 end;
 
 end.
