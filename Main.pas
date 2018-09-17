@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
   Vcl.ComCtrls, ProgressBar, IdBaseComponent, IdComponent, IdTCPConnection,
   IdTCPClient, IdHTTP, StringUtils, SaveFileUtils, ShellApi, Task, DownloadUtils,
-  System.Generics.Collections, CoreLoaderUpdate;
+  System.Generics.Collections, CoreLoaderUpdate, IdIOHandler, IdIOHandlerSocket,
+  IdIOHandlerStack, IdSSL, IdSSLOpenSSL;
 
 type
   TMainF = class(TForm)
@@ -19,6 +20,7 @@ type
     UpdateProgress: TCMDProgressBar;
     lblVersion: TLabel;
     HTTP: TIdHTTP;
+    IdSSLIOHandlerSocketOpenSSL1: TIdSSLIOHandlerSocketOpenSSL;
     procedure FormShow(Sender: TObject);
     procedure tmrUpdateTimer(Sender: TObject);
     procedure btnUpdateClick(Sender: TObject);
@@ -35,10 +37,11 @@ type
 
 const
 CountdownTime = 10;
+ProgramVersion : string = '1.2.0';
 
 var
   MainF: TMainF;
-  UpdateProgramVersion : String;
+  UpdateProgramVersion, ProgramName : String;
   //StartDownloading : Boolean;
   UpdateTaskManager : TUpdateTaskManager;
 
@@ -64,17 +67,15 @@ procedure TMainF.btnUpdateClick(Sender: TObject);
 var
 ServerVersion : String;
 Files, TempFiles : TStringList;
-  i: Integer;
-  FileStream : TFileStream;
+i: Integer;
 Tasks : TList<TTask>;
 begin
   btnUpdate.Caption := 'Updating';
   tmrUpdate.Enabled := False;
   btnUpdate.Enabled := False;
   btnCancel.Enabled := False;
-
   try
-    ServerVersion := HTTP.Get('http://creativemd.de/service/version_new.php?name=CMDLauncher');
+    ServerVersion := HTTP.Get('http://creativemd.de/service/version_new.php?name=' + ProgramName);
   except
     on E: Exception do
       ServerVersion := '';
@@ -85,8 +86,8 @@ begin
     if StringUtils.isHigher(UpdateProgramVersion, ServerVersion) then
     begin
       Files := TStringList.Create;
-      Files.AddStrings(Explode(HTTP.Get('http://creativemd.de/service/files_new.php?name=CMDLauncher&version=' + UpdateProgramVersion), ';'));
-      TempFiles := Explode(HTTP.Get('http://creativemd.de/service/files_new.php?name=CMDLauncher'), ';');
+      Files.AddStrings(Explode(HTTP.Get('http://creativemd.de/service/files_new.php?name=' + ProgramName + '&version=' + UpdateProgramVersion), ';'));
+      TempFiles := Explode(HTTP.Get('http://creativemd.de/service/files_new.php?name=' + ProgramName), ';');
       for i := 0 to TempFiles.Count-1 do
       begin
         if Files.IndexOf(TempFiles[i]) = -1 then
@@ -97,30 +98,14 @@ begin
       end;
       Tasks := TList<TTask>.Create;
       for i := 0 to Files.Count-1 do
-        Tasks.Add(TDownloadTask.Create('http://creativemd.bplaced.net/downloads/CMDLauncher/' + Files[i].Replace('\', '/'), ProgramFolder + Files[i].Replace('/', '\')));
+        Tasks.Add(TDownloadTask.Create('http://creativemd.bplaced.net/downloads/' + ProgramName + '/' + Files[i].Replace('\', '/'), ProgramFolder + Files[i].Replace('/', '\')));
       UpdateTaskManager := TUpdateTaskManager.Create(Tasks, Self.UpdateProgress);
 
       //UpdateTaskManager.Start;
       while UpdateTaskManager.isActive do
         Application.ProcessMessages;
-      {UpdateProgress.StartProcess(Files.Count);
-      //StartDownloading := True;
-      for i := 0 to Files.Count-1 do
-      begin
-        mmoChangelog.Lines.Add('Downloading ' + Files[i] + ' ...');
-        ForceDirectories(ExtractFilePath(ExePfad + Files[i].Replace('/', '\')));
-        FileStream := TFileStream.Create(ExePfad + Files[i].Replace('/', '\'), fmCreate);
-        try
-        HTTP.Get('http://creativemd.bplaced.net/downloads/CMDLauncher/' + Files[i].Replace('\', '/'), FileStream);
-        except
-          on E: Exception do
-            mmoChangelog.Lines.Add('Failed to download file=' + Files[i].Replace('/', '\') + ' url=' + 'http://creativemd.bplaced.net/downloads/CMDLauncher/' + Files[i].Replace('\', '/'));
-
-        end;
-        FileStream.Destroy;
-      end;   }
     end;
-    ShellExecute(Application.Handle, 'open', PChar(ProgramFolder + 'CMDLauncher.exe'), nil, nil, SW_NORMAL);
+    ShellExecute(Application.Handle, 'open', PChar(ProgramFolder + ProgramName + '.exe'), nil, nil, SW_NORMAL);
     Application.Terminate;
   end;
 end;
@@ -128,16 +113,28 @@ end;
 procedure TMainF.FormCreate(Sender: TObject);
 var
 ChangeLog : String;
+Programs : TArray<string>;
+j : Integer;
 begin
   MainLog.Listener.Add(mmoChangelog.Lines);
   lblVersion.Caption := string(lblVersion.Caption).Replace('${program_version}', ProgramVersion);
   //StartDownloading := False;
-  if FileExists(ProgramFolder + 'CMDLauncher.cfg') then    { TODO : Redesign finding program to update }
+
+  try
+    Programs := HTTP.Get('https://creativemd.de/service/programs.php').Split([';']);
+  except
+    on E: Exception do
+      Programs := TArray<string>.Create();
+  end;
+  for j := 0 to Length(Programs)-1 do
   begin
-    UpdateProgramVersion := TSaveFile.Create(ProgramFolder + 'CMDLauncher.cfg').getString('version');
-    lblProgrammName.Caption := 'CMDLauncher';
-    ChangeLog := HTTP.Get('http://creativemd.de/service/changelog_new.php?name=CMDLauncher&version=' + UpdateProgramVersion);
-    mmoChangelog.Lines.AddStrings(Explode(ChangeLog, '<br>'));
+    ProgramName := Programs[j];
+    if FileExists(ProgramFolder + ProgramName + '.exe') then
+    begin
+      lblProgrammName.Caption := ProgramName;
+      ChangeLog := HTTP.Get('http://creativemd.de/service/changelog_new.php?name=' + ProgramName + '&version=' + UpdateProgramVersion);
+      mmoChangelog.Lines.AddStrings(Explode(ChangeLog, '<br>'));
+    end;
   end;
 end;
 
