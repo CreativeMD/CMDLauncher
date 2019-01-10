@@ -128,12 +128,14 @@ begin
   end;
   for j := 0 to Length(Programs)-1 do
   begin
-    ProgramName := Programs[j];
-    if FileExists(ProgramFolder + ProgramName + '.exe') then
+    if FileExists(ProgramFolder + Programs[j] + '.exe') then
     begin
+      ProgramName := Programs[j];
       lblProgrammName.Caption := ProgramName;
+      UpdateProgramVersion := TSaveFile.Create(ProgramFolder + ProgramName + '.cfg').getString('version');
       ChangeLog := HTTP.Get('http://creativemd.de/service/changelog_new.php?name=' + ProgramName + '&version=' + UpdateProgramVersion);
       mmoChangelog.Lines.AddStrings(Explode(ChangeLog, '<br>'));
+      break;
     end;
   end;
 end;
