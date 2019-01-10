@@ -46,7 +46,7 @@ MinecraftVersions : TList<TMinecraftVersion>;
 implementation
 
 uses CoreLoader, AssetUtils, MinecraftVersionFileUtils, MinecraftLibaryUtills,
-DatabaseConnection, ServerUtils, StringUtils, SnapshotUtils;
+DatabaseConnection, ServerUtils, StringUtils, SnapshotUtils, ForgeUtils, ModpackUtils;
 
 function getMinecraftVersion(UUID : String) : TMinecraftVersion;
 var
@@ -75,6 +75,14 @@ begin
 
     Replacements.Add('${user_properties}', '{}');
     Replacements.Add('${user_type}', 'legacy');
+    if Instance is SnapshotUtils.TSnapshotInstance then
+      Replacements.Add('${version_type}', 'snapshot')
+    else if Instance is ForgeUtils.TForgeInstance then
+      Replacements.Add('${version_type}', 'modded')
+    else if Instance is ModpackUtils.TModPackInstance then
+      Replacements.Add('${version_type}', 'modpack')
+    else
+      Replacements.Add('${version_type}', 'release');
 
     Replacements.Add('${version_name}', MCVersion);
     Replacements.Add('${game_directory}', '"' + RemoveLastFolderSpliter(Instance.getInstanceFolder) + '"');

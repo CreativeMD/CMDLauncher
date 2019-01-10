@@ -71,8 +71,8 @@ end;
 procedure TDownLoadLibary.runTask(Bar : TCMDProgressBar);
 var
 JsonFile, Natives, Extract : ISuperObject;
-LibArray, ExcludeArray, rules : TSuperArray;
-JsonFileName, LibFileName, LibDownloadLink, NativeFolder, Libs : String;
+LibArray, ExcludeArray, rules, Arguments : TSuperArray;
+JsonFileName, LibFileName, LibDownloadLink, NativeFolder, Libs, Argument : String;
 i, j : Integer;
 DownloadTask : TDownloadTask;
 LibInfo : TStringList;
@@ -200,7 +200,18 @@ begin
     begin
       Command.SpecialArguments.Add(Libs + '"' + DownloadFolder + 'versions\' + Command.getMCVersion + '\' + Command.getMCVersion + '.jar";');
       Command.SpecialArguments.Add(JsonFile.S['mainClass']);
-      Command.SpecialArguments.Add(JsonFile.S['minecraftArguments']);
+      if JsonFile.O['arguments'] <> nil then
+      begin
+        Arguments := JsonFile.O['arguments'].A['game'];
+        for j := 0 to Arguments.Length-1 do
+        begin
+          Argument := Arguments.S[j];
+          if (Argument <> '') and (not Argument.StartsWith('{')) then
+            Command.SpecialArguments.Add(Argument);
+        end;
+      end
+      else
+        Command.SpecialArguments.Add(JsonFile.S['minecraftArguments']);
     end;
   end;
   Bar.FinishStep;
