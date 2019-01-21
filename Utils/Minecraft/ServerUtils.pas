@@ -74,7 +74,7 @@ begin
   Difficulty.Add('Easy');
   Difficulty.Add('Normal');
   Difficulty.Add('Hard');
-  Result.Add(TSelectSetting.Create('difficulty', 'Difficulty', Difficulty, 'Peaceful').setSaveNumber(True));
+  Result.Add(TSelectSetting.Create('difficulty', 'Difficulty', Difficulty, 'Peaceful'));
 end;
 
 end.
