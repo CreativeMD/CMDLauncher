@@ -33,6 +33,7 @@ type
       function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; override;
       function getLaunchSettings : TList<TSetting>; override;
       function getLaunchSaveFile : TSaveFile; override;
+      function getMinecraftVersion : string; override;
   end;
   TVanillaLaunch = class(TMinecraftLaunch)
     constructor Create(Java : TJava; mcversion : String; Instance : TInstance; LoginData : TLoginData);
@@ -236,6 +237,11 @@ end;
 function TVanillaInstance.getLaunchSaveFile : TSaveFile;
 begin
   Result := TSaveFile.Create(getInstanceFolder + 'server.properties');
+end;
+
+function TVanillaInstance.getMinecraftVersion;
+begin
+  Result := MinecraftVersion.UUID;
 end;
 
 end.

@@ -62,6 +62,7 @@ type
       function getLaunchSettings : TList<TSetting>; override;
       function getLaunchSaveFile : TSaveFile; override;
       function canInstanceLaunch : Boolean; override;
+      function getMinecraftVersion : string; override;
       property Custom : Boolean read FCustom write FCustom;
   end;
   TDownloadMods = class(TTask)
@@ -454,6 +455,11 @@ end;
 function TForgeInstance.canInstanceLaunch : Boolean;
 begin
   Result := LoadedInstances;
+end;
+
+function TForgeInstance.getMinecraftVersion;
+begin
+  Result := Forge.MV;
 end;
 
 function TForgeInstance.getLaunchSaveFile : TSaveFile;

@@ -29,6 +29,7 @@ type
       function getCommand(Java : TJava; LoginData : TLoginData) : TMinecraftLaunch; virtual; abstract;
       function getLaunchSettings : TList<TSetting>; virtual; abstract; //No groups avaiable
       function getLaunchSaveFile : TSaveFile; virtual; abstract;
+      function getMinecraftVersion : string; virtual; abstract;
       function canInstanceLaunch : Boolean; virtual;
       procedure LoadPost(SaveFile : TSaveFile); virtual;
       procedure SaveInstance;

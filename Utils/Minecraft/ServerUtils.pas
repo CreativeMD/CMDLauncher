@@ -17,6 +17,8 @@ function getStandardServerSettings(Instance : TInstance) : TList<TSetting>;
 
 implementation
 
+uses VanillaUtils;
+
 constructor TEulaOption.Create(Name, Title : String; Default : Boolean; EulaSaveFile : TSaveFile; Online : Boolean = False);
 begin
   inherited Create(Name, Title, Default, Online);
@@ -70,11 +72,11 @@ begin
   Result.Add(TStringSetting.Create('motd', 'Description', 'A Minecraft Server'));
 
   Difficulty := TStringList.Create;
-  Difficulty.Add('Peaceful');
-  Difficulty.Add('Easy');
-  Difficulty.Add('Normal');
-  Difficulty.Add('Hard');
-  Result.Add(TSelectSetting.Create('difficulty', 'Difficulty', Difficulty, 'Peaceful'));
+  Difficulty.Add('peaceful');
+  Difficulty.Add('easy');
+  Difficulty.Add('normal');
+  Difficulty.Add('hard');
+  Result.Add(TSelectSetting.Create('difficulty', 'Difficulty', Difficulty, 'peaceful').setSaveNumber(MinecraftVersions.IndexOf(getMinecraftVersion(Instance.getMinecraftVersion)) <= MinecraftVersions.IndexOf(getMinecraftVersion('1.12.2'))));
 end;
 
 end.
