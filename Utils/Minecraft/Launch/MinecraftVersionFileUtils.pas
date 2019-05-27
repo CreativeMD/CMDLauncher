@@ -51,7 +51,7 @@ begin
   else
     Self.Log.log('Could not find "' + Command.getMCVersion + '.json"!');
   Command.SpecialArguments.Add('-jar');
-  Command.SpecialArguments.Add('minecraft_server.' + Command.getMCVersion + '.jar');
+  Command.SpecialArguments.Add('"minecraft_server.' + Command.getMCVersion + '.jar"');
   //Bar.FinishStep;
 end;
 
