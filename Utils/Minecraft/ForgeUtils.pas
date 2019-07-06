@@ -260,16 +260,15 @@ end;
 procedure TLoadForge.runTask(Bar : TCMDProgressBar);
 var
 DownloadTask : TDownloadTask;
-FileName, TempFileName, UUID , Branch: string;
-JsonFile, Numbers : ISuperObject;
-BranchTable : TSuperTableString;
-BranchArray, VersionArray, ValueArray : TSuperArray;
-  i, j: Integer;
+FileName, TempFileName, MC , Branch: string;
+JsonFile : ISuperObject;
+Versions, Version : TSuperArray;
+i : Integer;
 begin
   FileName := DownloadFolder + 'forgeversions.json';
   TempFileName := DownloadFolder + 'forgeversionsTemp.json';
   ForgeList := TList<TForge>.Create;
-  DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/json',
+  DownloadTask := TDownloadTask.Create('https://launcher.creativemd.de/service/forgeservice.php?only=new',
   TempFileName, True);
   SupportedMV := TStringList.Create;
 
@@ -287,26 +286,19 @@ begin
   if FileExists(FileName) and (VanillaUtils.MinecraftVersions <> nil) then
   begin
     JsonFile := TSuperObject.ParseFile(FileName, true);
-    BranchTable := JsonFile.N['mcversion'].AsObject;
-    Numbers := JsonFile.O['number'];
-    BranchArray := BranchTable.GetNames.AsArray;
-    ValueArray := BranchTable.GetValues.AsArray;
-    Bar.StartStep(BranchArray.Length);
-    for i := 0 to BranchArray.Length-1 do
+    Versions := JsonFile.A['versions'];
+    Bar.StartStep(Versions.Length);
+    for i := 0 to Versions.Length-1 do
     begin
-      UUID := BranchArray[i].AsString;
-      if isHigher('1.6', UUID) and (VanillaUtils.getMinecraftVersion(UUID) <> nil) then
+      Version := Versions.O[i].AsArray;
+      MC := Version.S[1];
+      if VanillaUtils.getMinecraftVersion(MC) <> nil then
       begin
-        VersionArray := ValueArray.N[i].AsArray;
-        for j := 0 to VersionArray.Length-1 do
-          if Numbers.O[VersionArray[j].AsString] <> nil then
-          begin
-            Branch := '';
-            if Numbers.O[VersionArray[j].AsString].S['branch'] <> 'null' then
-              Branch := Numbers.O[VersionArray[j].AsString].S['branch'];
-            ForgeList.Add(TForge.Create(Numbers.O[VersionArray[j].AsString].S['version'], UUID, Branch));
-          end;
-        SupportedMV.Add(UUID);
+        Branch := '';
+        if Version.Length > 2 then
+          Branch := Version.S[2];
+        ForgeList.Add(TForge.Create(Version.S[0], MC, Branch));
+        SupportedMV.Add(MC);
       end;
       Bar.StepPos := i;
     end;
