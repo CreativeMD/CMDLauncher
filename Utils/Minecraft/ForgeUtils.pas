@@ -298,7 +298,8 @@ begin
         if Version.Length > 2 then
           Branch := Version.S[2];
         ForgeList.Add(TForge.Create(Version.S[0], MC, Branch));
-        SupportedMV.Add(MC);
+        if SupportedMV.IndexOf(MC) = -1 then
+          SupportedMV.Add(MC);
       end;
       Bar.StepPos := i;
     end;

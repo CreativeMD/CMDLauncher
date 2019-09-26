@@ -3,7 +3,7 @@ unit DownloadUtils;
 interface
 
 uses Task, ProgressBar, idHttp, IdSSLOpenSSL, System.Classes, IdException,
-IdExceptionCore, System.SysUtils, IdComponent, idGlobal;
+IdExceptionCore, System.SysUtils, IdComponent, idGlobal, IdZLibCompressorBase, IdBaseComponent;
 
 type
   TDownloadTask = class(TTask)
@@ -14,6 +14,7 @@ type
       MaxWork, LastPercent : Integer;
     protected
       procedure runTask(Bar : TCMDProgressBar); override;
+      function downloadExternally : Boolean;
     public
       constructor Create(DownloadLink, DownloadPath : String; ForceDownload : Boolean = True);
       function downloadFile(Bar : TCMDProgressBar) : Boolean;
@@ -24,7 +25,7 @@ type
 
 implementation
 
-uses Logger, DatabaseConnection, FileUtils;
+uses Logger, DatabaseConnection, FileUtils, FileDownload;
 
 const
 download_tries : Integer = 5;
@@ -67,6 +68,7 @@ var
 Http : TIdHTTP;
 Tries : Integer;
 FileStream : TFileStream;
+Socket : TIdSSLIOHandlerSocketOpenSSL;
 begin
   if not ForceDownload and (FileExists(DownloadPath)) then
   begin
@@ -90,7 +92,9 @@ begin
   Http.Request.UserAgent := 'Mozilla/5.0';
 
   Self.Bar := Bar;
-  Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+  Socket := TIdSSLIOHandlerSocketOpenSSL.Create(Http);
+  Socket.SSLOptions.SSLVersions := [sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2];
+  Http.IOHandler := Socket;
   ForceDirectories(ExtractFilePath(DownloadPath));
   FileStream := TFileStream.Create(DownloadPath, fmCreate);
 
@@ -101,7 +105,6 @@ begin
     try
       Self.Log.log('Downloading ' + ExtractFileName(DownloadPath));
       Http.HandleRedirects := True;
-      //Http.Request.IPVersion := Id_IPv4;
       Http.Get(DownloadLink, FileStream);
       Tries := 10;
       FileStream.Destroy;
@@ -115,11 +118,21 @@ begin
           Self.Log.logLastLine('Could not download file=' + DownloadPath + ' DownloadLink=' + DownloadLink  + ' Exception=' + E.Message + ' ' + InttoStr(Tries) + ' tries so far!');
           Tries := Tries + 1;
         end
+        else if E.Message = 'Socket Error # 10054'#$D#$A'Connection reset by peer.' then
+        begin
+          FileStream.Destroy;
+          FileStream := nil;
+          if downloadExternally then
+            Tries := 10
+          else
+            Tries := 6;
+        end
         else
           Tries := 6;
       end
       else
         Tries := 6;
+
     end;
   until (Tries > 5);
 
@@ -136,6 +149,33 @@ begin
   if Tries = 10 then
   begin
     Self.Log.logLastLine('Downloaded ' + ExtractFileName(DownloadPath) + ' successfully');
+  end;
+end;
+
+function TDownloadTask.downloadExternally : Boolean;
+var
+Downloader : TDownloaderF;
+DResult : TDownloadR;
+begin
+  Downloader := TDownloaderF.Create(nil);
+  Downloader.DownloadBar.StartProcess(1);
+  Downloader.lblProgress.Caption := 'Downloading ' + ExtractFileName(DownloadPath);
+  DResult := Downloader.downloadItem(TDownloadItem.Create(DownloadLink, DownloadPath, True, False));
+  if DResult = drCancel then
+  begin
+    Downloader.Destroy;
+    Exit(False);
+  end;
+  if DResult = drFail then
+  begin
+    Downloader.Destroy;
+    Exit(False);
+  end;
+
+  if DResult = drSuccess then
+  begin
+    Downloader.Destroy;
+    Exit(True);
   end;
 end;
 

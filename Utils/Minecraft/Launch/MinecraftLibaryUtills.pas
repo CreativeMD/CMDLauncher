@@ -77,7 +77,7 @@ i, j : Integer;
 DownloadTask : TDownloadTask;
 LibInfo : TStringList;
 Extractor : TExtractZip;
-CanDownload : Boolean;
+CanDownload, ShouldExtract : Boolean;
 begin
   if CustomJsonPath <> '' then
     JsonFileName := CustomJsonPath
@@ -108,19 +108,25 @@ begin
     for i := 0 to LibArray.Length-1 do
     begin
       LibInfo := Explode(LibArray[i].S['name'], ':');
-
+      ShouldExtract := False;
       if LibInfo.Count = 3 then
       begin
         if LibArray[i].S['url'] <> '' then
           LibDownloadLink := LibArray[i].S['url']
+        else if (LibArray[i].O['downloads'] <> nil) and (LibArray[i].O['downloads'].O['artifact'] <> nil) and (LibArray[i].O['downloads'].O['artifact'].S['url'] <> '') then
+           LibDownloadLink := LibArray[i].O['downloads'].O['artifact'].S['url']
         else
+        begin
           LibDownloadLink := 'https://libraries.minecraft.net/';
 
-        if getDownload(LibArray[i].S['name']) <> '' then
-          LibDownloadLink := getDownload(LibArray[i].S['name']);
+          if getDownload(LibArray[i].S['name']) <> '' then
+            LibDownloadLink := getDownload(LibArray[i].S['name']);
 
-        LibDownloadLink := LibDownloadLink + LibInfo[0].Replace('.', '/') + '/' + LibInfo[1] + '/' + LibInfo[2] + '/' + LibInfo[1] + '-' + LibInfo[2];;
+          if LibArray[i].S['name'].StartsWith('net.minecraftforge:forge') then
+            LibDownloadLink := 'https://files.minecraftforge.net/maven/';
 
+          LibDownloadLink := LibDownloadLink + LibInfo[0].Replace('.', '/') + '/' + LibInfo[1] + '/' + LibInfo[2] + '/' + LibInfo[1] + '-' + LibInfo[2];;
+        end;
 
         LibFileName := DownloadFolder + 'libraries\';
         if CustomLibaryFolder <> '' then
@@ -136,15 +142,30 @@ begin
         begin
           if Natives.S['windows'] <> '' then
           begin
-            LibDownloadLink := LibDownloadLink + '-' + Natives.S['windows'].Replace('${arch}', Command.getArch);
-            LibFileName := LibFileName + '-' + Natives.S['windows'].Replace('${arch}', Command.getArch);
+            if (LibArray[i].O['downloads'].O['classifiers'] <> nil) and (LibArray[i].O['downloads'].O['classifiers'].O['natives-windows'] <> nil) then
+            begin
+              LibFileName := DownloadFolder + 'libraries\';
+              if CustomLibaryFolder <> '' then
+                LibFileName := CustomLibaryFolder;
+
+              LibDownloadLink := LibArray[i].O['downloads'].O['classifiers'].O['natives-windows'].S['url'];
+              LibFileName := LibFileName + LibArray[i].O['downloads'].O['classifiers'].O['natives-windows'].S['path'].Replace('/', '\');
+              ShouldExtract := True;
+            end
+            else
+            begin
+              LibDownloadLink := LibDownloadLink + '-' + Natives.S['windows'].Replace('${arch}', Command.getArch);
+              LibFileName := LibFileName + '-' + Natives.S['windows'].Replace('${arch}', Command.getArch);
+            end;
           end
           else
             CanDownload := False;
         end;
 
-        LibDownloadLink := LibDownloadLink + getDJarFileEnd(LibArray[i].S['name']);
-        LibFileName := LibFileName + '.jar';
+        if not LibDownloadLink.EndsWith('.jar') then
+          LibDownloadLink := LibDownloadLink + getDJarFileEnd(LibArray[i].S['name']);
+        if not LibFileName.EndsWith('jar') then
+          LibFileName := LibFileName + '.jar';
 
         rules := LibArray[i].A['rules'];
         if rules <> nil then
@@ -166,19 +187,24 @@ begin
         begin
           CanDownload := LibArray[i].B['serverreq'];
         end;
-
+        
         DownloadTask := TDownloadTask.Create(LibDownloadLink, LibFileName, False);
         DownloadTask.setLog(Self.Log);
         if CanDownload and DownloadTask.downloadFile(nil) then
         begin
           Extract := LibArray[i].O['extract'];
-          if (Extract <> nil) then
+          if (Extract <> nil) or ShouldExtract then
           begin
-            ExcludeArray := Extract.A['exclude'];
             Extractor := TExtractZip.Create(LibFileName, NativeFolder);
             Extractor.setLog(Self.Log);
-            for j := 0 to ExcludeArray.Length-1 do
-              Extractor.Exclude.Add(string(ExcludeArray.S[j]));
+
+            if Extract <> nil then
+            begin
+              ExcludeArray := Extract.A['exclude'];
+              for j := 0 to ExcludeArray.Length-1 do
+                Extractor.Exclude.Add(string(ExcludeArray.S[j]));
+            end;
+
             Extractor.runTask(nil);
             Extractor.Destroy;
           end

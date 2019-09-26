@@ -12,9 +12,10 @@ type
   TDownloadR = (drSuccess, drFail, drCancel, drNotFinished);
   TDownloadItem = class
     URL, FileName : String;
-    IgnoreFileName : Boolean;
-    constructor Create(URL, FileName : String; IgnoreFileName : Boolean = False);
+    IgnoreFileName, DownloadToTempFolder : Boolean;
+    constructor Create(URL, FileName : String; IgnoreFileName : Boolean = False; DownloadToTempFolder : Boolean = True);
     function isFileName(SuggestedFileName : string): Boolean;
+    function getFileName : String;
   end;
   TDownloaderF = class(TForm)
     btnCancel: TButton;
@@ -63,16 +64,25 @@ implementation
 
 uses CoreLoader;
 
-constructor TDownloadItem.Create(URL, FileName : String; IgnoreFileName : Boolean = False);
+constructor TDownloadItem.Create(URL, FileName : String; IgnoreFileName : Boolean = False; DownloadToTempFolder : Boolean = True);
 begin
   Self.URL := URL;
   Self.FileName := FileName;
   Self.IgnoreFileName := IgnoreFileName;
+  Self.DownloadToTempFolder := DownloadToTempFolder;
 end;
 
 function TDownloadItem.isFileName(SuggestedFileName : string): Boolean;
 begin
   Result := IgnoreFileName or (SuggestedFileName.Replace(' ', '').Replace('''', '') = FileName.Replace(' ', ''));
+end;
+
+function TDownloadItem.getFileName;
+begin
+  if DownloadToTempFolder then
+    Result := TempFolder + FileName
+  else
+    Result := FileName;
 end;
 
 function TDownloaderF.cancelIt : Boolean;
@@ -207,7 +217,9 @@ begin
     + 'You do have the option to skip this mod or cancel all mods.')
   else
   begin
-    callback.Cont(TempFolder + Item.FileName, False);
+    if FileExists(Item.getFileName) then
+      DeleteFile(Item.getFileName);
+    callback.Cont(Item.getFileName, False);
   end;
 end;
 
@@ -226,13 +238,14 @@ begin
     Progress.Show;
     //Progress.SetFocus;
   end;
-  if not downloadItem.IsComplete then
+  if downloadItem.IsInProgress then
   begin
     Progress.TaskProgress.StepPos := downloadItem.ReceivedBytes;
     Progress.lblLog.Caption := IntToStr(downloadItem.ReceivedBytes) + ' / ' + IntToStr(downloadItem.TotalBytes) + ' Bytes (' + IntToStr(round(downloadItem.ReceivedBytes / downloadItem.TotalBytes * 100)) + '%)';
   end
   else
   begin
+    Application.ProcessMessages;
     Progress.TaskProgress.FinishStep;
     DownloadResult := drSuccess;
   end;

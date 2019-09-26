@@ -91,9 +91,9 @@ DownloadTask : TDownloadTask;
 UnZipper : TExtractZip;
 ForgeJarFile, ForgeJsonFile, VanillaJsonFile, VanillaJarFile, MCVersion, UUID, FName: String;
 ForgeJFile, VanillaJFile : ISuperObject;
-LibArrayVanilla, LibArrayForge : TSuperArray;
 i : Integer;
 FileStream : TFileStream;
+Lines : TStringList;
 begin
   ForgeJarFile := TForgeLaunch(Command).Forge.getJarFileName;
   ForgeJsonFile := TForgeLaunch(Command).Forge.getJsonFileName;
@@ -120,14 +120,14 @@ begin
       FName := MCVersion + '-' + UUID;
       if TForgeLaunch(Command).Forge.Branch <> '' then
         FName := FName + '-' + TForgeLaunch(Command).Forge.Branch;
-      DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/' + FName + '/forge-' + FName + '-universal.jar',
-      DownloadFolder + 'forge-universal.jar');
+      DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/net/minecraftforge/forge/' + FName + '/forge-' + FName + '-installer.jar',
+      DownloadFolder + 'forge-installer.jar');
       DownloadTask.setLog(Log);
       if DownloadTask.downloadFile(nil) then
       begin
         Bar.StepPos := 3;
         ForceDirectories(TempFolder);
-        UnZipper := TExtractZip.Create(DownloadFolder + 'forge-universal.jar', TempFolder);
+        UnZipper := TExtractZip.Create(DownloadFolder + 'forge-installer.jar', TempFolder);
         UnZipper.setLog(Self.Log);
         UnZipper.Exclude.ListType := ltWhite;
         UnZipper.Exclude.Add('version.json');
@@ -145,18 +145,27 @@ begin
         if ForgeJFile.S['inheritsFrom'] = MCVersion then
         begin
           VanillaJFile := TSuperObject.ParseFile(VanillaJsonFile, false);
-          LibArrayVanilla := VanillaJFile.A['libraries'];
+          VanillaJFile.Merge(ForgeJFile, True);
+          {LibArrayVanilla := VanillaJFile.A['libraries'];
           LibArrayForge := ForgeJFile.A['libraries'];
           for i := 0 to LibArrayVanilla.Length-1 do
-            LibArrayForge.Add(LibArrayVanilla[i]);
+            LibArrayForge.Add(LibArrayVanilla[i]);                     }
           FileStream := TFileStream.Create(ForgeJsonFile, fmCreate);
-          ForgeJFile.SaveTo(FileStream, True);
+          VanillaJFile.SaveTo(FileStream, True, True);
           FileStream.Destroy;
+
+          Lines := TStringList.Create;
+          Lines.LoadFromFile(ForgeJsonFile);
+          for i := 0 to Lines.Count-1 do
+            Lines[i] := Lines[i].Replace('\', '');
+          Lines.SaveToFile(ForgeJsonFile);
+
+
         end;
       end;
     end;
-    if FileExists(DownloadFolder + 'forge-universal.jar') then
-      DeleteFile(PWideChar(DownloadFolder + 'forge-universal.jar'));
+    if FileExists(DownloadFolder + 'forge-installer.jar') then
+      DeleteFile(PWideChar(DownloadFolder + 'forge-installer.jar'));
   end;
   Bar.FinishStep;
   Command.MCVersion := MCVersion + '-Forge' + UUID;
