@@ -2,7 +2,8 @@ unit CoreLoader;
 
 interface
 
-uses System.SysUtils, SaveFileUtils, JclShell, ShlObj, Vcl.Dialogs, System.Classes, LaunchHandler;
+uses System.SysUtils, SaveFileUtils, JclShell, ShlObj, Vcl.Dialogs, System.Classes,
+LaunchHandler, IdSSLOpenSSL, IdSSL, IdSSLOpenSSLHeaders;
 
 procedure LoadCore(args : TStringList);
 
@@ -13,7 +14,7 @@ ProgramSettings : TSaveFile;
 
 const
 ProgramName : String = 'CMDLauncher';
-ProgramVersion : String = '2.8.8';
+ProgramVersion : String = '2.8.9';
 
 implementation
 
@@ -34,6 +35,8 @@ begin
   MainLog := TLog.Create;
   ProgramSettings := TSaveFile.Create(ProgramFolder + 'CMDLauncher.cfg');
   ProgramSettings.setString('version', ProgramVersion);
+
+  IdOpenSSLSetLibPath(LibFolder);
 
   //SETUP DEFAULT SETTINGS!
   if not ProgramSettings.hasKey('protocol-enabled') then

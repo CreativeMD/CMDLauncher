@@ -4,7 +4,7 @@ interface
 
 uses ForgeUtils, Task, ProgressBar, System.Generics.Collections, superobject, superxmlparser, VanillaUtils, System.Classes, DownloadUtils,
 System.SysUtils, StringUtils, SettingUtils, MinecraftLaunchCommand, ForgeInstallation, LaunchTaskUtils, ZipUtils, SaveFileUtils,
-Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils, BuildUtils, ModpackUtils;
+Vcl.StdCtrls, Vcl.Controls, JavaUtils, AccountUtils, FileDownload, SideUtils, InstanceUtils, BuildUtils, ModpackUtils, SortingUtils;
 
 type
 TSpongeForge = class
@@ -139,7 +139,7 @@ begin
         begin
           Strings.AddObject(SpongeForgeList[i].Version, SpongeForgeList[i].BuildType.getObject);
         end;
-    Strings.Sort;
+    //Strings.Sort;
     TComboBox(Controls[1]).Items := Strings;
    // for i := 0 to Strings.Count-1 do
       //TComboBox(Controls[1]).Items.Add(Strings[Strings.Count-1-i]);
@@ -173,15 +173,26 @@ begin
   Data := Explode(Input, '-');
   //1.8-1521-2.1-DEV-729
   //mc-v(4)-v(2)-buildtype-buildnumber
-  if Data.Count = 5 then
+  if Data.Count >= 4 then
   begin
     FMC := Data[0];
-    FVersion := Data[2] + '.' + Data[4];
+    if Data.Count = 4 then
+    begin
+      FVersion := Data[2] + '.' + Data[3];
+      if Data[3].StartsWith('RC') then
+        BuildType := TRecommend
+      else
+        BuildType := TStable;
+    end
+    else
+    begin
+      FVersion := Data[2] + '.' + Data[4];
+      BuildType := parseBuildTypeString(Data[3]);
+    end;
+
     FForge := getForgeByBuildID(Data[1]);
-    BuildType := parseBuildTypeString(Data[3]);
     FFile := 'spongeforge-' + Input + '.jar';
     FURL := 'http://files.minecraftforge.net/maven/org/spongepowered/spongeforge/' + Input + '/' + FFile;
-    //http://files.minecraftforge.net/maven/org/spongepowered/spongeforge/1.8-1521-2.1-DEV-744/spongeforge-1.8-1521-2.1-DEV-744.jar
   end;
 end;
 
@@ -355,7 +366,7 @@ i : Integer;
 begin
   FileName := DownloadFolder + 'SpongeForge.xml';
   SpongeForgeList := TList<TSpongeForge>.Create;
-  DownloadTask := TDownloadTask.Create('http://files.minecraftforge.net/maven/org/spongepowered/spongeforge/maven-metadata.xml',
+  DownloadTask := TDownloadTask.Create('https://repo.spongepowered.org/maven/org/spongepowered/spongeforge/maven-metadata.xml',
   FileName, True);
   SpongeForgeMCList := TStringList.Create;
 
@@ -379,6 +390,8 @@ begin
         SpongeForgeList.Add(SpongeForge);
       end;
     end;
+
+    SpongeForgeMCList.CustomSort(SortVersions);
   end
   else
     SpongeForgeList := nil;

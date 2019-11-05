@@ -25,7 +25,7 @@ begin
   Input := Input.toLower;
   if Input = 'experimental' then
     Exit(TExperimental);
-  if Input = 'dev' then
+  if (Input = 'dev') or (Input = 'beta') then
     Exit(TDev);
   if Input = 'stable' then
     Exit(TStable);
