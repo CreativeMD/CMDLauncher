@@ -3,7 +3,8 @@ unit DownloadUtils;
 interface
 
 uses Task, ProgressBar, idHttp, IdSSLOpenSSL, System.Classes, IdException,
-IdExceptionCore, System.SysUtils, IdComponent, idGlobal, IdZLibCompressorBase, IdBaseComponent;
+IdExceptionCore, System.SysUtils, IdComponent, idGlobal, IdZLibCompressorBase,
+IdBaseComponent, IdSSL, IdSSLOpenSSLHeaders, IdCTypes;
 
 type
   TDownloadTask = class(TTask)
@@ -12,6 +13,8 @@ type
       DownloadLink, DownloadPath : String;
       ForceDownload : Boolean;
       MaxWork, LastPercent : Integer;
+      HTTP: TIdHTTP;
+      procedure OnStatusInfoEx(ASender: TObject; const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT; const AType, AMsg: String);
     protected
       procedure runTask(Bar : TCMDProgressBar); override;
       function downloadExternally : Boolean;
@@ -63,9 +66,14 @@ begin
     Bar.FinishStep;
 end;
 
+procedure TDownloadTask.OnStatusInfoEx(ASender: TObject; const AsslSocket: PSSL; const AWhere, Aret: TIdC_INT;
+  const AType, AMsg: String);
+begin
+  SSL_set_tlsext_host_name(AsslSocket, HTTP.Request.Host);
+end;
+
 procedure TDownloadTask.runTask(Bar : TCMDProgressBar);
 var
-Http : TIdHTTP;
 Tries : Integer;
 FileStream : TFileStream;
 Socket : TIdSSLIOHandlerSocketOpenSSL;
@@ -93,7 +101,9 @@ begin
 
   Self.Bar := Bar;
   Socket := TIdSSLIOHandlerSocketOpenSSL.Create(Http);
-  Socket.SSLOptions.SSLVersions := [sslvTLSv1, sslvTLSv1_1, sslvTLSv1_2];
+  Socket.OnStatusInfoEx := Self.OnStatusInfoEx;
+  Socket.SSLOptions.Method := sslvSSLv23;
+  Socket.SSLOptions.SSLVersions := [sslvTLSv1_2, sslvTLSv1_1, sslvTLSv1];
   Http.IOHandler := Socket;
   ForceDirectories(ExtractFilePath(DownloadPath));
   FileStream := TFileStream.Create(DownloadPath, fmCreate);
@@ -150,6 +160,8 @@ begin
   begin
     Self.Log.logLastLine('Downloaded ' + ExtractFileName(DownloadPath) + ' successfully');
   end;
+
+  Http.Free;
 end;
 
 function TDownloadTask.downloadExternally : Boolean;
