@@ -50,11 +50,15 @@ end;
 function CheckInternetConnection : Boolean;
 var
 Http : TIdHTTP;
+Socket : TIdSSLIOHandlerSocketOpenSSL;
 begin
   Http := TIdHTTP.Create;
   Http.Request.UserAgent := 'Mozilla/5.0';
   Http.HandleRedirects := True;
-  Http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+  Socket := TIdSSLIOHandlerSocketOpenSSL.Create(Http);
+  Socket.SSLOptions.Method := sslvSSLv23;
+  Socket.SSLOptions.SSLVersions := [sslvTLSv1_2, sslvTLSv1_1, sslvTLSv1];
+  Http.IOHandler := Socket;
   try
     Result := Http.Get('http://launcher.creativemd.de/service/connectLauncher.php') = 'true';
   except
